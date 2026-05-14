@@ -15,6 +15,7 @@ A tiny macOS menu-bar utility. No Dock icon. No windows. No telemetry. No nonsen
 ![arch](https://img.shields.io/badge/Apple%20Silicon%20·%20Intel-1d1d1f?style=for-the-badge)
 ![license](https://img.shields.io/badge/license-MIT-1d1d1f?style=for-the-badge)
 ![status](https://img.shields.io/badge/status-stable-22c55e?style=for-the-badge)
+![vibe-coded](https://img.shields.io/badge/vibe--coded%20with-Claude%20Code-d97757?style=for-the-badge)
 
 **English** · [한국어](./README.ko.md)
 
@@ -206,6 +207,12 @@ No code signing, no notarization — this is open source meant to be cloned and 
 - [ ] AC-power-only mode
 - [ ] External-display detection
 - [ ] Activity-based wake lock
+
+## Built with Claude Code
+
+Full disclosure: InsomniKit is **vibe-coded** — designed and built almost entirely through [Claude Code](https://claude.com/claude-code), commit by commit, PR by PR. A human steers the direction and reviews; the agent writes the code.
+
+So if you spot a rough edge: yes, that's the deal with vibe-coding. Open an issue or a PR — it gets fixed the same way it was built.
 
 ---
 
