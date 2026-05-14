@@ -51,26 +51,39 @@ Insomniac은 같은 일을 두 번의 클릭으로 해결합니다 — 그리고
 
 ## 영구 설치
 
-한 번 빌드해서 `/Applications`에 넣어두면 끝입니다.
+두 줄이면 끝.
 
 ```bash
 git clone git@github.com:racgoo/InsomniKit.git
 cd InsomniKit
 pnpm install            # 또는: npm install / yarn / bun install
-pnpm run pack           # Apple Silicon 기준 약 10초
+pnpm run install:app    # 빌드 → /Applications에 설치 → 실행
 ```
 
-빌드된 `.app`을 Applications로 옮기세요.
-
-```bash
-mv release/mac-arm64/Insomniac.app /Applications/
-xattr -dr com.apple.quarantine /Applications/Insomniac.app
-open /Applications/Insomniac.app
-```
-
-> Intel Mac은 `mac-arm64` 대신 `mac`을 사용하세요.
+이게 전부입니다 — 이미 `/Applications`에 들어갔고 메뉴바에서 돌고 있습니다.
 
 재부팅 후에도 자동으로 켜지길 원하면 메뉴에서 **Launch at Login**을 켜세요.
+
+### 업데이트
+
+```bash
+git pull
+pnpm install            # 새 의존성이 있으면 받음
+pnpm run install:app    # 실행 중인 앱 종료 → 재빌드 → 재설치 → 재실행
+```
+
+같은 스크립트. 설정값은 업데이트해도 그대로 유지됩니다.
+
+<details>
+<summary><code>install:app</code>이 하는 일</summary>
+
+1. 실행 중인 Insomniac을 정상 종료 (그래도 안 죽으면 SIGKILL).
+2. 호스트 아키텍처용으로만 빌드 (`electron-builder --mac --dir`) — 빠르고 `.dmg` 안 만듦.
+3. `.app`을 `/Applications`로 이동 (`/Applications`이 쓰기 불가능한 관리형 Mac에서는 `~/Applications`로 폴백).
+4. `com.apple.quarantine` 속성 제거 — 서명 없는 번들이라도 Gatekeeper가 막지 않음.
+5. 실행.
+
+</details>
 
 ## 사용법
 
