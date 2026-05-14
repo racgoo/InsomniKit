@@ -4,8 +4,10 @@ Project conventions for any AI agent working in this repo.
 
 ## Versioning & PRs
 
-- **Every PR bumps the minor version by 1** in `package.json` (e.g. `1.0.0` → `1.1.0` → `1.2.0`).
+- **Every PR bumps the patch version by 1** in `package.json` (e.g. `1.1.0` → `1.1.1` → `1.1.2`).
   Include the version bump in the same PR as the change.
+- The **major and minor** components are bumped *only* by the maintainer editing them directly —
+  an agent must never touch them.
 - One logical change per PR. Branch → commit → push → open PR → squash-merge → delete branch.
 - Verify before merging: `pnpm run lint` and a build must pass.
 
