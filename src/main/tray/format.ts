@@ -13,6 +13,32 @@ export function formatBattery(b: BatterySnapshot): string {
 }
 
 /**
+ * Human label for the current power source. Used to set expectations
+ * about what closing the lid will do — on AC caffeinate keeps the
+ * system awake; on battery macOS sleeps on lid-close regardless.
+ */
+export function formatPower(b: BatterySnapshot): string {
+  if (b.onACOnly) return "Power: AC (desktop)";
+  return b.charging ? "Power: AC" : "Power: Battery";
+}
+
+/**
+ * Returns a one-line caveat when the current setup means closing the
+ * lid will still sleep the Mac, or `null` when no warning is needed.
+ *
+ * Why this matters: with the default `caffeinate -dims` strategy, the
+ * `-s` (system sleep) assertion is documented as "valid only when the
+ * system is running on AC power". On battery + lid-close, macOS will
+ * sleep the system even with our caffeinate running. Users tend to
+ * blame Insomniac for this; the menu now spells it out.
+ */
+export function lidCloseWarning(b: BatterySnapshot): string | null {
+  if (b.onACOnly) return null;
+  if (b.charging) return null;
+  return "⚠︎  Lid-close sleeps on battery";
+}
+
+/**
  * Render a human-friendly "Xh Ym remaining" / "Xm remaining" /
  * "<1m remaining" string from a millisecond delta.
  *

@@ -96,6 +96,22 @@ Same script. Settings are preserved across updates.
 
 Your duration, threshold, and Launch-at-Login choices are remembered across restarts.
 
+## About closing the lid
+
+This trips up everyone, so it's worth spelling out:
+
+**Closing the lid always turns off the screen.** That's a hardware behavior of MacBooks — the display is physically covered, and no software (not Insomniac, not `caffeinate`, not `pmset`) can keep it lit. The real question is whether the *system* keeps running.
+
+| Power source                            | Lid closed → system sleeps? | What you'll see                                                          |
+| --------------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
+| **AC + Insomniac active**               | No                          | Screen off, but background tasks (downloads, builds, sync) keep running. |
+| **Battery + Insomniac active**          | **Yes**                     | macOS forces sleep on lid-close regardless. `caffeinate -s` is documented as AC-only. The menu shows `⚠︎ Lid-close sleeps on battery` when you're in this state. |
+| **AC + external display + lid closed** | No (native clamshell)       | Mac drives the external display normally — Insomniac isn't even needed.   |
+
+> **TL;DR**: On AC power, just leave it active and close the lid. Your work continues. On battery, plug in first.
+
+A privileged "lid-closed mode" using `pmset disablesleep` (which requires admin and modifies system state) is not exposed in the UI yet — see Roadmap.
+
 ## Dev
 
 ```bash
@@ -112,6 +128,12 @@ pnpm run dist     # arm64 + x64, .dmg + .zip in release/
 ```
 
 No code signing. No notarization. This is open source meant to be cloned and built locally — sign it yourself if you want to ship it.
+
+## Roadmap
+
+- **Lid-closed mode** — opt-in `pmset disablesleep` toggle so the system stays awake on battery too. Will prompt for admin and clearly warn that it mutates system state.
+- **Strategy picker** — expose caffeinate vs pmset in the menu for power users.
+- AC-power-only mode, external-display detection, activity-based wake lock.
 
 ## License
 

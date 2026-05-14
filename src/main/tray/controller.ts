@@ -12,10 +12,12 @@ import {
 import { createLogger } from "../utils/logger";
 import {
   formatBattery,
+  formatPower,
   formatStatusLine,
   formatThresholdLine,
   formatTimerLine,
   formatTrayTitle,
+  lidCloseWarning,
 } from "./format";
 import { getActiveIcon, getInactiveIcon } from "./icons";
 
@@ -104,13 +106,19 @@ export class TrayController {
     state: InsomniacState,
     remainingMs: number | null,
   ): Menu {
+    const warning = state.active ? lidCloseWarning(state.battery) : null;
+
     const template: MenuItemConstructorOptions[] = [
       { label: "Insomniac", enabled: false },
       { type: "separator" },
       { label: formatStatusLine(state), enabled: false },
+      { label: formatPower(state.battery), enabled: false },
       { label: formatBattery(state.battery), enabled: false },
       { label: formatTimerLine(state, remainingMs), enabled: false },
       { label: formatThresholdLine(state), enabled: false },
+      ...(warning
+        ? ([{ label: warning, enabled: false }] as MenuItemConstructorOptions[])
+        : []),
       { type: "separator" },
       {
         label: state.active ? "Disable" : "Enable",
