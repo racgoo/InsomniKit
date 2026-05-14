@@ -1,4 +1,4 @@
-import { BatterySnapshot, InsomniacState } from "../state/types";
+import { BatterySnapshot, AppState } from "../state/types";
 
 /**
  * Pure helpers for rendering menu labels. Kept dependency-free and
@@ -30,7 +30,7 @@ export function formatPower(b: BatterySnapshot): string {
  * `-s` (system sleep) assertion is documented as "valid only when the
  * system is running on AC power". On battery + lid-close, macOS will
  * sleep the system even with our caffeinate running. Users tend to
- * blame Insomniac for this; the menu now spells it out.
+ * blame InsomniKit for this; the menu now spells it out.
  */
 export function lidCloseWarning(b: BatterySnapshot): string | null {
   if (b.onACOnly) return null;
@@ -59,7 +59,7 @@ export function formatRemaining(ms: number): string {
 }
 
 export function formatTimerLine(
-  state: InsomniacState,
+  state: AppState,
   remainingMs: number | null,
 ): string {
   if (state.duration === "infinite") return "Timer: Infinite";
@@ -67,13 +67,13 @@ export function formatTimerLine(
   return `Timer: ${formatRemaining(remainingMs)}`;
 }
 
-export function formatThresholdLine(state: InsomniacState): string {
+export function formatThresholdLine(state: AppState): string {
   return state.batteryThreshold === "off"
     ? "Auto-disable: Off"
     : `Auto-disable: ≤ ${state.batteryThreshold}%`;
 }
 
-export function formatStatusLine(state: InsomniacState): string {
+export function formatStatusLine(state: AppState): string {
   return state.active ? "● Active" : "○ Inactive";
 }
 
@@ -86,7 +86,7 @@ export function formatStatusLine(state: InsomniacState): string {
  * - active timer: "Xm" / "Xh"
  */
 export function formatTrayTitle(
-  state: InsomniacState,
+  state: AppState,
   remainingMs: number | null,
 ): string {
   if (!state.active) return "";

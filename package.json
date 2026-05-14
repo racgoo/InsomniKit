@@ -1,6 +1,7 @@
 {
-  "name": "insomniac",
-  "version": "0.1.0",
+  "name": "insomnikit",
+  "productName": "InsomniKit",
+  "version": "0.2.0",
   "description": "Minimal macOS menu bar utility that prevents sleep, with timer and battery-aware auto-disable.",
   "main": "dist/main/index.js",
   "author": "racgoo",
@@ -28,8 +29,8 @@
     "typescript": "^5.4.0"
   },
   "build": {
-    "appId": "dev.racgoo.insomniac",
-    "productName": "Insomniac",
+    "appId": "dev.racgoo.insomnikit",
+    "productName": "InsomniKit",
     "asar": true,
     "files": [
       "dist/**/*",

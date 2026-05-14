@@ -4,7 +4,7 @@ import {
   BatteryThreshold,
   DEFAULT_STATE,
   DurationPreset,
-  InsomniacState,
+  AppState,
   SleepStrategyKind,
   TimerSnapshot,
 } from "./types";
@@ -20,19 +20,19 @@ import {
  */
 
 export type StoreEvents = {
-  change: InsomniacState;
+  change: AppState;
 };
 
 export class Store extends Emitter<StoreEvents> {
-  private state: InsomniacState;
+  private state: AppState;
 
-  constructor(initial: Partial<InsomniacState> = {}) {
+  constructor(initial: Partial<AppState> = {}) {
     super();
     this.state = { ...DEFAULT_STATE, ...initial };
   }
 
   /** Immutable view. Callers must not mutate the returned object. */
-  get(): InsomniacState {
+  get(): AppState {
     return this.state;
   }
 

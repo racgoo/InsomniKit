@@ -1,6 +1,6 @@
 <div align="center">
 
-# Insomniac
+# InsomniKit
 
 **Keep your Mac awake — exactly as long as you want.**
 
@@ -46,7 +46,7 @@ When the timer ends — or the battery dips below your threshold — sleep comes
 - You forget it's running and your battery drains overnight.
 - You actually want it to stop after the build finishes.
 
-Insomniac is the same idea, wrapped in two clicks — and it cleans itself up.
+InsomniKit is the same idea, wrapped in two clicks — and it cleans itself up.
 Crash, force-quit, kill -9: there's no orphaned `caffeinate` process and no leftover `pmset` state.
 
 ## Install (permanent)
@@ -60,7 +60,7 @@ pnpm install            # or: npm install / yarn / bun install
 pnpm run install:app    # builds, installs to /Applications, launches
 ```
 
-That's it — Insomniac is now in your `/Applications` folder and running in the menu bar.
+That's it — InsomniKit is now in your `/Applications` folder and running in the menu bar.
 
 In the menu, toggle **Launch at Login** if you want it to come back automatically after every reboot.
 
@@ -77,7 +77,7 @@ Same script. Settings are preserved across updates.
 <details>
 <summary>What <code>install:app</code> does</summary>
 
-1. Gracefully quits any running Insomniac (then SIGKILLs stragglers).
+1. Gracefully quits any running InsomniKit (then SIGKILLs stragglers).
 2. Builds the host architecture only (`electron-builder --mac --dir`) — fast, no `.dmg`.
 3. Moves the `.app` to `/Applications` (falls back to `~/Applications` on managed Macs where `/Applications` isn't writable).
 4. Strips the `com.apple.quarantine` attribute so Gatekeeper doesn't block the unsigned bundle on first launch.
@@ -100,13 +100,13 @@ Your duration, threshold, and Launch-at-Login choices are remembered across rest
 
 This trips up everyone, so it's worth spelling out:
 
-**Closing the lid always turns off the screen.** That's a hardware behavior of MacBooks — the display is physically covered, and no software (not Insomniac, not `caffeinate`, not `pmset`) can keep it lit. The real question is whether the *system* keeps running.
+**Closing the lid always turns off the screen.** That's a hardware behavior of MacBooks — the display is physically covered, and no software (not InsomniKit, not `caffeinate`, not `pmset`) can keep it lit. The real question is whether the *system* keeps running.
 
 | Power source                            | Lid closed → system sleeps? | What you'll see                                                          |
 | --------------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
-| **AC + Insomniac active**               | No                          | Screen off, but background tasks (downloads, builds, sync) keep running. |
-| **Battery + Insomniac active**          | **Yes**                     | macOS forces sleep on lid-close regardless. `caffeinate -s` is documented as AC-only. The menu shows `⚠︎ Lid-close sleeps on battery` when you're in this state. |
-| **AC + external display + lid closed** | No (native clamshell)       | Mac drives the external display normally — Insomniac isn't even needed.   |
+| **AC + InsomniKit active**               | No                          | Screen off, but background tasks (downloads, builds, sync) keep running. |
+| **Battery + InsomniKit active**          | **Yes**                     | macOS forces sleep on lid-close regardless. `caffeinate -s` is documented as AC-only. The menu shows `⚠︎ Lid-close sleeps on battery` when you're in this state. |
+| **AC + external display + lid closed** | No (native clamshell)       | Mac drives the external display normally — InsomniKit isn't even needed.   |
 
 > **TL;DR**: On AC power, just leave it active and close the lid. Your work continues. On battery, plug in first.
 
