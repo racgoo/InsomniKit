@@ -1,6 +1,7 @@
 import { app, Menu, MenuItemConstructorOptions, Tray } from "electron";
 import { BatteryMonitor } from "../services/battery";
 import { setLaunchAtLogin } from "../services/launchAtLogin";
+import { LidClosedService } from "../services/lidClosed";
 import { SleepManager } from "../services/sleep";
 import { TimerManager } from "../services/timer";
 import { Store } from "../state/store";
@@ -12,6 +13,7 @@ import {
 import { createLogger } from "../utils/logger";
 import {
   formatBattery,
+  formatLidClosedLine,
   formatPower,
   formatStatusLine,
   formatThresholdLine,
@@ -60,6 +62,7 @@ export class TrayController {
     private readonly sleep: SleepManager,
     private readonly timer: TimerManager,
     private readonly battery: BatteryMonitor,
+    private readonly lidClosed: LidClosedService,
   ) {}
 
   start(): void {
@@ -147,6 +150,22 @@ export class TrayController {
       },
       { type: "separator" },
       {
+        label: formatLidClosedLine(
+          state.lidClosedMode,
+          this.lidClosed.isActive(),
+        ),
+        enabled: false,
+      },
+      {
+        label: this.lidClosed.isActive()
+          ? "Turn off Lid-Closed Mode…"
+          : "Turn on Lid-Closed Mode… (admin)",
+        click: () => {
+          void this.handleLidClosedToggle();
+        },
+      },
+      { type: "separator" },
+      {
         label: "Launch at Login",
         type: "checkbox",
         checked: state.launchAtLogin,
@@ -203,5 +222,28 @@ export class TrayController {
   private handleLaunchAtLogin(enabled: boolean): void {
     setLaunchAtLogin(enabled);
     this.store.setLaunchAtLogin(enabled);
+  }
+
+  private async handleLidClosedToggle(): Promise<void> {
+    // Reflect "pending" in the UI immediately so the user sees their
+    // click landed even though the macOS password sheet hasn't returned
+    // yet. We revert if the auth fails.
+    const wantActive = !this.lidClosed.isActive();
+    this.store.setLidClosedMode(wantActive);
+    this.render();
+
+    try {
+      if (wantActive) {
+        await this.lidClosed.enable();
+      } else {
+        await this.lidClosed.disable();
+      }
+    } catch (err) {
+      log.warn("lid-closed toggle failed", err);
+      // Roll back intent to match reality.
+      this.store.setLidClosedMode(this.lidClosed.isActive());
+    } finally {
+      this.render();
+    }
   }
 }

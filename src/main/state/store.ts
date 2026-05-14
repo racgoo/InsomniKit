@@ -66,6 +66,12 @@ export class Store extends Emitter<StoreEvents> {
     this.emit("change", this.state);
   }
 
+  setLidClosedMode(enabled: boolean): void {
+    if (this.state.lidClosedMode === enabled) return;
+    this.state = { ...this.state, lidClosedMode: enabled };
+    this.emit("change", this.state);
+  }
+
   setBattery(battery: BatterySnapshot): void {
     const prev = this.state.battery;
     if (

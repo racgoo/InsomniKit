@@ -4,6 +4,7 @@ import {
   getLaunchAtLogin,
   setLaunchAtLogin,
 } from "./services/launchAtLogin";
+import { LidClosedService } from "./services/lidClosed";
 import { SleepManager } from "./services/sleep";
 import { TimerManager } from "./services/timer";
 import { Store, attachPersistence, loadSettings } from "./state";
@@ -22,9 +23,6 @@ if (!gotLock) {
   app.quit();
 }
 
-// Hydrate from disk BEFORE constructing the store so SleepManager picks
-// the user's preferred strategy on first use. Settings are written
-// back via `attachPersistence` on every store change.
 const persisted = loadSettings();
 const store = new Store(persisted);
 
@@ -35,11 +33,18 @@ store.setLaunchAtLogin(getLaunchAtLogin());
 const sleep = new SleepManager(store);
 const timer = new TimerManager(store);
 const battery = new BatteryMonitor(store);
-const tray = new TrayController(store, sleep, timer, battery);
+const lidClosed = new LidClosedService();
+const tray = new TrayController(store, sleep, timer, battery, lidClosed);
 const detachPersistence = attachPersistence(store);
 
 // Crash safety — restore caffeinate / pmset on every conceivable exit
 // path. Installed BEFORE anything else can throw on startup.
+//
+// Note: we deliberately do NOT call lidClosed.restoreOnExit() from the
+// signal-handler / crash path. Lid-Closed Mode is an explicit, opt-in,
+// admin-authenticated session — if the app dies mid-session, the user
+// asked for the pmset state and our next launch will adopt it without
+// prompting. Forcing a password sheet during SIGINT/SIGTERM is hostile.
 installCleanupHandlers(() => {
   sleep.restoreOnExit();
 });
@@ -61,18 +66,45 @@ store.on("change", (next) => {
     duration: next.duration,
     threshold: next.batteryThreshold,
     launchAtLogin: next.launchAtLogin,
+    lidClosedMode: next.lidClosedMode,
   });
 });
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   log.info("ready", { platform: process.platform, arch: process.arch });
-  // If persisted settings include launchAtLogin=true but the OS
-  // disagrees, re-apply (handles fresh-install + first toggle).
   if (persisted.launchAtLogin && !getLaunchAtLogin()) {
     setLaunchAtLogin(true);
   }
   tray.start();
   battery.start();
+
+  // Lid-Closed Mode reconcile:
+  // 1. Sync from current system state (no prompt).
+  // 2. If user intent says it should be on and system isn't, prompt once.
+  // 3. If user intent says off but system has it on (leftover from
+  //    crash or external tooling), don't touch — just reflect reality.
+  await lidClosed.syncFromSystem();
+  const intent = store.get().lidClosedMode;
+  if (intent && !lidClosed.isActive()) {
+    log.info("re-applying Lid-Closed Mode from persisted intent");
+    try {
+      await lidClosed.enable();
+    } catch (err) {
+      log.warn(
+        "could not re-apply Lid-Closed Mode at startup; user cancelled or denied",
+        err,
+      );
+      store.setLidClosedMode(false);
+    }
+  } else if (!intent && lidClosed.isActive()) {
+    // System has disablesleep=1 from somewhere we didn't set — adopt
+    // the state silently so the UI doesn't lie, but DON'T try to
+    // revert (might be another app or the user's manual setting).
+    log.warn(
+      "system has disablesleep=1 but no persisted intent — adopting as-is",
+    );
+    store.setLidClosedMode(true);
+  }
 });
 
 app.on("window-all-closed", (event: Electron.Event) => {
@@ -85,4 +117,9 @@ app.on("before-quit", () => {
   timer.cancel();
   detachPersistence();
   sleep.restoreOnExit();
+  // Lid-Closed Mode persists across quit by design: the pmset flag
+  // stays set, the user's intent stays in settings.json, and the
+  // next launch adopts the state silently via syncFromSystem(). If
+  // they want it off, they explicitly toggle off in the menu (which
+  // runs the disable() prompt and persists intent=false).
 });

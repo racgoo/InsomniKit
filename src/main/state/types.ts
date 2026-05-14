@@ -45,6 +45,12 @@ export interface AppState {
   duration: DurationPreset;
   batteryThreshold: BatteryThreshold;
   launchAtLogin: boolean;
+  /**
+   * "User intent" for Lid-Closed Mode. The LidClosedService also tracks
+   * an `active` flag for what's currently applied; they can diverge
+   * mid-prompt and the tray reconciles by reading both.
+   */
+  lidClosedMode: boolean;
   battery: BatterySnapshot;
   timer: TimerSnapshot;
 }
@@ -55,6 +61,7 @@ export const DEFAULT_STATE: AppState = {
   duration: "infinite",
   batteryThreshold: "off",
   launchAtLogin: false,
+  lidClosedMode: false,
   battery: { percent: null, charging: false, onACOnly: false },
   timer: { preset: "infinite", endsAt: null },
 };
