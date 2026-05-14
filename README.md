@@ -108,9 +108,24 @@ This trips up everyone, so it's worth spelling out:
 | **Battery + InsomniKit active**          | **Yes**                     | macOS forces sleep on lid-close regardless. `caffeinate -s` is documented as AC-only. The menu shows `⚠︎ Lid-close sleeps on battery` when you're in this state. |
 | **AC + external display + lid closed** | No (native clamshell)       | Mac drives the external display normally — InsomniKit isn't even needed.   |
 
-> **TL;DR**: On AC power, just leave it active and close the lid. Your work continues. On battery, plug in first.
+> **TL;DR**: On AC power, just leave it active and close the lid. Your work continues. On battery, plug in first — *or* turn on Lid-Closed Mode (below).
 
-A privileged "lid-closed mode" using `pmset disablesleep` (which requires admin and modifies system state) is not exposed in the UI yet — see Roadmap.
+### Lid-Closed Mode (advanced, opt-in)
+
+If you really need the system to stay awake with the lid closed *on battery*, InsomniKit can flip `pmset -c disablesleep 1` for you. Open the menu and click **Turn on Lid-Closed Mode… (admin)**.
+
+What happens:
+
+- macOS shows a native password sheet ("InsomniKit needs admin access to keep your Mac awake when the lid is closed"). Enter your password.
+- The setting is **system-wide** — every app sees it.
+- Your choice is remembered: the next launch silently adopts the existing state, no second prompt.
+- To turn it off: click **Turn off Lid-Closed Mode…** in the menu. Another password sheet, then it's reverted.
+
+What this **doesn't** do:
+
+- It does **not** stop the screen turning off when the lid closes — nothing can.
+- It does **not** override macOS thermal limits. If the Mac gets too hot inside a closed lid, the kernel will still sleep it for safety.
+- It does **not** auto-revert on quit. If you quit InsomniKit while Lid-Closed Mode is on, the system stays in that state until you launch InsomniKit again and toggle it off, or run `sudo pmset -c disablesleep 0` manually.
 
 ## Dev
 
@@ -131,7 +146,6 @@ No code signing. No notarization. This is open source meant to be cloned and bui
 
 ## Roadmap
 
-- **Lid-closed mode** — opt-in `pmset disablesleep` toggle so the system stays awake on battery too. Will prompt for admin and clearly warn that it mutates system state.
 - **Strategy picker** — expose caffeinate vs pmset in the menu for power users.
 - AC-power-only mode, external-display detection, activity-based wake lock.
 

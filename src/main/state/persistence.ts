@@ -24,6 +24,7 @@ interface PersistedSettings {
   duration: DurationPreset;
   batteryThreshold: BatteryThreshold;
   launchAtLogin: boolean;
+  lidClosedMode: boolean;
 }
 
 const VALID_STRATEGIES: ReadonlyArray<SleepStrategyKind> = [
@@ -104,6 +105,9 @@ function validate(input: unknown): Partial<PersistedSettings> {
   if (typeof o.launchAtLogin === "boolean") {
     out.launchAtLogin = o.launchAtLogin;
   }
+  if (typeof o.lidClosedMode === "boolean") {
+    out.lidClosedMode = o.lidClosedMode;
+  }
   return out;
 }
 
@@ -139,6 +143,7 @@ export function attachPersistence(store: Store): () => void {
       duration: s.duration,
       batteryThreshold: s.batteryThreshold,
       launchAtLogin: s.launchAtLogin,
+      lidClosedMode: s.lidClosedMode,
     };
     try {
       const file = settingsPath();
