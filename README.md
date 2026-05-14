@@ -30,8 +30,8 @@ When the timer ends — or the battery dips below your threshold — sleep comes
   ───────────────────
   Disable
   ───────────────────
-  Duration             ▸  15m · 30m · 1h · 2h · ∞
-  Battery Auto-Disable ▸  Off · ≤50% · ≤30% · ≤20%
+  Duration             ▸  15m · 30m · 1h · 2h · ∞ · Custom…
+  Battery Auto-Disable ▸  Off · ≤50% · ≤30% · ≤20% · Custom…
   ───────────────────
   ☑  Launch at Login
   ───────────────────
@@ -93,8 +93,9 @@ Same script. Settings are preserved across updates.
 | Keep watching a movie without locking                 | **Enable** + **Duration → ∞**            |
 | Auto-stop when the battery gets low                   | **Battery Auto-Disable → ≤ 30%**         |
 | Stop immediately                                      | **Disable** (or just **Quit**)           |
+| Pick a value the presets don't cover                   | **Duration → Custom…** (1–1440 min) or **Battery Auto-Disable → Custom…** (1–99 %) |
 
-Your duration, threshold, and Launch-at-Login choices are remembered across restarts.
+Your duration, threshold, and Launch-at-Login choices are remembered across restarts. Custom values persist the same way — the menu shows your current value as "Custom: 47 minutes" so you always know what's set.
 
 ## About closing the lid
 

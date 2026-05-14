@@ -6,13 +6,25 @@ import { SleepManager } from "../services/sleep";
 import { TimerManager } from "../services/timer";
 import { Store } from "../state/store";
 import {
-  BatteryThreshold,
-  DurationPreset,
   AppState,
+  BatteryThreshold,
+  DURATION_MAX_MINUTES,
+  DURATION_MIN_MINUTES,
+  DURATION_PRESETS,
+  Duration,
+  THRESHOLD_MAX_PERCENT,
+  THRESHOLD_MIN_PERCENT,
+  THRESHOLD_PRESETS,
+  isDurationPreset,
+  isThresholdPreset,
+  parseDurationInput,
+  parseThresholdInput,
 } from "../state/types";
 import { createLogger } from "../utils/logger";
+import { promptText } from "../utils/prompt";
 import {
   formatBattery,
+  formatDuration,
   formatLidClosedLine,
   formatPower,
   formatStatusLine,
@@ -25,32 +37,13 @@ import { getActiveIcon, getInactiveIcon } from "./icons";
 
 const log = createLogger("tray");
 
-const DURATION_OPTIONS: ReadonlyArray<{ label: string; value: DurationPreset }> = [
-  { label: "15 minutes", value: "15m" },
-  { label: "30 minutes", value: "30m" },
-  { label: "1 hour", value: "1h" },
-  { label: "2 hours", value: "2h" },
-  { label: "Infinite", value: "infinite" },
-];
-
-const THRESHOLD_OPTIONS: ReadonlyArray<{ label: string; value: BatteryThreshold }> = [
-  { label: "Off", value: "off" },
-  { label: "≤ 50%", value: "50" },
-  { label: "≤ 30%", value: "30" },
-  { label: "≤ 20%", value: "20" },
-];
-
 /**
  * Owns the macOS menu-bar Tray and the menu rebuild loop.
  *
  * Rebuild strategy: we re-`buildFromTemplate` whenever the store
- * changes. The menu is small (~20 items) and macOS only renders it
- * when opened, so this is cheap and avoids the bookkeeping nightmare
- * of mutating individual `MenuItem` checked / label properties.
- *
- * A 30s "tick" interval also refreshes the menu so the "remaining"
- * line stays roughly current even when nothing else changes. The
- * interval is unref'd so it never holds the app alive on its own.
+ * changes. The menu is small and macOS only renders it when opened,
+ * so this is cheap and avoids the bookkeeping of mutating individual
+ * MenuItem properties.
  */
 export class TrayController {
   private tray: Tray | null = null;
@@ -73,8 +66,6 @@ export class TrayController {
     this.disposeStoreListener = this.store.on("change", () => this.render());
     this.render();
 
-    // Periodic refresh for the "remaining" line. 30s is more than
-    // enough — the menu only shows minutes anyway.
     this.tickHandle = setInterval(() => this.render(), 30_000);
     this.tickHandle.unref?.();
     log.info("tray started");
@@ -91,10 +82,6 @@ export class TrayController {
     this.tray = null;
   }
 
-  /**
-   * Rebuild icon + title + menu from the current store state.
-   * Safe to call freely; cheap operations only.
-   */
   private render(): void {
     if (!this.tray) return;
     const state = this.store.get();
@@ -130,24 +117,8 @@ export class TrayController {
         },
       },
       { type: "separator" },
-      {
-        label: "Duration",
-        submenu: DURATION_OPTIONS.map((opt) => ({
-          label: opt.label,
-          type: "radio",
-          checked: state.duration === opt.value,
-          click: () => this.handleDuration(opt.value),
-        })),
-      },
-      {
-        label: "Battery Auto-Disable",
-        submenu: THRESHOLD_OPTIONS.map((opt) => ({
-          label: opt.label,
-          type: "radio",
-          checked: state.batteryThreshold === opt.value,
-          click: () => this.handleThreshold(opt.value),
-        })),
-      },
+      this.buildDurationMenu(state),
+      this.buildThresholdMenu(state),
       { type: "separator" },
       {
         label: formatLidClosedLine(
@@ -174,14 +145,77 @@ export class TrayController {
       { type: "separator" },
       {
         label: "Quit InsomniKit",
-        click: () => {
-          // Use app.quit so before-quit cleanup fires.
-          app.quit();
-        },
+        click: () => app.quit(),
       },
     ];
 
     return Menu.buildFromTemplate(template);
+  }
+
+  private buildDurationMenu(state: AppState): MenuItemConstructorOptions {
+    // Show the active custom value as its own radio so the user can see
+    // what's currently set even when it's not one of the presets.
+    const showsCustomBranch = !isDurationPreset(state.duration);
+
+    const submenu: MenuItemConstructorOptions[] = [
+      ...DURATION_PRESETS.map<MenuItemConstructorOptions>((opt) => ({
+        label: opt.label,
+        type: "radio" as const,
+        checked: !showsCustomBranch && state.duration === opt.minutes,
+        click: () => this.handleDuration(opt.minutes),
+      })),
+      { type: "separator" },
+      ...(showsCustomBranch
+        ? ([
+            {
+              label: `Custom: ${formatDuration(state.duration)}`,
+              type: "radio" as const,
+              checked: true,
+              enabled: false,
+            },
+          ] as MenuItemConstructorOptions[])
+        : []),
+      {
+        label: "Custom…",
+        click: () => {
+          void this.handleDurationCustom();
+        },
+      },
+    ];
+
+    return { label: "Duration", submenu };
+  }
+
+  private buildThresholdMenu(state: AppState): MenuItemConstructorOptions {
+    const showsCustomBranch = !isThresholdPreset(state.batteryThreshold);
+
+    const submenu: MenuItemConstructorOptions[] = [
+      ...THRESHOLD_PRESETS.map<MenuItemConstructorOptions>((opt) => ({
+        label: opt.label,
+        type: "radio" as const,
+        checked: !showsCustomBranch && state.batteryThreshold === opt.percent,
+        click: () => this.handleThreshold(opt.percent),
+      })),
+      { type: "separator" },
+      ...(showsCustomBranch
+        ? ([
+            {
+              label: `Custom: ≤ ${state.batteryThreshold}%`,
+              type: "radio" as const,
+              checked: true,
+              enabled: false,
+            },
+          ] as MenuItemConstructorOptions[])
+        : []),
+      {
+        label: "Custom…",
+        click: () => {
+          void this.handleThresholdCustom();
+        },
+      },
+    ];
+
+    return { label: "Battery Auto-Disable", submenu };
   }
 
   private async handleToggle(): Promise<void> {
@@ -192,11 +226,7 @@ export class TrayController {
         await this.sleep.disable();
       } else {
         await this.sleep.enable();
-        // (Re)arm the timer fresh on every enable so a previously
-        // expired timer doesn't immediately auto-disable us.
         this.timer.start(this.store.get().duration, { restart: true });
-        // Refresh battery immediately so the threshold check is honest
-        // right after enable.
         void this.battery.refresh();
       }
     } catch (err) {
@@ -204,19 +234,83 @@ export class TrayController {
     }
   }
 
-  private handleDuration(preset: DurationPreset): void {
-    this.store.setDuration(preset);
-    // Only re-arm the timer if currently active. While inactive we
-    // just remember the preference for the next enable.
+  private handleDuration(duration: Duration): void {
+    this.store.setDuration(duration);
     if (this.store.get().active) {
-      this.timer.start(preset, { restart: true });
+      this.timer.start(duration, { restart: true });
     }
+  }
+
+  private async handleDurationCustom(): Promise<void> {
+    const current = this.store.get().duration;
+    const defaultValue =
+      current === null
+        ? "60"
+        : String(current);
+    const raw = await promptText({
+      title: "InsomniKit · Custom duration",
+      message: `Enter duration in minutes (${DURATION_MIN_MINUTES}–${DURATION_MAX_MINUTES}):`,
+      defaultValue,
+    });
+    if (raw === null) return; // cancelled
+    const parsed = parseDurationInput(raw);
+    if (parsed === undefined) {
+      log.info("invalid custom duration input", { raw });
+      // Loop the prompt with a hint so the user understands what's wrong.
+      void this.handleDurationInvalid("duration");
+      return;
+    }
+    this.handleDuration(parsed);
   }
 
   private handleThreshold(threshold: BatteryThreshold): void {
     this.store.setBatteryThreshold(threshold);
-    // New threshold deserves a fresh edge-trigger chance.
     this.battery.resetThresholdLatch();
+  }
+
+  private async handleThresholdCustom(): Promise<void> {
+    const current = this.store.get().batteryThreshold;
+    const defaultValue = current === null ? "30" : String(current);
+    const raw = await promptText({
+      title: "InsomniKit · Custom battery threshold",
+      message: `Auto-disable when battery is at or below this percent (${THRESHOLD_MIN_PERCENT}–${THRESHOLD_MAX_PERCENT}):`,
+      defaultValue,
+    });
+    if (raw === null) return;
+    const parsed = parseThresholdInput(raw);
+    if (parsed === undefined) {
+      log.info("invalid custom threshold input", { raw });
+      void this.handleDurationInvalid("threshold");
+      return;
+    }
+    this.handleThreshold(parsed);
+  }
+
+  /**
+   * Show a single error sheet and bounce the user back to the right
+   * prompt. We don't infinite-loop — one retry is enough; if they
+   * still cancel, we drop it.
+   */
+  private async handleDurationInvalid(
+    which: "duration" | "threshold",
+  ): Promise<void> {
+    const hint =
+      which === "duration"
+        ? `Please enter a whole number of minutes between ${DURATION_MIN_MINUTES} and ${DURATION_MAX_MINUTES}.`
+        : `Please enter a whole percent between ${THRESHOLD_MIN_PERCENT} and ${THRESHOLD_MAX_PERCENT}.`;
+    const raw = await promptText({
+      title: "InsomniKit · Invalid value",
+      message: hint,
+      defaultValue: "",
+    });
+    if (raw === null) return;
+    if (which === "duration") {
+      const parsed = parseDurationInput(raw);
+      if (parsed !== undefined) this.handleDuration(parsed);
+    } else {
+      const parsed = parseThresholdInput(raw);
+      if (parsed !== undefined) this.handleThreshold(parsed);
+    }
   }
 
   private handleLaunchAtLogin(enabled: boolean): void {
@@ -225,9 +319,6 @@ export class TrayController {
   }
 
   private async handleLidClosedToggle(): Promise<void> {
-    // Reflect "pending" in the UI immediately so the user sees their
-    // click landed even though the macOS password sheet hasn't returned
-    // yet. We revert if the auth fails.
     const wantActive = !this.lidClosed.isActive();
     this.store.setLidClosedMode(wantActive);
     this.render();
@@ -240,7 +331,6 @@ export class TrayController {
       }
     } catch (err) {
       log.warn("lid-closed toggle failed", err);
-      // Roll back intent to match reality.
       this.store.setLidClosedMode(this.lidClosed.isActive());
     } finally {
       this.render();

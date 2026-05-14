@@ -1,5 +1,5 @@
 import { Store } from "../../state/store";
-import { DurationPreset, durationToMs } from "../../state/types";
+import { Duration, durationToMs } from "../../state/types";
 import { Emitter } from "../../utils/emitter";
 import { createLogger } from "../../utils/logger";
 
@@ -7,7 +7,7 @@ const log = createLogger("timer");
 
 export type TimerEvents = {
   /** Fired when the active duration timer reaches zero. */
-  expired: { preset: DurationPreset };
+  expired: { duration: Duration };
 };
 
 /**
@@ -17,22 +17,21 @@ export type TimerEvents = {
  * - Exactly zero or one timer is ever active. Every `start()` clears
  *   the previous handle first, so rapid toggle / preset changes can't
  *   leak overlapping timers.
- * - `infinite` is a first-class value, not "very large ms". We just
- *   don't arm a setTimeout in that case; `getRemainingMs()` returns
- *   null and the menu renders nothing.
+ * - Infinite (`duration === null`) is a first-class case — we just
+ *   don't arm a setTimeout; `getRemainingMs()` returns null and the
+ *   menu renders nothing.
  * - Wall-clock `endsAt` is stored in the central state so the menu can
  *   render "54m remaining" without holding a reference to the manager.
  *
  * Note on system sleep: setTimeout drifts across sleep on macOS. Since
  * InsomniKit's whole job is to *prevent* sleep while a timer is running,
- * the drift is negligible during active use — but if the user toggles
- * off and the timer keeps running through sleep, we accept the drift.
- * Tracking wall-clock `endsAt` (vs. a tick counter) at least makes the
- * displayed remaining time honest.
+ * the drift is negligible during active use. Tracking wall-clock
+ * `endsAt` (vs. a tick counter) at least makes the displayed remaining
+ * time honest.
  */
 export class TimerManager extends Emitter<TimerEvents> {
   private handle: NodeJS.Timeout | null = null;
-  private currentPreset: DurationPreset = "infinite";
+  private currentDuration: Duration = null;
   private endsAt: number | null = null;
 
   constructor(private readonly store: Store) {
@@ -40,53 +39,54 @@ export class TimerManager extends Emitter<TimerEvents> {
   }
 
   /**
-   * Arm (or re-arm) the timer for the given preset.
+   * Arm (or re-arm) the timer for the given duration (minutes, or null
+   * for infinite).
    *
-   * Idempotent: calling repeatedly with the same preset while already
+   * Idempotent: calling repeatedly with the same value while already
    * armed does NOT reset the clock — that lets the tray refresh the
    * menu freely without nudging the deadline. Pass `restart: true` to
    * force a reset (used when the user re-selects a duration).
    */
-  start(preset: DurationPreset, opts: { restart?: boolean } = {}): void {
-    const ms = durationToMs(preset);
+  start(duration: Duration, opts: { restart?: boolean } = {}): void {
+    const ms = durationToMs(duration);
 
     if (
       !opts.restart &&
       this.handle !== null &&
-      this.currentPreset === preset
+      this.currentDuration === duration
     ) {
       return;
     }
 
     this.clearHandle();
-    this.currentPreset = preset;
+    this.currentDuration = duration;
 
     if (ms === null) {
       this.endsAt = null;
-      this.store.setTimer({ preset, endsAt: null });
+      this.store.setTimer({ duration, endsAt: null });
       log.info("started infinite (no auto-disable)");
       return;
     }
 
     this.endsAt = Date.now() + ms;
-    this.store.setTimer({ preset, endsAt: this.endsAt });
+    this.store.setTimer({ duration, endsAt: this.endsAt });
     this.handle = setTimeout(() => {
       this.handle = null;
       this.endsAt = null;
-      this.store.setTimer({ preset: this.currentPreset, endsAt: null });
-      log.info("expired", { preset });
-      this.emit("expired", { preset });
+      this.store.setTimer({ duration: this.currentDuration, endsAt: null });
+      log.info("expired", { duration });
+      this.emit("expired", { duration });
     }, ms);
     this.handle.unref?.();
-    log.info("started", { preset, endsAt: this.endsAt });
+    log.info("started", { duration, endsAt: this.endsAt });
   }
 
-  /** Cancel any pending timer; preset stays as the last-set value. */
+  /** Cancel any pending timer; last-set duration stays. */
   cancel(): void {
     this.clearHandle();
     if (this.endsAt !== null) {
       this.endsAt = null;
-      this.store.setTimer({ preset: this.currentPreset, endsAt: null });
+      this.store.setTimer({ duration: this.currentDuration, endsAt: null });
       log.info("cancelled");
     }
   }

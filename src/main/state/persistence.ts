@@ -4,10 +4,14 @@ import * as path from "path";
 import { createLogger } from "../utils/logger";
 import { Store } from "./store";
 import {
-  BatteryThreshold,
-  DurationPreset,
   AppState,
+  BatteryThreshold,
+  DURATION_MAX_MINUTES,
+  DURATION_MIN_MINUTES,
+  Duration,
   SleepStrategyKind,
+  THRESHOLD_MAX_PERCENT,
+  THRESHOLD_MIN_PERCENT,
 } from "./types";
 
 const log = createLogger("persistence");
@@ -21,7 +25,7 @@ const log = createLogger("persistence");
  */
 interface PersistedSettings {
   strategy: SleepStrategyKind;
-  duration: DurationPreset;
+  duration: Duration;
   batteryThreshold: BatteryThreshold;
   launchAtLogin: boolean;
   lidClosedMode: boolean;
@@ -31,19 +35,26 @@ const VALID_STRATEGIES: ReadonlyArray<SleepStrategyKind> = [
   "caffeinate",
   "pmset",
 ];
-const VALID_DURATIONS: ReadonlyArray<DurationPreset> = [
-  "15m",
-  "30m",
-  "1h",
-  "2h",
-  "infinite",
-];
-const VALID_THRESHOLDS: ReadonlyArray<BatteryThreshold> = [
-  "off",
-  "50",
-  "30",
-  "20",
-];
+
+/**
+ * Legacy v0.1 / v0.2 → v0.3 migration map. Older settings stored
+ * duration / threshold as labeled strings; the new schema uses raw
+ * numbers (minutes / percent) and `null` for off/infinite so custom
+ * user input can land in the same shape.
+ */
+const LEGACY_DURATION_MAP: Record<string, Duration> = {
+  "15m": 15,
+  "30m": 30,
+  "1h": 60,
+  "2h": 120,
+  infinite: null,
+};
+const LEGACY_THRESHOLD_MAP: Record<string, BatteryThreshold> = {
+  off: null,
+  "50": 50,
+  "30": 30,
+  "20": 20,
+};
 
 function settingsPath(): string {
   return path.join(app.getPath("userData"), "settings.json");
@@ -78,6 +89,9 @@ function migrateFromLegacyIfPresent(target: string): void {
  * Strict-but-forgiving validator. Any malformed / missing field falls
  * back to its default — a corrupt settings file should never prevent
  * the app from starting.
+ *
+ * Also handles the v0.1/v0.2 string-form values for duration /
+ * batteryThreshold so existing installs upgrade silently.
  */
 function validate(input: unknown): Partial<PersistedSettings> {
   if (!input || typeof input !== "object") return {};
@@ -90,18 +104,43 @@ function validate(input: unknown): Partial<PersistedSettings> {
   ) {
     out.strategy = o.strategy as SleepStrategyKind;
   }
-  if (
-    typeof o.duration === "string" &&
-    (VALID_DURATIONS as ReadonlyArray<string>).includes(o.duration)
+
+  // Duration: accept number (new) or string (legacy)
+  if (o.duration === null) {
+    out.duration = null;
+  } else if (
+    typeof o.duration === "number" &&
+    Number.isInteger(o.duration) &&
+    o.duration >= DURATION_MIN_MINUTES &&
+    o.duration <= DURATION_MAX_MINUTES
   ) {
-    out.duration = o.duration as DurationPreset;
+    out.duration = o.duration;
+  } else if (typeof o.duration === "string" && o.duration in LEGACY_DURATION_MAP) {
+    out.duration = LEGACY_DURATION_MAP[o.duration];
+    log.info("migrated legacy duration string", { from: o.duration, to: out.duration });
   }
-  if (
+
+  // Battery threshold: accept number (new) or string (legacy)
+  if (o.batteryThreshold === null) {
+    out.batteryThreshold = null;
+  } else if (
+    typeof o.batteryThreshold === "number" &&
+    Number.isInteger(o.batteryThreshold) &&
+    o.batteryThreshold >= THRESHOLD_MIN_PERCENT &&
+    o.batteryThreshold <= THRESHOLD_MAX_PERCENT
+  ) {
+    out.batteryThreshold = o.batteryThreshold;
+  } else if (
     typeof o.batteryThreshold === "string" &&
-    (VALID_THRESHOLDS as ReadonlyArray<string>).includes(o.batteryThreshold)
+    o.batteryThreshold in LEGACY_THRESHOLD_MAP
   ) {
-    out.batteryThreshold = o.batteryThreshold as BatteryThreshold;
+    out.batteryThreshold = LEGACY_THRESHOLD_MAP[o.batteryThreshold];
+    log.info("migrated legacy threshold string", {
+      from: o.batteryThreshold,
+      to: out.batteryThreshold,
+    });
   }
+
   if (typeof o.launchAtLogin === "boolean") {
     out.launchAtLogin = o.launchAtLogin;
   }
@@ -149,8 +188,6 @@ export function attachPersistence(store: Store): () => void {
       const file = settingsPath();
       const dir = path.dirname(file);
       fs.mkdirSync(dir, { recursive: true });
-      // Atomic-ish: write to tmp then rename, so a crash mid-write
-      // can't leave a half-truncated settings.json.
       const tmp = `${file}.tmp`;
       fs.writeFileSync(tmp, JSON.stringify(payload, null, 2), "utf8");
       fs.renameSync(tmp, file);
@@ -173,7 +210,6 @@ export function attachPersistence(store: Store): () => void {
     if (writeTimer) {
       clearTimeout(writeTimer);
       writeTimer = null;
-      // Flush pending change synchronously on detach.
       write();
     }
   };

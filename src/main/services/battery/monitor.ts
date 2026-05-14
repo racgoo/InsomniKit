@@ -1,5 +1,4 @@
 import { Store } from "../../state/store";
-import { batteryThresholdToPercent } from "../../state/types";
 import { exec } from "../../utils/exec";
 import { createLogger } from "../../utils/logger";
 import { Emitter } from "../../utils/emitter";
@@ -93,7 +92,7 @@ export class BatteryMonitor extends Emitter<BatteryEvents> {
     this.store.setBattery(snapshot);
 
     const state = this.store.get();
-    const threshold = batteryThresholdToPercent(state.batteryThreshold);
+    const threshold = state.batteryThreshold;
     if (
       state.active &&
       threshold !== null &&
