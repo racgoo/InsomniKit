@@ -16,6 +16,7 @@
     "start": "tsc -p tsconfig.json && env -u ELECTRON_RUN_AS_NODE electron .",
     "dev": "tsc -p tsconfig.json && env -u ELECTRON_RUN_AS_NODE electron .",
     "lint": "tsc -p tsconfig.json --noEmit",
+    "pack": "rm -rf dist release && tsc -p tsconfig.json && electron-builder --mac --dir",
     "dist": "rm -rf dist release && tsc -p tsconfig.json && electron-builder --mac --arm64 --x64",
     "dist:dir": "rm -rf dist release && tsc -p tsconfig.json && electron-builder --mac --arm64 --x64 --dir"
   },
