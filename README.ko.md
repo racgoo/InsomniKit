@@ -163,7 +163,7 @@ git pull && pnpm install && pnpm run install:app
 
 <br>
 
-**배터리 상태에서** 노트북 닫고도 시스템을 깨워둬야 한다면, InsomniKit이 `pmset -c disablesleep 1`을 대신 켜줍니다. 메뉴 → **Stay Awake When Closed → Turn on…**
+**배터리 상태에서** 노트북 닫고도 시스템을 깨워둬야 한다면, InsomniKit이 `pmset -a disablesleep 1`을 대신 켜줍니다. 메뉴 → **Stay Awake When Closed → Turn on…**
 
 **일어나는 일**
 
@@ -176,7 +176,7 @@ git pull && pnpm install && pnpm run install:app
 
 - 노트북 닫힌 채로 화면 켜두는 거 — 못 함, 어떤 방법으로도.
 - macOS 발열 제한 무시 — 노트북 닫힌 채 너무 뜨거우면 커널이 안전상 잠재움.
-- 종료 시 자동 복구 안 함. 켠 채로 종료하면 다시 실행해서 끄거나 직접 `sudo pmset -c disablesleep 0` 하기 전까지 그 상태 유지.
+- 종료 시 자동 복구 안 함. 켠 채로 종료하면 다시 실행해서 끄거나 직접 `sudo pmset -a disablesleep 0` 하기 전까지 그 상태 유지.
 
 </details>
 

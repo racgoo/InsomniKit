@@ -5,8 +5,13 @@ import { createLogger } from "../utils/logger";
 const log = createLogger("lid-closed");
 
 /**
- * Lid-Closed Mode — uses `pmset -c disablesleep` so the system keeps
- * running even when the lid is shut on battery.
+ * "Stay Awake When Closed" — uses `pmset -a disablesleep` so the system
+ * keeps running even when the laptop is shut.
+ *
+ * Why `-a` (all power sources) and not `-c` (AC only): the whole point
+ * of this feature is the *battery + lid-closed* case. `-c` would only
+ * apply on AC, silently doing nothing on battery — exactly when the
+ * user needs it most.
  *
  * Why this lives outside the SleepStrategy interface:
  * - SleepStrategy switches a single "preventing sleep" knob. Lid-Closed
@@ -34,7 +39,7 @@ const log = createLogger("lid-closed");
  *   `restoreOnExit()` does a SYNCHRONOUS osascript call so the
  *   before-quit handler can wait for it. If the user dismisses the
  *   sheet at quit time, the flag stays set — we log loudly and the
- *   user can revert with `sudo pmset -c disablesleep 0` or by
+ *   user can revert with `sudo pmset -a disablesleep 0` or by
  *   relaunching the app.
  */
 export type LidClosedEvents = {
@@ -100,7 +105,7 @@ export class LidClosedService extends Emitter<LidClosedEvents> {
     this.busy = true;
     try {
       const ok = await this.runWithAdmin(
-        "/usr/bin/pmset -c disablesleep 1",
+        "/usr/bin/pmset -a disablesleep 1",
         "InsomniKit needs admin access to keep your Mac awake when the lid is closed.",
       );
       if (!ok) {
@@ -122,7 +127,7 @@ export class LidClosedService extends Emitter<LidClosedEvents> {
     this.busy = true;
     try {
       const ok = await this.runWithAdmin(
-        "/usr/bin/pmset -c disablesleep 0",
+        "/usr/bin/pmset -a disablesleep 0",
         "InsomniKit needs admin access to restore the default sleep behavior.",
       );
       if (!ok) {
@@ -146,7 +151,7 @@ export class LidClosedService extends Emitter<LidClosedEvents> {
   restoreOnExit(): void {
     if (!this.active) return;
     const script = osascriptScript(
-      "/usr/bin/pmset -c disablesleep 0",
+      "/usr/bin/pmset -a disablesleep 0",
       "InsomniKit is quitting and needs admin access to restore the default sleep behavior.",
     );
     try {
@@ -160,7 +165,7 @@ export class LidClosedService extends Emitter<LidClosedEvents> {
       } else {
         log.warn(
           "exit restore was cancelled — disablesleep is still set. " +
-            "Run `sudo pmset -c disablesleep 0` to revert, or relaunch InsomniKit.",
+            "Run `sudo pmset -a disablesleep 0` to revert, or relaunch InsomniKit.",
         );
       }
     } catch (err) {

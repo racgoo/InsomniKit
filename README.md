@@ -162,7 +162,7 @@ The real question is whether the **system** keeps running:
 
 <br>
 
-Need the system awake with the laptop closed **on battery**? InsomniKit can flip `pmset -c disablesleep 1` for you. Menu → **Stay Awake When Closed → Turn on…**
+Need the system awake with the laptop closed **on battery**? InsomniKit can flip `pmset -a disablesleep 1` for you. Menu → **Stay Awake When Closed → Turn on…**
 
 **What happens**
 
@@ -175,7 +175,7 @@ Need the system awake with the laptop closed **on battery**? InsomniKit can flip
 
 - It can't keep the screen on with the lid shut — nothing can.
 - It can't override macOS thermal limits — a too-hot closed Mac still sleeps for safety.
-- It doesn't auto-revert on quit. Quit with it on and the system stays that way until you relaunch and toggle off — or run `sudo pmset -c disablesleep 0` yourself.
+- It doesn't auto-revert on quit. Quit with it on and the system stays that way until you relaunch and toggle off — or run `sudo pmset -a disablesleep 0` yourself.
 
 </details>
 
