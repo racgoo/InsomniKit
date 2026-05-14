@@ -29,6 +29,14 @@ export class CaffeinateStrategy implements SleepStrategy {
   readonly kind = "caffeinate" as const;
   private child: ChildProcess | null = null;
 
+  /**
+   * @param onUnexpectedExit fired when the caffeinate child dies WITHOUT
+   *   a deliberate `disable()` — e.g. killed externally or crashed. Lets
+   *   the manager correct the store so the UI doesn't claim "Active"
+   *   while nothing is actually preventing sleep.
+   */
+  constructor(private readonly onUnexpectedExit?: () => void) {}
+
   isEnabled(): boolean {
     return this.child !== null && this.child.exitCode === null;
   }
@@ -52,7 +60,13 @@ export class CaffeinateStrategy implements SleepStrategy {
     });
     proc.on("exit", (code, signal) => {
       log.info("caffeinate exited", { code, signal });
-      if (this.child === proc) this.child = null;
+      // `this.child === proc` still being true means this exit did NOT
+      // come from our own `disable()` / `restoreOnExit()` (both null the
+      // handle first). So it died on its own — surface it.
+      if (this.child === proc) {
+        this.child = null;
+        this.onUnexpectedExit?.();
+      }
     });
 
     this.child = proc;

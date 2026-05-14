@@ -32,7 +32,8 @@ export type BatteryEvents = {
  */
 export class BatteryMonitor extends Emitter<BatteryEvents> {
   private timer: NodeJS.Timeout | null = null;
-  private starting = false;
+  /** Handle for the one-shot fast initial sample, so stop() can cancel it. */
+  private initialHandle: NodeJS.Timeout | null = null;
   /** True once the current threshold has fired since the last reset. */
   private latched = false;
 
@@ -44,14 +45,18 @@ export class BatteryMonitor extends Emitter<BatteryEvents> {
   }
 
   start(): void {
-    if (this.timer || this.starting) return;
-    this.starting = true;
+    // `this.timer` is assigned synchronously below, so it's a reliable
+    // "already running" guard — no separate `starting` flag needed.
+    if (this.timer) return;
+
     // Fire one read soon so the menu has data, then settle into the
     // long-interval cadence.
-    setTimeout(() => {
-      this.starting = false;
+    this.initialHandle = setTimeout(() => {
+      this.initialHandle = null;
       void this.pollOnce();
     }, INITIAL_DELAY_MS);
+    this.initialHandle.unref?.();
+
     this.timer = setInterval(() => void this.pollOnce(), this.intervalMs);
     // Don't keep the event loop alive solely for battery polling — the
     // Electron app loop is what we want to track.
@@ -60,6 +65,10 @@ export class BatteryMonitor extends Emitter<BatteryEvents> {
   }
 
   stop(): void {
+    if (this.initialHandle) {
+      clearTimeout(this.initialHandle);
+      this.initialHandle = null;
+    }
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
