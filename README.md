@@ -24,6 +24,8 @@ Lives in the menu bar only. No Dock icon, no windows.
 - Node.js ≥ 18
 - npm, pnpm, yarn, or bun — pick any; the scripts don't assume a specific manager
 
+> **pnpm note:** pnpm blocks dependency install scripts by default. Electron downloads its binary in a `postinstall`, so the package's `pnpm.onlyBuiltDependencies` config explicitly allows it. If you ran `pnpm install` against an older revision and see `Electron failed to install correctly`, just run `pnpm install` again (or `pnpm rebuild electron`).
+
 ## Getting started
 
 ```bash
