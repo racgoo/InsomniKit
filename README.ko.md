@@ -64,25 +64,13 @@ pnpm install && pnpm run install:app
 
 <br>
 
-```text
-            ┌─────────────────────────────────────┐
-            │  ●  Active                          │
-            │  Power: AC                          │
-            │  Battery: 82% ⚡                     │
-            │  Timer: 54m remaining               │
-            │  Auto-disable: ≤ 30%                │
-            │  ─────────────────────────────────  │
-            │  Disable                            │
-            │  ─────────────────────────────────  │
-            │  Duration               ▸  · · ·    │
-            │  Battery Auto-Disable   ▸  · · ·    │
-            │  Lid-Closed Mode: Off   ▸  · · ·    │
-            │  ─────────────────────────────────  │
-            │  ☑  Launch at Login                 │
-            │  ─────────────────────────────────  │
-            │  Quit InsomniKit                    │
-            └─────────────────────────────────────┘
-```
+<div align="center">
+
+<img src="https://github.com/user-attachments/assets/54a2bd1c-e662-44d3-ba19-76a06826dce5" alt="InsomniKit 메뉴바 드롭다운" width="340" />
+
+<sub>이게 앱 전부 — 메뉴바에서 한 번 클릭.</sub>
+
+</div>
 
 ---
 
