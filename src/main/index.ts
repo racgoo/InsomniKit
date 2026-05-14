@@ -3,6 +3,7 @@ import { BatteryMonitor } from "./services/battery";
 import { SleepManager } from "./services/sleep";
 import { TimerManager } from "./services/timer";
 import { Store } from "./state";
+import { TrayController } from "./tray";
 import { rootLogger } from "./utils/logger";
 
 const log = rootLogger.child("main");
@@ -20,13 +21,8 @@ const store = new Store();
 const sleep = new SleepManager(store);
 const timer = new TimerManager(store);
 const battery = new BatteryMonitor(store);
+const tray = new TrayController(store, sleep, timer, battery);
 
-// Auto-disable cross-wiring.
-//
-// Both triggers route through SleepManager.disable() so the strategy-
-// specific cleanup paths (caffeinate SIGTERM, pmset restore) always run.
-// We intentionally do NOT cancel the user's preset / threshold settings
-// — only the active session ends.
 timer.on("expired", () => {
   log.info("auto-disable: timer expired");
   void sleep.disable();
@@ -48,9 +44,8 @@ store.on("change", (next) => {
 
 app.whenReady().then(() => {
   log.info("ready", { platform: process.platform, arch: process.arch });
+  tray.start();
   battery.start();
-  // Step 5 wires the tray and connects user actions to
-  // sleep.enable() / timer.start() / store.setBatteryThreshold().
 });
 
 app.on("window-all-closed", (event: Electron.Event) => {
@@ -58,6 +53,7 @@ app.on("window-all-closed", (event: Electron.Event) => {
 });
 
 app.on("before-quit", () => {
+  tray.stop();
   battery.stop();
   timer.cancel();
   sleep.restoreOnExit();
