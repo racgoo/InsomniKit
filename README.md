@@ -1,135 +1,105 @@
+<div align="center">
+
 # Insomniac
 
-A minimal macOS menu-bar utility that keeps your Mac awake — with timer- and battery-based auto-disable, and safe cleanup even if the app crashes.
+**Keep your Mac awake — exactly as long as you want.**
 
-Lives in the menu bar only. No Dock icon, no windows.
+A tiny menu-bar utility for macOS. No Dock icon. No windows. No telemetry.
 
-## Features
+![platform](https://img.shields.io/badge/platform-macOS%2012%2B-1d1d1f?style=flat-square)
+![arch](https://img.shields.io/badge/arch-Apple%20Silicon%20%7C%20Intel-1d1d1f?style=flat-square)
+![license](https://img.shields.io/badge/license-MIT-1d1d1f?style=flat-square)
+![status](https://img.shields.io/badge/status-stable-22c55e?style=flat-square)
 
-- **One-click enable / disable** sleep prevention
-- **Duration timer**: 15m / 30m / 1h / 2h / ∞ — auto-disables when it expires
-- **Battery threshold auto-disable**: ≤ 50% / 30% / 20% (edge-triggered)
-- **Pluggable sleep strategies**:
-  - `caffeinate` (default, per-process, safest)
-  - `pmset` (system-wide, survives lid close; restores original setting on quit)
-- **Crash-safe cleanup**: SIGINT / SIGTERM / SIGHUP / `uncaughtException` / `before-quit` all route through a synchronous restore — no orphan `caffeinate`, no leftover `disablesleep`
-- **Launch at Login** toggle
-- **Settings persistence**: duration / threshold / strategy / launch-at-login restored on next start
-- **Live tray title** showing remaining time (`15m`, `1h 5m`, `∞`)
-- **Single-instance**: two Insomniacs can never fight over the same caffeinate process
+English · [한국어](./README.ko.md)
 
-## Requirements
+</div>
 
-- macOS 12+ (Apple Silicon or Intel)
-- Node.js ≥ 18
-- npm, pnpm, yarn, or bun — pick any; the scripts don't assume a specific manager
+---
 
-> **pnpm note:** pnpm blocks dependency install scripts by default. Electron downloads its binary in a `postinstall`, so the package's `pnpm.onlyBuiltDependencies` config explicitly allows it. If you ran `pnpm install` against an older revision and see `Electron failed to install correctly`, just run `pnpm install` again (or `pnpm rebuild electron`).
+## What it does
 
-## Getting started
+Click the moon in your menu bar → pick a duration → your Mac stays awake.
+When the timer ends — or the battery dips below your threshold — sleep comes back automatically.
+
+```text
+  ●  Active
+  Battery: 82% ⚡
+  Timer: 54m remaining
+  Auto-disable: ≤ 30%
+  ───────────────────
+  Disable
+  ───────────────────
+  Duration             ▸  15m · 30m · 1h · 2h · ∞
+  Battery Auto-Disable ▸  Off · ≤50% · ≤30% · ≤20%
+  ───────────────────
+  ☑  Launch at Login
+  ───────────────────
+  Quit
+```
+
+## Why
+
+`caffeinate` from a terminal is great until:
+
+- You close the terminal and your Mac sleeps mid-render.
+- You forget it's running and your battery drains overnight.
+- You actually want it to stop after the build finishes.
+
+Insomniac is the same idea, wrapped in two clicks — and it cleans itself up.
+Crash, force-quit, kill -9: there's no orphaned `caffeinate` process and no leftover `pmset` state.
+
+## Install (permanent)
+
+Build it once, drop it in `/Applications`, forget it exists.
 
 ```bash
 git clone git@github.com:racgoo/InsomniKit.git
 cd InsomniKit
-
-# pick whichever you have installed:
-npm install   # or: pnpm install   /   yarn install   /   bun install
-npm run dev   # or: pnpm dev       /   yarn dev       /   bun run dev
+pnpm install            # or: npm install / yarn / bun install
+pnpm run pack           # ~10 seconds on Apple Silicon
 ```
 
-The app appears in the menu bar within ~1 second. There is no Dock icon and no window. Click the icon to open the menu.
-
-### Scripts
-
-All scripts work with any package manager — they inline their commands rather than calling `npm run` recursively.
-
-| Script         | What it does                                                         |
-| -------------- | -------------------------------------------------------------------- |
-| `build`        | Compile TypeScript to `dist/`                                        |
-| `build:watch`  | Incremental compile                                                  |
-| `lint`         | Strict `tsc --noEmit` (no other linter, intentionally)               |
-| `dev` / `start`| Build + launch Electron (uses `env -u ELECTRON_RUN_AS_NODE` for safety) |
-| `dist`         | Build a local `.dmg` + `.zip` for arm64 and x64                      |
-| `dist:dir`     | Build the unpacked `.app` only (faster, for testing)                 |
-| `clean`        | Remove `dist/` and `release/`                                        |
-
-## Building a local app
+Then drag the `.app` to Applications:
 
 ```bash
-npm run dist   # or: pnpm dist / yarn dist / bun run dist
-```
-
-Artifacts land in `release/`. No code signing, no notarization — this is deliberate. The project is intended to be cloned and built locally per the project goals.
-
-To run the unsigned `.app` on macOS for the first time, either right-click → Open, or strip the quarantine attribute:
-
-```bash
+mv release/mac-arm64/Insomniac.app /Applications/
 xattr -dr com.apple.quarantine /Applications/Insomniac.app
+open /Applications/Insomniac.app
 ```
 
-## Architecture
+> Intel Macs: replace `mac-arm64` with `mac`.
 
-```
-src/main/
-  index.ts              # Entry: wires everything, installs cleanup handlers
-  state/
-    types.ts            # InsomniacState, presets, helpers
-    store.ts            # Typed event-driven store (single source of truth)
-    persistence.ts      # Atomic JSON settings persistence
-  services/
-    sleep/
-      strategy.ts       # SleepStrategy interface
-      caffeinate.ts     # `caffeinate -dims` lifecycle
-      pmset.ts          # `pmset -c disablesleep` with original-value restore
-      manager.ts        # SleepManager (owns both strategies)
-    battery/
-      parser.ts         # Robust `pmset -g batt` parser
-      monitor.ts        # Polling + edge-triggered threshold detection
-    timer/manager.ts    # Single-slot countdown
-    launchAtLogin.ts    # app.setLoginItemSettings wrapper
-  tray/
-    icons.ts            # Template icon loading (auto dark/light)
-    format.ts           # Pure label formatters
-    controller.ts       # Tray + Menu rebuild loop
-  utils/
-    cleanup.ts          # SIGINT/SIGTERM/SIGHUP/uncaught handlers
-    emitter.ts          # Tiny typed event emitter
-    exec.ts             # Promisified execFile (no shell)
-    logger.ts           # Prefixed leveled logger
-```
+In the menu, toggle **Launch at Login** if you want it to come back automatically after every reboot.
 
-### Why two sleep strategies?
+## Use
 
-`caffeinate` is per-process and goes away the moment our binary does — safest choice for a default. But `caffeinate` alone does **not** keep a MacBook awake with the lid closed. `pmset -c disablesleep 1` does, but it's a **system-wide** setting that can leave the user stuck if the app crashes without restoring it.
+| When you want to…                                     | Do this                                  |
+| ----------------------------------------------------- | ---------------------------------------- |
+| Stay awake for a long build / download                | **Enable** + **Duration → 1h** (or 2h)   |
+| Keep watching a movie without locking                 | **Enable** + **Duration → ∞**            |
+| Auto-stop when the battery gets low                   | **Battery Auto-Disable → ≤ 30%**         |
+| Stop immediately                                      | **Disable** (or just **Quit**)           |
 
-`PmsetStrategy` reads the original value via `pmset -g custom` **before** writing, only flips it if the user wasn't already running with `disablesleep=1`, and uses `spawnSync` in its `restoreOnExit()` path so signal handlers can safely call it.
+Your duration, threshold, and Launch-at-Login choices are remembered across restarts.
 
-The `SleepStrategy` interface is the seam where future modes plug in — lid-close-aware mode, AC-only mode, external-display-attached mode, etc.
-
-### Why edge-triggered battery threshold?
-
-A naive "battery ≤ 30% → disable" check would fire on every poll while sitting at 19%, repeatedly calling `sleep.disable()` even after the user manually re-enabled. The monitor latches after the first crossing and re-arms only when the battery rises >2% above the threshold (or the user changes the threshold setting).
-
-## Logging
-
-Set `INSOMNIAC_LOG_LEVEL=debug` to see verbose output:
+## Dev
 
 ```bash
-INSOMNIAC_LOG_LEVEL=debug npm run dev
+pnpm install
+pnpm run dev      # tsc + electron, hot relaunch with `pnpm run dev` again
 ```
 
-## Roadmap
+Works identically with **npm**, **yarn**, and **bun** — scripts inline their commands and don't assume a package manager.
 
-Extension points already in place (interfaces / structure) but not yet exposed in the UI:
+## Build for distribution
 
-- Lid-close-aware mode (auto-switch caffeinate → pmset when lid closes)
-- AC-power-only mode (disable on battery regardless of threshold)
-- External-display detection
-- Per-trigger strategy choice
-- Activity-based wake lock
+```bash
+pnpm run dist     # arm64 + x64, .dmg + .zip in release/
+```
 
-The `SleepStrategy` and event-driven store make these additive rather than rewrites.
+No code signing. No notarization. This is open source meant to be cloned and built locally — sign it yourself if you want to ship it.
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+MIT — do whatever you want.
