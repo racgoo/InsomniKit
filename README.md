@@ -1,4 +1,4 @@
-<div align="center">
+
 
 <br>
 
@@ -23,6 +23,10 @@ A tiny macOS menu-bar utility. No Dock icon. No windows. No telemetry. No nonsen
 </div>
 
 ---
+
+!!!여기입니다. 
+<img width="1600" height="1057" alt="vibe-meme" src="https://github.com/user-attachments/assets/920f5ed0-16f3-4a8f-928f-f3f485597db4" />
+<div align="center">
 
 ## ⚡ 30-second start
 
