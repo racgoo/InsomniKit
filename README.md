@@ -1,4 +1,4 @@
-
+<div align="center">
 
 <br>
 
@@ -51,9 +51,6 @@ Done. InsomniKit is in `/Applications` and live in your menu bar. Click the moon
 
 ---
 
-<img width="363" height="434" alt="image" src="https://github.com/user-attachments/assets/54a2bd1c-e662-44d3-ba19-76a06826dce5" />
-
-
 ## What you get
 
 |  | |
@@ -67,25 +64,13 @@ Done. InsomniKit is in `/Applications` and live in your menu bar. Click the moon
 
 <br>
 
-```text
-            ┌─────────────────────────────────────┐
-            │  ●  Active                          │
-            │  Power: AC                          │
-            │  Battery: 82% ⚡                     │
-            │  Timer: 54m remaining               │
-            │  Auto-disable: ≤ 30%                │
-            │  ─────────────────────────────────  │
-            │  Disable                            │
-            │  ─────────────────────────────────  │
-            │  Duration               ▸  · · ·    │
-            │  Battery Auto-Disable   ▸  · · ·    │
-            │  Lid-Closed Mode: Off   ▸  · · ·    │
-            │  ─────────────────────────────────  │
-            │  ☑  Launch at Login                 │
-            │  ─────────────────────────────────  │
-            │  Quit InsomniKit                    │
-            └─────────────────────────────────────┘
-```
+<div align="center">
+
+<img src="https://github.com/user-attachments/assets/54a2bd1c-e662-44d3-ba19-76a06826dce5" alt="InsomniKit menu-bar dropdown" width="340" />
+
+<sub>The whole app — one click from the menu bar.</sub>
+
+</div>
 
 ---
 
