@@ -1,7 +1,7 @@
 {
   "name": "insomnikit",
   "productName": "InsomniKit",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Minimal macOS menu bar utility that prevents sleep, with timer and battery-aware auto-disable.",
   "main": "dist/main/index.js",
   "author": "racgoo",
@@ -46,11 +46,17 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["arm64", "x64"]
+          "arch": [
+            "arm64",
+            "x64"
+          ]
         },
         {
           "target": "zip",
-          "arch": ["arm64", "x64"]
+          "arch": [
+            "arm64",
+            "x64"
+          ]
         }
       ],
       "extendInfo": {
