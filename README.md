@@ -1,156 +1,199 @@
 <div align="center">
 
-# InsomniKit
+<br>
 
-**Keep your Mac awake — exactly as long as you want.**
+# ◐ &nbsp; InsomniKit
 
-A tiny menu-bar utility for macOS. No Dock icon. No windows. No telemetry.
+### Keep your Mac awake — *exactly* as long as you want.
 
-![platform](https://img.shields.io/badge/platform-macOS%2012%2B-1d1d1f?style=flat-square)
-![arch](https://img.shields.io/badge/arch-Apple%20Silicon%20%7C%20Intel-1d1d1f?style=flat-square)
-![license](https://img.shields.io/badge/license-MIT-1d1d1f?style=flat-square)
-![status](https://img.shields.io/badge/status-stable-22c55e?style=flat-square)
+A tiny macOS menu-bar utility. No Dock icon. No windows. No telemetry. No nonsense.
 
-English · [한국어](./README.ko.md)
+<br>
+
+![platform](https://img.shields.io/badge/platform-macOS%2012+-1d1d1f?style=for-the-badge&logo=apple&logoColor=white)
+![arch](https://img.shields.io/badge/Apple%20Silicon%20·%20Intel-1d1d1f?style=for-the-badge)
+![license](https://img.shields.io/badge/license-MIT-1d1d1f?style=for-the-badge)
+![status](https://img.shields.io/badge/status-stable-22c55e?style=for-the-badge)
+
+**English** · [한국어](./README.ko.md)
+
+<br>
 
 </div>
 
 ---
 
-## What it does
-
-Click the moon in your menu bar → pick a duration → your Mac stays awake.
-When the timer ends — or the battery dips below your threshold — sleep comes back automatically.
-
-```text
-  ●  Active
-  Battery: 82% ⚡
-  Timer: 54m remaining
-  Auto-disable: ≤ 30%
-  ───────────────────
-  Disable
-  ───────────────────
-  Duration             ▸  15m · 30m · 1h · 2h · ∞ · Custom…
-  Battery Auto-Disable ▸  Off · ≤50% · ≤30% · ≤20% · Custom…
-  Lid-Closed Mode: Off ▸  (status, explanation, Turn on…)
-  ───────────────────
-  ☑  Launch at Login
-  ───────────────────
-  Quit
-```
-
-## Why
-
-`caffeinate` from a terminal is great until:
-
-- You close the terminal and your Mac sleeps mid-render.
-- You forget it's running and your battery drains overnight.
-- You actually want it to stop after the build finishes.
-
-InsomniKit is the same idea, wrapped in two clicks — and it cleans itself up.
-Crash, force-quit, kill -9: there's no orphaned `caffeinate` process and no leftover `pmset` state.
-
-## Install (permanent)
-
-Two commands. Done.
+## ⚡ 30-second start
 
 ```bash
 git clone git@github.com:racgoo/InsomniKit.git
 cd InsomniKit
-pnpm install            # or: npm install / yarn / bun install
-pnpm run install:app    # builds, installs to /Applications, launches
+pnpm install && pnpm run install:app
 ```
 
-That's it — InsomniKit is now in your `/Applications` folder and running in the menu bar.
+Done. InsomniKit is in `/Applications` and live in your menu bar. Click the moon → pick a duration → your Mac stays awake.
 
-In the menu, toggle **Launch at Login** if you want it to come back automatically after every reboot.
+> Works with **npm**, **yarn**, and **bun** too — pick your poison.
 
-### Updating
+---
+
+## What you get
+
+|  | |
+|---|---|
+| **One-click toggle** | Awake on. Awake off. That's the whole interaction. |
+| **Timers** | 15m · 30m · 1h · 2h · ∞ — or type any value up to 24h. |
+| **Battery-aware** | Auto-stops when the battery dips below your threshold. Set it to 50 / 30 / 20 % or anything 1–99. |
+| **Lid-Closed Mode** | Opt-in: keep the system running with the lid shut, even on battery. |
+| **Bulletproof cleanup** | Crash, force-quit, `kill -9` — no orphaned `caffeinate`, no stuck `pmset` state. Ever. |
+| **Remembers everything** | Duration, threshold, Launch-at-Login — all restored on next launch. |
+
+<br>
+
+```text
+            ┌─────────────────────────────────────┐
+            │  ●  Active                          │
+            │  Power: AC                          │
+            │  Battery: 82% ⚡                     │
+            │  Timer: 54m remaining               │
+            │  Auto-disable: ≤ 30%                │
+            │  ─────────────────────────────────  │
+            │  Disable                            │
+            │  ─────────────────────────────────  │
+            │  Duration               ▸  · · ·    │
+            │  Battery Auto-Disable   ▸  · · ·    │
+            │  Lid-Closed Mode: Off   ▸  · · ·    │
+            │  ─────────────────────────────────  │
+            │  ☑  Launch at Login                 │
+            │  ─────────────────────────────────  │
+            │  Quit InsomniKit                    │
+            └─────────────────────────────────────┘
+```
+
+---
+
+## Why not just `caffeinate`?
+
+You can. Until:
+
+- You close the terminal — and your Mac sleeps mid-render.
+- You forget it's running — and your battery drains overnight.
+- You wanted it to stop after the build finished — but it didn't.
+
+InsomniKit is the same IOKit assertion, wrapped in two clicks, with a timer, a battery guard, and cleanup that *actually* runs no matter how the app dies.
+
+---
+
+## How to use it
+
+| You want to…                              | Do this                                                                |
+| ----------------------------------------- | ---------------------------------------------------------------------- |
+| Stay awake for a long build / download    | **Enable** → **Duration → 1h** (or 2h)                                 |
+| Watch something without the screen locking| **Enable** → **Duration → ∞**                                          |
+| Auto-stop when the battery gets low       | **Battery Auto-Disable → ≤ 30%**                                       |
+| Use a value the presets don't cover       | **Duration → Custom…** (1–1440 min) · **Battery Auto-Disable → Custom…** (1–99 %) |
+| Stop right now                            | **Disable** — or just **Quit**                                         |
+
+The menu always shows your current custom value (`Custom: 47 minutes`) so you're never guessing.
+
+---
+
+## Updating
 
 ```bash
-git pull
-pnpm install            # picks up new deps if any
-pnpm run install:app    # closes the running app, rebuilds, reinstalls, relaunches
+git pull && pnpm install && pnpm run install:app
 ```
 
-Same script. Settings are preserved across updates.
+Same command as install. It quits the running app, rebuilds, reinstalls, relaunches — and your settings carry over untouched.
 
 <details>
-<summary>What <code>install:app</code> does</summary>
+<summary><b>What <code>install:app</code> actually does</b></summary>
 
-1. Gracefully quits any running InsomniKit (then SIGKILLs stragglers).
-2. Builds the host architecture only (`electron-builder --mac --dir`) — fast, no `.dmg`.
-3. Moves the `.app` to `/Applications` (falls back to `~/Applications` on managed Macs where `/Applications` isn't writable).
-4. Strips the `com.apple.quarantine` attribute so Gatekeeper doesn't block the unsigned bundle on first launch.
+<br>
+
+1. Gracefully quits any running InsomniKit (SIGKILLs stragglers).
+2. Builds for your architecture only (`electron-builder --mac --dir`) — fast, no `.dmg`.
+3. Moves the `.app` to `/Applications` — or `~/Applications` on managed Macs where `/Applications` isn't writable.
+4. Strips `com.apple.quarantine` so Gatekeeper doesn't block the unsigned bundle.
 5. Launches it.
 
 </details>
 
-## Use
-
-| When you want to…                                     | Do this                                  |
-| ----------------------------------------------------- | ---------------------------------------- |
-| Stay awake for a long build / download                | **Enable** + **Duration → 1h** (or 2h)   |
-| Keep watching a movie without locking                 | **Enable** + **Duration → ∞**            |
-| Auto-stop when the battery gets low                   | **Battery Auto-Disable → ≤ 30%**         |
-| Stop immediately                                      | **Disable** (or just **Quit**)           |
-| Pick a value the presets don't cover                   | **Duration → Custom…** (1–1440 min) or **Battery Auto-Disable → Custom…** (1–99 %) |
-
-Your duration, threshold, and Launch-at-Login choices are remembered across restarts. Custom values persist the same way — the menu shows your current value as "Custom: 47 minutes" so you always know what's set.
+---
 
 ## About closing the lid
 
-This trips up everyone, so it's worth spelling out:
+This one trips up everyone, so here's the truth:
 
-**Closing the lid always turns off the screen.** That's a hardware behavior of MacBooks — the display is physically covered, and no software (not InsomniKit, not `caffeinate`, not `pmset`) can keep it lit. The real question is whether the *system* keeps running.
+> **Closing the lid always turns off the screen.** That's hardware — the display is physically covered. *No* software (not InsomniKit, not `caffeinate`, not `pmset`) can keep it lit.
 
-| Power source                            | Lid closed → system sleeps? | What you'll see                                                          |
-| --------------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
-| **AC + InsomniKit active**               | No                          | Screen off, but background tasks (downloads, builds, sync) keep running. |
-| **Battery + InsomniKit active**          | **Yes**                     | macOS forces sleep on lid-close regardless. `caffeinate -s` is documented as AC-only. The menu shows `⚠︎ Lid-close sleeps on battery` when you're in this state. |
-| **AC + external display + lid closed** | No (native clamshell)       | Mac drives the external display normally — InsomniKit isn't even needed.   |
+The real question is whether the **system** keeps running:
 
-> **TL;DR**: On AC power, just leave it active and close the lid. Your work continues. On battery, plug in first — *or* turn on Lid-Closed Mode (below).
+| Power source                          | Lid closed → sleeps? | Reality                                                                 |
+| -------------------------------------- | :------------------: | ----------------------------------------------------------------------- |
+| **AC** + InsomniKit active             |          No          | Screen off, but downloads / builds / sync keep running.                 |
+| **Battery** + InsomniKit active        |       **Yes**        | macOS forces sleep on lid-close. `caffeinate -s` is AC-only. The menu warns you: `⚠︎ Lid-close sleeps on battery`. |
+| **AC + external display**              |   No (clamshell)     | Native macOS clamshell mode — InsomniKit isn't even needed.             |
 
-### Lid-Closed Mode (advanced, opt-in)
+**TL;DR** — On AC, just close the lid; your work continues. On battery, plug in first — *or* turn on Lid-Closed Mode.
 
-If you really need the system to stay awake with the lid closed *on battery*, InsomniKit can flip `pmset -c disablesleep 1` for you. Open the menu and click **Turn on Lid-Closed Mode… (admin)**.
+<details>
+<summary><b>Lid-Closed Mode — for battery + lid-shut (advanced, opt-in)</b></summary>
 
-What happens:
+<br>
 
-- macOS shows a native password sheet ("InsomniKit needs admin access to keep your Mac awake when the lid is closed"). Enter your password.
+Need the system awake with the lid closed **on battery**? InsomniKit can flip `pmset -c disablesleep 1` for you. Menu → **Lid-Closed Mode → Turn on…**
+
+**What happens**
+
+- macOS shows a native password sheet — enter your admin password.
 - The setting is **system-wide** — every app sees it.
-- Your choice is remembered: the next launch silently adopts the existing state, no second prompt.
-- To turn it off: click **Turn off Lid-Closed Mode…** in the menu. Another password sheet, then it's reverted.
+- It's remembered: the next launch adopts the state silently, no second prompt.
+- Turn it off from the same submenu (one more password sheet, then reverted).
 
-What this **doesn't** do:
+**What it does *not* do**
 
-- It does **not** stop the screen turning off when the lid closes — nothing can.
-- It does **not** override macOS thermal limits. If the Mac gets too hot inside a closed lid, the kernel will still sleep it for safety.
-- It does **not** auto-revert on quit. If you quit InsomniKit while Lid-Closed Mode is on, the system stays in that state until you launch InsomniKit again and toggle it off, or run `sudo pmset -c disablesleep 0` manually.
+- It can't keep the screen on with the lid shut — nothing can.
+- It can't override macOS thermal limits — a too-hot closed Mac still sleeps for safety.
+- It doesn't auto-revert on quit. Quit with it on and the system stays that way until you relaunch and toggle off — or run `sudo pmset -c disablesleep 0` yourself.
 
-## Dev
+</details>
+
+---
+
+## For developers
 
 ```bash
 pnpm install
-pnpm run dev      # tsc + electron, hot relaunch with `pnpm run dev` again
+pnpm run dev      # tsc + electron — rerun the same command to hot-relaunch
 ```
 
-Works identically with **npm**, **yarn**, and **bun** — scripts inline their commands and don't assume a package manager.
+| Script                  | Does                                                      |
+| ----------------------- | --------------------------------------------------------- |
+| `pnpm run dev`          | Build + launch from source                                |
+| `pnpm run install:app`  | Build + install to `/Applications` + launch               |
+| `pnpm run dist`         | Full `.dmg` + `.zip` for arm64 & x64 in `release/`        |
+| `pnpm run lint`         | Type-check only                                           |
 
-## Build for distribution
+No code signing, no notarization — this is open source meant to be cloned and built locally. Sign it yourself if you want to ship it.
 
-```bash
-pnpm run dist     # arm64 + x64, .dmg + .zip in release/
-```
+**Stack:** Electron · TypeScript · zero runtime dependencies. The whole thing is `caffeinate` / `pmset` / `osascript` orchestrated from the main process — no renderer, no framework.
 
-No code signing. No notarization. This is open source meant to be cloned and built locally — sign it yourself if you want to ship it.
+---
 
 ## Roadmap
 
-- **Strategy picker** — expose caffeinate vs pmset in the menu for power users.
-- AC-power-only mode, external-display detection, activity-based wake lock.
+- [ ] Strategy picker — choose `caffeinate` vs `pmset` from the menu
+- [ ] AC-power-only mode
+- [ ] External-display detection
+- [ ] Activity-based wake lock
 
-## License
+---
 
-MIT — do whatever you want.
+<div align="center">
+
+**MIT** — do whatever you want.
+
+<sub>Built because <code>caffeinate &amp;</code> in a terminal tab deserved better.</sub>
+
+</div>
