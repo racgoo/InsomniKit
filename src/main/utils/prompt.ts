@@ -39,24 +39,33 @@ export async function promptText(opts: PromptOptions): Promise<string | null> {
     });
     let out = "";
     let err = "";
+    let settled = false;
+    const settle = (value: string | null) => {
+      if (settled) return;
+      settled = true;
+      resolve(value);
+    };
+
     proc.stdout.on("data", (d) => (out += d.toString()));
     proc.stderr.on("data", (d) => (err += d.toString()));
     proc.on("error", (e) => {
       log.error("osascript spawn failed", e);
-      resolve(null);
+      settle(null);
     });
-    proc.on("exit", (code) => {
+    // `close` (not `exit`) — guarantees stdout/stderr are fully drained
+    // before we parse them. `exit` can fire with data still buffered.
+    proc.on("close", (code) => {
       if (code !== 0) {
         // -128 = "user cancelled" — expected, don't log as error.
         if (!/User cancel(l|)ed/i.test(err)) {
           log.warn("osascript returned non-zero", { code, stderr: err.trim() });
         }
-        return resolve(null);
+        return settle(null);
       }
       // Format: "button returned:OK, text returned:60\n"
       // `.` doesn't match \n by default so this captures up to the EOL.
       const m = out.match(/text returned:(.*)/);
-      resolve(m ? m[1].trim() : null);
+      settle(m ? m[1].trim() : null);
     });
   });
 }

@@ -43,6 +43,8 @@ export type LidClosedEvents = {
 
 export class LidClosedService extends Emitter<LidClosedEvents> {
   private active = false;
+  /** True while an enable/disable admin prompt is in flight. */
+  private busy = false;
 
   isActive(): boolean {
     return this.active;
@@ -59,12 +61,19 @@ export class LidClosedService extends Emitter<LidClosedEvents> {
         stdio: ["ignore", "pipe", "ignore"],
       });
       let out = "";
+      let settled = false;
+      const settle = (v: 0 | 1) => {
+        if (settled) return;
+        settled = true;
+        resolve(v);
+      };
       proc.stdout.on("data", (d) => (out += d.toString()));
-      proc.on("exit", () => {
+      // `close`, not `exit` — wait for stdout to be fully drained.
+      proc.on("close", () => {
         const m = out.match(/SleepDisabled\s+(\d)/);
-        resolve(m && m[1] === "1" ? 1 : 0);
+        settle(m && m[1] === "1" ? 1 : 0);
       });
-      proc.on("error", () => resolve(0));
+      proc.on("error", () => settle(0));
     });
   }
 
@@ -82,30 +91,49 @@ export class LidClosedService extends Emitter<LidClosedEvents> {
 
   async enable(): Promise<void> {
     if (this.active) return;
-    const ok = await this.runWithAdmin(
-      "/usr/bin/pmset -c disablesleep 1",
-      "InsomniKit needs admin access to keep your Mac awake when the lid is closed.",
-    );
-    if (!ok) {
-      throw new Error("Admin authorization was cancelled or failed");
+    // Guard against a second prompt — e.g. the startup reconcile and a
+    // user menu click both calling enable() before the first sheet
+    // returns. Without this the user gets two stacked password sheets.
+    if (this.busy) {
+      throw new Error("An admin authorization is already in progress");
     }
-    this.active = true;
-    log.info("enabled (pmset disablesleep=1)");
-    this.emit("changed", { active: true });
+    this.busy = true;
+    try {
+      const ok = await this.runWithAdmin(
+        "/usr/bin/pmset -c disablesleep 1",
+        "InsomniKit needs admin access to keep your Mac awake when the lid is closed.",
+      );
+      if (!ok) {
+        throw new Error("Admin authorization was cancelled or failed");
+      }
+      this.active = true;
+      log.info("enabled (pmset disablesleep=1)");
+      this.emit("changed", { active: true });
+    } finally {
+      this.busy = false;
+    }
   }
 
   async disable(): Promise<void> {
     if (!this.active) return;
-    const ok = await this.runWithAdmin(
-      "/usr/bin/pmset -c disablesleep 0",
-      "InsomniKit needs admin access to restore the default sleep behavior.",
-    );
-    if (!ok) {
-      throw new Error("Admin authorization was cancelled or failed");
+    if (this.busy) {
+      throw new Error("An admin authorization is already in progress");
     }
-    this.active = false;
-    log.info("disabled (pmset disablesleep=0)");
-    this.emit("changed", { active: false });
+    this.busy = true;
+    try {
+      const ok = await this.runWithAdmin(
+        "/usr/bin/pmset -c disablesleep 0",
+        "InsomniKit needs admin access to restore the default sleep behavior.",
+      );
+      if (!ok) {
+        throw new Error("Admin authorization was cancelled or failed");
+      }
+      this.active = false;
+      log.info("disabled (pmset disablesleep=0)");
+      this.emit("changed", { active: false });
+    } finally {
+      this.busy = false;
+    }
   }
 
   /**
@@ -147,8 +175,15 @@ export class LidClosedService extends Emitter<LidClosedEvents> {
         stdio: ["ignore", "ignore", "pipe"],
       });
       let stderr = "";
+      let settled = false;
+      const settle = (ok: boolean) => {
+        if (settled) return;
+        settled = true;
+        resolve(ok);
+      };
       proc.stderr.on("data", (d) => (stderr += d.toString()));
-      proc.on("exit", (code) => {
+      // `close`, not `exit` — guarantees stderr is fully drained.
+      proc.on("close", (code) => {
         if (code !== 0) {
           // osascript exits non-zero when the user cancels. Log the
           // reason for `-128` (user-cancelled) vs other failures so we
@@ -158,11 +193,11 @@ export class LidClosedService extends Emitter<LidClosedEvents> {
             stderr: stderr.trim(),
           });
         }
-        resolve(code === 0);
+        settle(code === 0);
       });
       proc.on("error", (err) => {
         log.error("osascript spawn failed", err);
-        resolve(false);
+        settle(false);
       });
     });
   }
