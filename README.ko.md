@@ -24,6 +24,19 @@
 
 ---
 
+<div align="center">
+
+<img src="https://github.com/user-attachments/assets/920f5ed0-16f3-4a8f-928f-f3f485597db4" alt="6개월 전 vs 지금: 개발자가 노트북 들고 다니는 법" width="660" />
+
+**6개월 전엔 노트북 그냥 탁 닫고 자리 떴습니다.**
+**지금은 에이전트 죽을까 봐 살짝 열어둔 채로, 유리 다루듯 들고 다니죠.**
+
+### 그냥 닫으세요. InsomniKit이 작업 살려둡니다.
+
+</div>
+
+---
+
 ## ⚡ 30초 시작
 
 ```bash
