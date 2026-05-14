@@ -87,7 +87,9 @@ export class TrayController {
     const remainingMs = this.timer.getRemainingMs();
 
     this.tray.setImage(state.active ? getActiveIcon() : getInactiveIcon());
-    this.tray.setTitle(formatTrayTitle(state, remainingMs));
+    this.tray.setTitle(
+      formatTrayTitle(state, remainingMs, this.lidClosed.isActive()),
+    );
     this.tray.setContextMenu(this.buildMenu(state, remainingMs));
   }
 

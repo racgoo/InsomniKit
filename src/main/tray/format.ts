@@ -86,9 +86,32 @@ export function formatStatusLine(state: AppState): string {
 }
 
 /**
- * Short status string for the tray title (next to the icon).
+ * Marker shown in the tray title when "Stay Awake When Closed" is on.
+ * "⊙" is distinct from the moon brand icon, renders reliably in the
+ * menu bar, and reads as "an extra lock is engaged".
+ */
+const LID_CLOSED_MARKER = "⊙";
+
+/**
+ * Short status string for the tray title (the text next to the icon).
+ *
+ * Two independent signals are folded in:
+ * - the main sleep-prevention toggle + its countdown ("23m", "1h5m",
+ *   "∞", or "" when idle), and
+ * - "Stay Awake When Closed" — prefixed with `⊙` so it's visible even
+ *   when the main toggle is off (the two are independent).
  */
 export function formatTrayTitle(
+  state: AppState,
+  remainingMs: number | null,
+  lidClosedActive: boolean,
+): string {
+  const main = formatMainTitle(state, remainingMs);
+  if (!lidClosedActive) return main;
+  return main ? `${LID_CLOSED_MARKER} ${main}` : LID_CLOSED_MARKER;
+}
+
+function formatMainTitle(
   state: AppState,
   remainingMs: number | null,
 ): string {
