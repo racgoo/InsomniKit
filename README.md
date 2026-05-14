@@ -6,6 +6,7 @@
 
 ### Keep your Mac awake — *exactly* as long as you want.
 
+Close the lid, walk away, let your agent keep coding.
 A tiny macOS menu-bar utility. No Dock icon. No windows. No telemetry. No nonsense.
 
 <br>
@@ -72,6 +73,22 @@ Done. InsomniKit is in `/Applications` and live in your menu bar. Click the moon
 
 ---
 
+## Made for the agent era
+
+You kick off a Claude Code / Cursor agent on a long refactor, stand up, and walk to the couch — lid half-closed, laptop under your arm. Ten minutes later the agent's done... except it isn't, because your Mac slept the moment the lid dropped and the run died halfway through.
+
+That's the whole reason this exists.
+
+```
+  ▸ Enable → Duration ∞ → close the lid → agent keeps grinding
+  ▸ On battery? Lid-Closed Mode keeps the run alive while you move
+  ▸ Battery Auto-Disable so a forgotten agent doesn't drain you to 0%
+```
+
+Long builds, dataset downloads, model pulls, overnight test suites — same story. If it needs to *keep running while you're not looking at it*, InsomniKit is the seatbelt.
+
+---
+
 ## Why not just `caffeinate`?
 
 You can. Until:
@@ -88,6 +105,7 @@ InsomniKit is the same IOKit assertion, wrapped in two clicks, with a timer, a b
 
 | You want to…                              | Do this                                                                |
 | ----------------------------------------- | ---------------------------------------------------------------------- |
+| Let an AI agent run while you walk away    | **Enable** → **Duration → ∞** → close the lid (plug in, or use Lid-Closed Mode) |
 | Stay awake for a long build / download    | **Enable** → **Duration → 1h** (or 2h)                                 |
 | Watch something without the screen locking| **Enable** → **Duration → ∞**                                          |
 | Auto-stop when the battery gets low       | **Battery Auto-Disable → ≤ 30%**                                       |
