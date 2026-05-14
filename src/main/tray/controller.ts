@@ -7,7 +7,7 @@ import { Store } from "../state/store";
 import {
   BatteryThreshold,
   DurationPreset,
-  InsomniacState,
+  AppState,
 } from "../state/types";
 import { createLogger } from "../utils/logger";
 import {
@@ -65,7 +65,7 @@ export class TrayController {
   start(): void {
     if (this.tray) return;
     this.tray = new Tray(getInactiveIcon());
-    this.tray.setToolTip("Insomniac");
+    this.tray.setToolTip("InsomniKit");
 
     this.disposeStoreListener = this.store.on("change", () => this.render());
     this.render();
@@ -103,13 +103,13 @@ export class TrayController {
   }
 
   private buildMenu(
-    state: InsomniacState,
+    state: AppState,
     remainingMs: number | null,
   ): Menu {
     const warning = state.active ? lidCloseWarning(state.battery) : null;
 
     const template: MenuItemConstructorOptions[] = [
-      { label: "Insomniac", enabled: false },
+      { label: "InsomniKit", enabled: false },
       { type: "separator" },
       { label: formatStatusLine(state), enabled: false },
       { label: formatPower(state.battery), enabled: false },
@@ -154,7 +154,7 @@ export class TrayController {
       },
       { type: "separator" },
       {
-        label: "Quit Insomniac",
+        label: "Quit InsomniKit",
         click: () => {
           // Use app.quit so before-quit cleanup fires.
           app.quit();

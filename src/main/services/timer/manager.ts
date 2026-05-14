@@ -24,7 +24,7 @@ export type TimerEvents = {
  *   render "54m remaining" without holding a reference to the manager.
  *
  * Note on system sleep: setTimeout drifts across sleep on macOS. Since
- * Insomniac's whole job is to *prevent* sleep while a timer is running,
+ * InsomniKit's whole job is to *prevent* sleep while a timer is running,
  * the drift is negligible during active use — but if the user toggles
  * off and the timer keeps running through sleep, we accept the drift.
  * Tracking wall-clock `endsAt` (vs. a tick counter) at least makes the

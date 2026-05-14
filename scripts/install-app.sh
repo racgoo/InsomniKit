@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build Insomniac, install it to /Applications, strip quarantine, and launch.
+# Build InsomniKit, install it to /Applications, strip quarantine, and launch.
 # Idempotent: rerun anytime to update (pulls handled separately by the user).
 
 set -euo pipefail
@@ -21,12 +21,12 @@ ok()    { printf "${G}✓${N} %s\n" "$1"; }
 warn()  { printf "${Y}!${N} %s\n" "$1"; }
 fail()  { printf "${R}✗${N} %s\n" "$1" >&2; exit 1; }
 
-APP_NAME="Insomniac"
+APP_NAME="InsomniKit"
 APP_BUNDLE="$APP_NAME.app"
 
 # --- preflight ---
 if [ "$(uname)" != "Darwin" ]; then
-  fail "Insomniac is macOS-only (detected $(uname))."
+  fail "InsomniKit is macOS-only (detected $(uname))."
 fi
 
 ARCH=$(uname -m)
@@ -54,14 +54,26 @@ if [ ! -x ./node_modules/.bin/electron-builder ] || [ ! -x ./node_modules/.bin/t
   fail "Dependencies not installed. Run ${B}pnpm install${N} (or npm install / yarn / bun install) first, then retry."
 fi
 
-# --- 1. stop any running instance ---
+# --- 1. stop any running instance (current name + legacy name) ---
 step "Stopping any running $APP_NAME..."
-osascript -e "tell application \"$APP_NAME\" to quit" >/dev/null 2>&1 || true
-# Force-kill stragglers — strategy cleanup still runs because each
-# strategy handles SIGTERM in its own restoreOnExit().
-pkill -TERM -f "$APP_BUNDLE/Contents/MacOS/$APP_NAME" >/dev/null 2>&1 || true
+for name in "$APP_NAME" "Insomniac"; do
+  osascript -e "tell application \"$name\" to quit" >/dev/null 2>&1 || true
+  pkill -TERM -f "$name.app/Contents/MacOS/$name" >/dev/null 2>&1 || true
+done
 sleep 1
-pkill -KILL -f "$APP_BUNDLE/Contents/MacOS/$APP_NAME" >/dev/null 2>&1 || true
+for name in "$APP_NAME" "Insomniac"; do
+  pkill -KILL -f "$name.app/Contents/MacOS/$name" >/dev/null 2>&1 || true
+done
+
+# Remove the legacy v0.1 bundle if present — preferences are migrated
+# automatically inside the app, but the old bundle would otherwise sit
+# in /Applications forever.
+for legacy_dir in "/Applications/Insomniac.app" "$HOME/Applications/Insomniac.app"; do
+  if [ -d "$legacy_dir" ]; then
+    step "Removing legacy bundle $legacy_dir..."
+    rm -rf "$legacy_dir"
+  fi
+done
 
 # --- 2. build ---
 step "Building $APP_NAME for $ARCH..."

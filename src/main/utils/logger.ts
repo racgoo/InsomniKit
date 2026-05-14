@@ -51,4 +51,4 @@ export function createLogger(scope: string): Logger {
   };
 }
 
-export const rootLogger = createLogger("insomniac");
+export const rootLogger = createLogger("insomnikit");

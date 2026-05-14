@@ -39,7 +39,7 @@ export interface TimerSnapshot {
   endsAt: number | null;
 }
 
-export interface InsomniacState {
+export interface AppState {
   active: boolean;
   strategy: SleepStrategyKind;
   duration: DurationPreset;
@@ -49,7 +49,7 @@ export interface InsomniacState {
   timer: TimerSnapshot;
 }
 
-export const DEFAULT_STATE: InsomniacState = {
+export const DEFAULT_STATE: AppState = {
   active: false,
   strategy: "caffeinate",
   duration: "infinite",

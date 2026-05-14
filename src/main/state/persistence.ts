@@ -6,7 +6,7 @@ import { Store } from "./store";
 import {
   BatteryThreshold,
   DurationPreset,
-  InsomniacState,
+  AppState,
   SleepStrategyKind,
 } from "./types";
 
@@ -49,6 +49,31 @@ function settingsPath(): string {
 }
 
 /**
+ * Path the v0.1 app (productName "Insomniac") wrote to. Electron derives
+ * userData from `app.getName()`, so renaming the productName moves us
+ * to a fresh directory and the user would otherwise silently lose
+ * their preferences. We do a one-shot copy on first launch after the
+ * rename and leave the old file in place — non-destructive.
+ */
+function legacySettingsPath(): string {
+  const appData = path.dirname(app.getPath("userData"));
+  return path.join(appData, "insomniac", "settings.json");
+}
+
+function migrateFromLegacyIfPresent(target: string): void {
+  if (fs.existsSync(target)) return;
+  const legacy = legacySettingsPath();
+  if (!fs.existsSync(legacy)) return;
+  try {
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(legacy, target);
+    log.info("migrated settings from legacy Insomniac path", { from: legacy });
+  } catch (err) {
+    log.warn("legacy settings migration failed", err);
+  }
+}
+
+/**
  * Strict-but-forgiving validator. Any malformed / missing field falls
  * back to its default — a corrupt settings file should never prevent
  * the app from starting.
@@ -82,9 +107,10 @@ function validate(input: unknown): Partial<PersistedSettings> {
   return out;
 }
 
-export function loadSettings(): Partial<InsomniacState> {
+export function loadSettings(): Partial<AppState> {
   try {
     const file = settingsPath();
+    migrateFromLegacyIfPresent(file);
     if (!fs.existsSync(file)) return {};
     const raw = fs.readFileSync(file, "utf8");
     const parsed = JSON.parse(raw);

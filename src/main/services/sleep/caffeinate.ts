@@ -12,7 +12,7 @@ const log = createLogger("sleep:caffeinate");
  * - `-i` prevents idle sleep
  * - `-m` prevents disk idle sleep
  * - `-s` prevents system sleep on AC power (closest analogue to what
- *   the Insomniac UI promises)
+ *   the InsomniKit UI promises)
  *
  * We intentionally skip `-w <pid>` since we own the lifecycle ourselves
  * — if Electron crashes, `restoreOnExit()` + the SIGTERM handler in
