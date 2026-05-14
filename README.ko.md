@@ -32,6 +32,7 @@ macOS용 메뉴바 유틸리티. Dock 아이콘 없음. 창 없음. 텔레메트
   ───────────────────
   Duration             ▸  15m · 30m · 1h · 2h · ∞ · Custom…
   Battery Auto-Disable ▸  Off · ≤50% · ≤30% · ≤20% · Custom…
+  Lid-Closed Mode: Off ▸  (상태, 설명, Turn on…)
   ───────────────────
   ☑  Launch at Login
   ───────────────────
