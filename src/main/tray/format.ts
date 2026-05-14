@@ -87,10 +87,11 @@ export function formatStatusLine(state: AppState): string {
 
 /**
  * Marker shown in the tray title when "Stay Awake When Closed" is on.
- * "⊙" is distinct from the moon brand icon, renders reliably in the
- * menu bar, and reads as "an extra lock is engaged".
+ * A padlock — the feature "locks" the Mac into the awake state across
+ * lid-close, so a lock glyph reads at a glance. Previously this was
+ * "⊙", which carried no meaning at all.
  */
-const LID_CLOSED_MARKER = "⊙";
+const LID_CLOSED_MARKER = "🔒";
 
 /**
  * Short status string for the tray title (the text next to the icon).
@@ -98,7 +99,7 @@ const LID_CLOSED_MARKER = "⊙";
  * Two independent signals are folded in:
  * - the main sleep-prevention toggle + its countdown ("23m", "1h5m",
  *   "∞", or "" when idle), and
- * - "Stay Awake When Closed" — prefixed with `⊙` so it's visible even
+ * - "Stay Awake When Closed" — prefixed with 🔒 so it's visible even
  *   when the main toggle is off (the two are independent).
  */
 export function formatTrayTitle(
