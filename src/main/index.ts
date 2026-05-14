@@ -1,5 +1,7 @@
 import { app } from "electron";
+import { BatteryMonitor } from "./services/battery";
 import { SleepManager } from "./services/sleep";
+import { TimerManager } from "./services/timer";
 import { Store } from "./state";
 import { rootLogger } from "./utils/logger";
 
@@ -16,6 +18,24 @@ if (!gotLock) {
 
 const store = new Store();
 const sleep = new SleepManager(store);
+const timer = new TimerManager(store);
+const battery = new BatteryMonitor(store);
+
+// Auto-disable cross-wiring.
+//
+// Both triggers route through SleepManager.disable() so the strategy-
+// specific cleanup paths (caffeinate SIGTERM, pmset restore) always run.
+// We intentionally do NOT cancel the user's preset / threshold settings
+// — only the active session ends.
+timer.on("expired", () => {
+  log.info("auto-disable: timer expired");
+  void sleep.disable();
+});
+
+battery.on("thresholdHit", ({ percent, threshold }) => {
+  log.info("auto-disable: battery threshold hit", { percent, threshold });
+  void sleep.disable();
+});
 
 store.on("change", (next) => {
   log.debug("state changed", {
@@ -28,18 +48,17 @@ store.on("change", (next) => {
 
 app.whenReady().then(() => {
   log.info("ready", { platform: process.platform, arch: process.arch });
-  // Step 5 wires the tray here; Step 4 starts the battery monitor and
-  // timer manager. SleepManager is already instantiated so they can
-  // call sleep.enable()/disable() once wired up.
+  battery.start();
+  // Step 5 wires the tray and connects user actions to
+  // sleep.enable() / timer.start() / store.setBatteryThreshold().
 });
 
 app.on("window-all-closed", (event: Electron.Event) => {
   event.preventDefault();
 });
 
-// Final restore safety net — Step 6 replaces this with the full set of
-// SIGINT/SIGTERM/uncaughtException handlers. Keeping a minimal hook now
-// means a Ctrl-C in dev already kills caffeinate cleanly.
 app.on("before-quit", () => {
+  battery.stop();
+  timer.cancel();
   sleep.restoreOnExit();
 });
