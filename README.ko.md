@@ -15,6 +15,7 @@
 ![arch](https://img.shields.io/badge/Apple%20Silicon%20·%20Intel-1d1d1f?style=for-the-badge)
 ![license](https://img.shields.io/badge/license-MIT-1d1d1f?style=for-the-badge)
 ![status](https://img.shields.io/badge/status-stable-22c55e?style=for-the-badge)
+![vibe-coded](https://img.shields.io/badge/vibe--coded%20with-Claude%20Code-d97757?style=for-the-badge)
 
 [English](./README.md) · **한국어**
 
@@ -76,12 +77,12 @@ pnpm install && pnpm run install:app
 
 ## 에이전트 시대를 위해 만들었습니다
 
-Claude Code / Cursor 에이전트한테 긴 리팩토링 던져놓고, 일어나서 노트북 옆구리에 끼고 소파로 이동 — lid는 반쯤 닫힌 채로. 10분 뒤 에이전트가 끝났겠지... 싶은데 안 끝났습니다. lid 닫히는 순간 Mac이 잠들어서 작업이 중간에 죽었거든요.
+Claude Code / Cursor 에이전트한테 긴 리팩토링 던져놓고, 일어나서 노트북 옆구리에 끼고 소파로 이동 — 노트북은 반쯤 닫힌 채로. 10분 뒤 에이전트가 끝났겠지... 싶은데 안 끝났습니다. 노트북이 닫히는 순간 Mac이 잠들어서 작업이 중간에 죽었거든요.
 
 이게 이 앱을 만든 이유 전부입니다.
 
 ```
-  ▸ Enable → Duration ∞ → lid 닫기 → 에이전트 계속 돔
+  ▸ Enable → Duration ∞ → 노트북 닫기 → 에이전트 계속 돔
   ▸ 배터리 상태? "Stay Awake When Closed"가 이동 중에도 작업 살려둠
   ▸ Battery Auto-Disable로 깜빡한 에이전트가 배터리 0%까지 안 빨아먹게
 ```
@@ -140,15 +141,15 @@ git pull && pnpm install && pnpm run install:app
 
 ---
 
-## lid를 닫으면
+## 노트북을 닫으면
 
 다들 헷갈리는 부분이라 솔직하게 적습니다:
 
-> **lid를 닫으면 항상 화면이 꺼집니다.** 이건 하드웨어 — 디스플레이가 물리적으로 가려지는 거예요. 어떤 소프트웨어도 (InsomniKit, `caffeinate`, `pmset` 전부) 화면을 못 켭니다.
+> **노트북을 닫으면 항상 화면이 꺼집니다.** 이건 하드웨어 — 디스플레이가 물리적으로 가려지는 거예요. 어떤 소프트웨어도 (InsomniKit, `caffeinate`, `pmset` 전부) 화면을 못 켭니다.
 
 진짜 중요한 건 **시스템**이 계속 도는지입니다:
 
-| 전원 상태                          | lid 닫음 → 잠? | 실제                                                                    |
+| 전원 상태                          | 닫으면 → 잠?  | 실제                                                                    |
 | ----------------------------------- | :------------: | ----------------------------------------------------------------------- |
 | **AC** + InsomniKit 켜짐            |      안 잠      | 화면만 꺼지고 다운로드 / 빌드 / 동기화는 계속 돔.                       |
 | **배터리** + InsomniKit 켜짐        |    **잠**      | macOS가 닫힐 때 강제 sleep. `caffeinate -s`는 AC 전용. 메뉴가 경고함: `⚠︎ Sleeps when closed on battery`. |
@@ -172,8 +173,8 @@ git pull && pnpm install && pnpm run install:app
 
 **하지 *않는* 것**
 
-- lid 닫힌 채로 화면 켜두는 거 — 못 함, 어떤 방법으로도.
-- macOS 발열 제한 무시 — lid 닫힌 채 너무 뜨거우면 커널이 안전상 잠재움.
+- 노트북 닫힌 채로 화면 켜두는 거 — 못 함, 어떤 방법으로도.
+- macOS 발열 제한 무시 — 노트북 닫힌 채 너무 뜨거우면 커널이 안전상 잠재움.
 - 종료 시 자동 복구 안 함. 켠 채로 종료하면 다시 실행해서 끄거나 직접 `sudo pmset -c disablesleep 0` 하기 전까지 그 상태 유지.
 
 </details>
@@ -206,6 +207,12 @@ pnpm run dev      # tsc + electron — 같은 명령 다시 치면 hot-relaunch
 - [ ] AC 전용 모드
 - [ ] 외장 디스플레이 감지
 - [ ] 활동 기반 wake lock
+
+## Claude Code로 만들었습니다
+
+솔직하게: InsomniKit은 **바이브 코딩**으로 만들었습니다 — 설계도 구현도 거의 전부 [Claude Code](https://claude.com/claude-code)로, 커밋 하나하나 PR 하나하나. 사람은 방향을 잡고 리뷰하고, 에이전트가 코드를 씁니다.
+
+그러니 거슬리는 부분이 보이면 — 네, 그게 바이브 코딩입니다. 이슈나 PR 남겨주시면 만든 방식 그대로 고칩니다.
 
 ---
 
