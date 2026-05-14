@@ -56,5 +56,12 @@
       "hardenedRuntime": false,
       "gatekeeperAssess": false
     }
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron",
+      "electron-winstaller",
+      "esbuild"
+    ]
   }
 }

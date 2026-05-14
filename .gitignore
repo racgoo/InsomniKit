@@ -8,3 +8,9 @@ npm-debug.log*
 .env.local
 .vscode/
 .idea/
+
+# Lockfiles from non-default package managers — package-lock.json is
+# the source of truth so reproducible builds work across PMs.
+pnpm-lock.yaml
+yarn.lock
+bun.lockb
