@@ -24,13 +24,36 @@ export class SleepManager {
   private current: SleepStrategy;
   /** Tracks the manager-level intent independent of strategy state. */
   private desiredActive = false;
+  private onUnexpectedStop: (() => void) | null = null;
 
   constructor(private readonly store: Store) {
     this.strategies = {
-      caffeinate: new CaffeinateStrategy(),
+      caffeinate: new CaffeinateStrategy(() => this.handleUnexpectedStop()),
       pmset: new PmsetStrategy(),
     };
     this.current = this.strategies[store.get().strategy];
+  }
+
+  /**
+   * Register a callback for when sleep prevention dies on its own —
+   * e.g. the caffeinate process is killed externally — while we still
+   * wanted it active. Used by the entry point to also cancel the timer.
+   */
+  setOnUnexpectedStop(cb: () => void): void {
+    this.onUnexpectedStop = cb;
+  }
+
+  /**
+   * Reconcile after a strategy died without us asking it to: clear the
+   * store's `active` flag so the tray / battery logic stop assuming
+   * we're protected, then notify the entry point.
+   */
+  private handleUnexpectedStop(): void {
+    if (!this.desiredActive) return; // Already a deliberate disable.
+    this.desiredActive = false;
+    this.store.setActive(false);
+    log.warn("sleep prevention stopped unexpectedly — corrected state");
+    this.onUnexpectedStop?.();
   }
 
   async enable(): Promise<void> {

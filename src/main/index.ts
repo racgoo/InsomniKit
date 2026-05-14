@@ -18,9 +18,13 @@ if (process.platform === "darwin" && app.dock) {
   app.dock.hide();
 }
 
-const gotLock = app.requestSingleInstanceLock();
-if (!gotLock) {
+// A primary instance already running? Bail immediately — before we
+// construct any services, register exit handlers, or attach the
+// persistence writer. Otherwise this doomed second instance would
+// race the primary on settings.json during its own before-quit.
+if (!app.requestSingleInstanceLock()) {
   app.quit();
+  process.exit(0);
 }
 
 const persisted = loadSettings();
@@ -47,6 +51,14 @@ const detachPersistence = attachPersistence(store);
 // prompting. Forcing a password sheet during SIGINT/SIGTERM is hostile.
 installCleanupHandlers(() => {
   sleep.restoreOnExit();
+});
+
+// If sleep prevention dies on its own (caffeinate killed externally,
+// crashed), SleepManager already corrected the store's `active` flag —
+// here we also cancel the now-meaningless countdown timer.
+sleep.setOnUnexpectedStop(() => {
+  log.warn("sleep prevention stopped unexpectedly — cancelling timer");
+  timer.cancel();
 });
 
 timer.on("expired", () => {
