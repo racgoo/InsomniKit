@@ -1,0 +1,60 @@
+{
+  "name": "insomniac",
+  "version": "0.1.0",
+  "description": "Minimal macOS menu bar utility that prevents sleep, with timer and battery-aware auto-disable.",
+  "main": "dist/main/index.js",
+  "author": "racgoo",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "clean": "rm -rf dist release",
+    "build": "tsc -p tsconfig.json",
+    "build:watch": "tsc -p tsconfig.json --watch",
+    "start": "npm run build && electron .",
+    "dev": "npm run build && electron .",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "dist": "npm run clean && npm run build && electron-builder --mac --arm64 --x64",
+    "dist:dir": "npm run clean && npm run build && electron-builder --mac --arm64 --x64 --dir"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3",
+    "typescript": "^5.4.0"
+  },
+  "build": {
+    "appId": "dev.racgoo.insomniac",
+    "productName": "Insomniac",
+    "asar": true,
+    "files": [
+      "dist/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["arm64", "x64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["arm64", "x64"]
+        }
+      ],
+      "extendInfo": {
+        "LSUIElement": true
+      },
+      "identity": null,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
+    }
+  }
+}
