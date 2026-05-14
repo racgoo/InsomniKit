@@ -6,9 +6,23 @@
  * slot in without touching every file.
  */
 
-export type DurationPreset = "15m" | "30m" | "1h" | "2h" | "infinite";
+/**
+ * Duration the user wants to keep their Mac awake for, in **minutes**.
+ * `null` means "infinite" (no auto-disable timer).
+ *
+ * Why a plain number instead of an enum:
+ *   The previous `"15m" | "30m" | "1h" | "2h" | "infinite"` shape forced
+ *   us to ship a new build to add a preset and ruled out custom values.
+ *   A number subsumes both — presets become labels for fixed values and
+ *   the "Custom…" menu item can persist anything the user types.
+ */
+export type Duration = number | null;
 
-export type BatteryThreshold = "off" | "50" | "30" | "20";
+/**
+ * Battery percentage at-or-below which auto-disable fires. `null` means
+ * "off". Stored as an integer 1–99.
+ */
+export type BatteryThreshold = number | null;
 
 /**
  * Sleep prevention strategy.
@@ -18,9 +32,8 @@ export type BatteryThreshold = "off" | "50" | "30" | "20";
  * - `pmset`: toggle `pmset -c disablesleep` (system-wide, requires
  *   careful restore on quit/crash).
  *
- * Step 3 introduces the strategy implementations; the state layer only
- * needs the discriminator now so persisted settings stay forward-
- * compatible.
+ * The state layer only needs the discriminator now so persisted
+ * settings stay forward-compatible.
  */
 export type SleepStrategyKind = "caffeinate" | "pmset";
 
@@ -34,7 +47,8 @@ export interface BatterySnapshot {
 }
 
 export interface TimerSnapshot {
-  preset: DurationPreset;
+  /** Minutes, or null for infinite. Matches AppState.duration. */
+  duration: Duration;
   /** Wall-clock ms when the timer fires. `null` for infinite or idle. */
   endsAt: number | null;
 }
@@ -42,7 +56,7 @@ export interface TimerSnapshot {
 export interface AppState {
   active: boolean;
   strategy: SleepStrategyKind;
-  duration: DurationPreset;
+  duration: Duration;
   batteryThreshold: BatteryThreshold;
   launchAtLogin: boolean;
   /**
@@ -58,33 +72,70 @@ export interface AppState {
 export const DEFAULT_STATE: AppState = {
   active: false,
   strategy: "caffeinate",
-  duration: "infinite",
-  batteryThreshold: "off",
+  duration: null,
+  batteryThreshold: null,
   launchAtLogin: false,
   lidClosedMode: false,
   battery: { percent: null, charging: false, onACOnly: false },
-  timer: { preset: "infinite", endsAt: null },
+  timer: { duration: null, endsAt: null },
 };
 
+/** Presets shown in the menu. The user can also enter any value via "Custom…". */
+export const DURATION_PRESETS: ReadonlyArray<{ label: string; minutes: Duration }> = [
+  { label: "15 minutes", minutes: 15 },
+  { label: "30 minutes", minutes: 30 },
+  { label: "1 hour", minutes: 60 },
+  { label: "2 hours", minutes: 120 },
+  { label: "Infinite", minutes: null },
+];
+
+export const THRESHOLD_PRESETS: ReadonlyArray<{ label: string; percent: BatteryThreshold }> = [
+  { label: "Off", percent: null },
+  { label: "≤ 50%", percent: 50 },
+  { label: "≤ 30%", percent: 30 },
+  { label: "≤ 20%", percent: 20 },
+];
+
+/** Hard limits for custom user input. */
+export const DURATION_MIN_MINUTES = 1;
+export const DURATION_MAX_MINUTES = 24 * 60; // 24 hours
+export const THRESHOLD_MIN_PERCENT = 1;
+export const THRESHOLD_MAX_PERCENT = 99;
+
 /**
- * Convert a duration preset to milliseconds. `infinite` returns `null`,
+ * Convert a duration (minutes) to milliseconds. `null` returns `null`,
  * meaning "no auto-disable timer".
  */
-export function durationToMs(preset: DurationPreset): number | null {
-  switch (preset) {
-    case "15m":
-      return 15 * 60 * 1000;
-    case "30m":
-      return 30 * 60 * 1000;
-    case "1h":
-      return 60 * 60 * 1000;
-    case "2h":
-      return 2 * 60 * 60 * 1000;
-    case "infinite":
-      return null;
-  }
+export function durationToMs(d: Duration): number | null {
+  return d === null ? null : d * 60 * 1000;
 }
 
-export function batteryThresholdToPercent(t: BatteryThreshold): number | null {
-  return t === "off" ? null : Number(t);
+/** True when a Duration matches one of the built-in presets. */
+export function isDurationPreset(d: Duration): boolean {
+  return DURATION_PRESETS.some((p) => p.minutes === d);
+}
+
+/** True when a threshold matches one of the built-in presets. */
+export function isThresholdPreset(t: BatteryThreshold): boolean {
+  return THRESHOLD_PRESETS.some((p) => p.percent === t);
+}
+
+/** Coerce arbitrary user input into a valid Duration or return null on failure. */
+export function parseDurationInput(raw: string): Duration | undefined {
+  const trimmed = raw.trim();
+  if (!trimmed) return undefined;
+  const n = Number(trimmed);
+  if (!Number.isFinite(n) || !Number.isInteger(n)) return undefined;
+  if (n < DURATION_MIN_MINUTES || n > DURATION_MAX_MINUTES) return undefined;
+  return n;
+}
+
+/** Coerce user input into a valid BatteryThreshold or return undefined. */
+export function parseThresholdInput(raw: string): BatteryThreshold | undefined {
+  const trimmed = raw.trim();
+  if (!trimmed) return undefined;
+  const n = Number(trimmed);
+  if (!Number.isFinite(n) || !Number.isInteger(n)) return undefined;
+  if (n < THRESHOLD_MIN_PERCENT || n > THRESHOLD_MAX_PERCENT) return undefined;
+  return n;
 }

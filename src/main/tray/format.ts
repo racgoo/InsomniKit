@@ -1,4 +1,4 @@
-import { BatterySnapshot, AppState } from "../state/types";
+import { AppState, BatterySnapshot, Duration } from "../state/types";
 
 /**
  * Pure helpers for rendering menu labels. Kept dependency-free and
@@ -25,12 +25,6 @@ export function formatPower(b: BatterySnapshot): string {
 /**
  * Returns a one-line caveat when the current setup means closing the
  * lid will still sleep the Mac, or `null` when no warning is needed.
- *
- * Why this matters: with the default `caffeinate -dims` strategy, the
- * `-s` (system sleep) assertion is documented as "valid only when the
- * system is running on AC power". On battery + lid-close, macOS will
- * sleep the system even with our caffeinate running. Users tend to
- * blame InsomniKit for this; the menu now spells it out.
  */
 export function lidCloseWarning(b: BatterySnapshot): string | null {
   if (b.onACOnly) return null;
@@ -53,12 +47,27 @@ export function formatLidClosedLine(
 }
 
 /**
+ * Render a duration as a friendly label.
+ *
+ * - null         → "Infinite"
+ * - 1            → "1 minute"
+ * - 59           → "59 minutes"
+ * - 60           → "1 hour"
+ * - 90           → "1h 30m"
+ * - 120          → "2 hours"
+ */
+export function formatDuration(d: Duration): string {
+  if (d === null) return "Infinite";
+  if (d < 60) return d === 1 ? "1 minute" : `${d} minutes`;
+  const h = Math.floor(d / 60);
+  const m = d % 60;
+  if (m === 0) return h === 1 ? "1 hour" : `${h} hours`;
+  return `${h}h ${m}m`;
+}
+
+/**
  * Render a human-friendly "Xh Ym remaining" / "Xm remaining" /
  * "<1m remaining" string from a millisecond delta.
- *
- * - >= 1 hour:    "1h 23m remaining"
- * - >= 1 minute:  "23m remaining"
- * - < 1 minute:   "<1m remaining"
  */
 export function formatRemaining(ms: number): string {
   if (ms <= 0) return "<1m remaining";
@@ -76,15 +85,14 @@ export function formatTimerLine(
   state: AppState,
   remainingMs: number | null,
 ): string {
-  if (state.duration === "infinite") return "Timer: Infinite";
-  if (remainingMs === null) return "Timer: —";
+  if (state.duration === null) return "Timer: Infinite";
+  if (remainingMs === null) return `Timer: ${formatDuration(state.duration)} (idle)`;
   return `Timer: ${formatRemaining(remainingMs)}`;
 }
 
 export function formatThresholdLine(state: AppState): string {
-  return state.batteryThreshold === "off"
-    ? "Auto-disable: Off"
-    : `Auto-disable: ≤ ${state.batteryThreshold}%`;
+  if (state.batteryThreshold === null) return "Auto-disable: Off";
+  return `Auto-disable: ≤ ${state.batteryThreshold}%`;
 }
 
 export function formatStatusLine(state: AppState): string {
@@ -93,18 +101,13 @@ export function formatStatusLine(state: AppState): string {
 
 /**
  * Short status string for the tray title (next to the icon).
- *
- * Visible cues to the user without clicking the menu:
- * - inactive: empty (icon-only is cleaner)
- * - infinite: "∞"
- * - active timer: "Xm" / "Xh"
  */
 export function formatTrayTitle(
   state: AppState,
   remainingMs: number | null,
 ): string {
   if (!state.active) return "";
-  if (state.duration === "infinite") return "∞";
+  if (state.duration === null) return "∞";
   if (remainingMs === null) return "";
   const totalMin = Math.ceil(remainingMs / 60_000);
   if (totalMin < 60) return `${Math.max(1, totalMin)}m`;

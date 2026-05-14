@@ -1,10 +1,10 @@
 import { Emitter } from "../utils/emitter";
 import {
+  AppState,
   BatterySnapshot,
   BatteryThreshold,
   DEFAULT_STATE,
-  DurationPreset,
-  AppState,
+  Duration,
   SleepStrategyKind,
   TimerSnapshot,
 } from "./types";
@@ -16,7 +16,7 @@ import {
  * tray subscribes to `change` and re-renders the menu. Keeping the
  * surface narrow (instead of exposing the raw object) lets us guarantee
  * an event is emitted on every meaningful update and makes the
- * persistence layer in Step 6 trivial — it just listens to `change`.
+ * persistence layer trivial — it just listens to `change`.
  */
 
 export type StoreEvents = {
@@ -48,7 +48,7 @@ export class Store extends Emitter<StoreEvents> {
     this.emit("change", this.state);
   }
 
-  setDuration(duration: DurationPreset): void {
+  setDuration(duration: Duration): void {
     if (this.state.duration === duration) return;
     this.state = { ...this.state, duration };
     this.emit("change", this.state);
@@ -87,7 +87,7 @@ export class Store extends Emitter<StoreEvents> {
 
   setTimer(timer: TimerSnapshot): void {
     const prev = this.state.timer;
-    if (prev.preset === timer.preset && prev.endsAt === timer.endsAt) {
+    if (prev.duration === timer.duration && prev.endsAt === timer.endsAt) {
       return;
     }
     this.state = { ...this.state, timer };
