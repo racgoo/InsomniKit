@@ -32,6 +32,7 @@ When the timer ends — or the battery dips below your threshold — sleep comes
   ───────────────────
   Duration             ▸  15m · 30m · 1h · 2h · ∞ · Custom…
   Battery Auto-Disable ▸  Off · ≤50% · ≤30% · ≤20% · Custom…
+  Lid-Closed Mode: Off ▸  (status, explanation, Turn on…)
   ───────────────────
   ☑  Launch at Login
   ───────────────────

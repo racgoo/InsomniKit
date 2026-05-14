@@ -25,7 +25,6 @@ import { promptText } from "../utils/prompt";
 import {
   formatBattery,
   formatDuration,
-  formatLidClosedLine,
   formatPower,
   formatStatusLine,
   formatThresholdLine,
@@ -119,22 +118,7 @@ export class TrayController {
       { type: "separator" },
       this.buildDurationMenu(state),
       this.buildThresholdMenu(state),
-      { type: "separator" },
-      {
-        label: formatLidClosedLine(
-          state.lidClosedMode,
-          this.lidClosed.isActive(),
-        ),
-        enabled: false,
-      },
-      {
-        label: this.lidClosed.isActive()
-          ? "Turn off Lid-Closed Mode…"
-          : "Turn on Lid-Closed Mode… (admin)",
-        click: () => {
-          void this.handleLidClosedToggle();
-        },
-      },
+      this.buildLidClosedMenu(),
       { type: "separator" },
       {
         label: "Launch at Login",
@@ -216,6 +200,63 @@ export class TrayController {
     ];
 
     return { label: "Battery Auto-Disable", submenu };
+  }
+
+  /**
+   * Lid-Closed Mode is a power-user toggle with admin-prompt cost and
+   * a non-obvious benefit ("why would I want this?"). The whole feature
+   * lives in a submenu so:
+   *  1. The top-level menu doesn't truncate long admin labels (and the
+   *     status stays visible at a glance — "Lid-Closed Mode: Off ▸").
+   *  2. There's room inside to explain what it does and when to use
+   *     it without cluttering the main menu for users who don't care.
+   */
+  private buildLidClosedMenu(): MenuItemConstructorOptions {
+    const applied = this.lidClosed.isActive();
+    const intent = this.store.get().lidClosedMode;
+    const stateLabel = applied
+      ? "On (system-wide)"
+      : intent
+        ? "pending…"
+        : "Off";
+
+    // Each "paragraph" line is its own disabled menu item — macOS doesn't
+    // render \n inside a label. Kept short so they don't truncate the
+    // submenu width.
+    const description: MenuItemConstructorOptions[] = applied
+      ? [
+          { label: "Your Mac stays awake even when the", enabled: false },
+          { label: "lid is closed — including on battery.", enabled: false },
+          { type: "separator" },
+          { label: "Note: this persists across app quit.", enabled: false },
+          { label: "Turn it off here when you're done.", enabled: false },
+        ]
+      : [
+          { label: "Keeps your Mac awake when you close", enabled: false },
+          { label: "the lid — even on battery.", enabled: false },
+          { type: "separator" },
+          { label: "macOS normally sleeps on lid-close.", enabled: false },
+          { label: "This overrides that, system-wide.", enabled: false },
+          { label: "You'll be asked for your password.", enabled: false },
+        ];
+
+    const submenu: MenuItemConstructorOptions[] = [
+      { label: `Currently: ${stateLabel}`, enabled: false },
+      { type: "separator" },
+      ...description,
+      { type: "separator" },
+      {
+        label: applied ? "Turn off" : "Turn on…",
+        click: () => {
+          void this.handleLidClosedToggle();
+        },
+      },
+    ];
+
+    return {
+      label: `Lid-Closed Mode: ${stateLabel === "On (system-wide)" ? "On" : stateLabel}`,
+      submenu,
+    };
   }
 
   private async handleToggle(): Promise<void> {

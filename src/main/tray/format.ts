@@ -33,20 +33,6 @@ export function lidCloseWarning(b: BatterySnapshot): string | null {
 }
 
 /**
- * Label for the Lid-Closed-Mode menu line. Distinguishes "intent" (the
- * persisted user choice) from the actual applied state, so the menu
- * never lies during a pending password prompt.
- */
-export function formatLidClosedLine(
-  intent: boolean,
-  applied: boolean,
-): string {
-  if (applied) return "Lid-Closed Mode: On (system-wide)";
-  if (intent) return "Lid-Closed Mode: pending…";
-  return "Lid-Closed Mode: Off";
-}
-
-/**
  * Render a duration as a friendly label.
  *
  * - null         → "Infinite"
