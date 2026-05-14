@@ -13,7 +13,13 @@ const LEVEL_ORDER: Record<Level, number> = {
   error: 40,
 };
 
-const envLevel = (process.env.INSOMNIAC_LOG_LEVEL ?? "info").toLowerCase();
+// `INSOMNIAC_LOG_LEVEL` is the pre-rename name, still honored as a
+// fallback so anyone's existing shell profile keeps working.
+const envLevel = (
+  process.env.INSOMNIKIT_LOG_LEVEL ??
+  process.env.INSOMNIAC_LOG_LEVEL ??
+  "info"
+).toLowerCase();
 const minLevel: number =
   LEVEL_ORDER[envLevel as Level] ?? LEVEL_ORDER.info;
 
