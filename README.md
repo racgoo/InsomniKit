@@ -51,26 +51,39 @@ Crash, force-quit, kill -9: there's no orphaned `caffeinate` process and no left
 
 ## Install (permanent)
 
-Build it once, drop it in `/Applications`, forget it exists.
+Two commands. Done.
 
 ```bash
 git clone git@github.com:racgoo/InsomniKit.git
 cd InsomniKit
 pnpm install            # or: npm install / yarn / bun install
-pnpm run pack           # ~10 seconds on Apple Silicon
+pnpm run install:app    # builds, installs to /Applications, launches
 ```
 
-Then drag the `.app` to Applications:
-
-```bash
-mv release/mac-arm64/Insomniac.app /Applications/
-xattr -dr com.apple.quarantine /Applications/Insomniac.app
-open /Applications/Insomniac.app
-```
-
-> Intel Macs: replace `mac-arm64` with `mac`.
+That's it — Insomniac is now in your `/Applications` folder and running in the menu bar.
 
 In the menu, toggle **Launch at Login** if you want it to come back automatically after every reboot.
+
+### Updating
+
+```bash
+git pull
+pnpm install            # picks up new deps if any
+pnpm run install:app    # closes the running app, rebuilds, reinstalls, relaunches
+```
+
+Same script. Settings are preserved across updates.
+
+<details>
+<summary>What <code>install:app</code> does</summary>
+
+1. Gracefully quits any running Insomniac (then SIGKILLs stragglers).
+2. Builds the host architecture only (`electron-builder --mac --dir`) — fast, no `.dmg`.
+3. Moves the `.app` to `/Applications` (falls back to `~/Applications` on managed Macs where `/Applications` isn't writable).
+4. Strips the `com.apple.quarantine` attribute so Gatekeeper doesn't block the unsigned bundle on first launch.
+5. Launches it.
+
+</details>
 
 ## Use
 
