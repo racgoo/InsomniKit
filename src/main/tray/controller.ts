@@ -1,5 +1,6 @@
 import { app, Menu, MenuItemConstructorOptions, Tray } from "electron";
 import { BatteryMonitor } from "../services/battery";
+import { setLaunchAtLogin } from "../services/launchAtLogin";
 import { SleepManager } from "../services/sleep";
 import { TimerManager } from "../services/timer";
 import { Store } from "../state/store";
@@ -138,6 +139,13 @@ export class TrayController {
       },
       { type: "separator" },
       {
+        label: "Launch at Login",
+        type: "checkbox",
+        checked: state.launchAtLogin,
+        click: (item) => this.handleLaunchAtLogin(item.checked),
+      },
+      { type: "separator" },
+      {
         label: "Quit Insomniac",
         click: () => {
           // Use app.quit so before-quit cleanup fires.
@@ -182,5 +190,10 @@ export class TrayController {
     this.store.setBatteryThreshold(threshold);
     // New threshold deserves a fresh edge-trigger chance.
     this.battery.resetThresholdLatch();
+  }
+
+  private handleLaunchAtLogin(enabled: boolean): void {
+    setLaunchAtLogin(enabled);
+    this.store.setLaunchAtLogin(enabled);
   }
 }
