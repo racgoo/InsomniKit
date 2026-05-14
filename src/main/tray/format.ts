@@ -29,7 +29,7 @@ export function formatPower(b: BatterySnapshot): string {
 export function lidCloseWarning(b: BatterySnapshot): string | null {
   if (b.onACOnly) return null;
   if (b.charging) return null;
-  return "⚠︎  Lid-close sleeps on battery";
+  return "⚠︎  Sleeps when closed on battery";
 }
 
 /**

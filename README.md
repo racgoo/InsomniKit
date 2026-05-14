@@ -58,7 +58,7 @@ Done. InsomniKit is in `/Applications` and live in your menu bar. Click the moon
 | **One-click toggle** | Awake on. Awake off. That's the whole interaction. |
 | **Timers** | 15m · 30m · 1h · 2h · ∞ — or type any value up to 24h. |
 | **Battery-aware** | Auto-stops when the battery dips below your threshold. Set it to 50 / 30 / 20 % or anything 1–99. |
-| **Lid-Closed Mode** | Opt-in: keep the system running with the lid shut, even on battery. |
+| **Stay Awake When Closed** | Opt-in: keep the system running when you shut the laptop, even on battery. |
 | **Bulletproof cleanup** | Crash, force-quit, `kill -9` — no orphaned `caffeinate`, no stuck `pmset` state. Ever. |
 | **Remembers everything** | Duration, threshold, Launch-at-Login — all restored on next launch. |
 
@@ -82,7 +82,7 @@ That's the whole reason this exists.
 
 ```
   ▸ Enable → Duration ∞ → close the lid → agent keeps grinding
-  ▸ On battery? Lid-Closed Mode keeps the run alive while you move
+  ▸ On battery? "Stay Awake When Closed" keeps the run alive while you move
   ▸ Battery Auto-Disable so a forgotten agent doesn't drain you to 0%
 ```
 
@@ -106,7 +106,7 @@ InsomniKit is the same IOKit assertion, wrapped in two clicks, with a timer, a b
 
 | You want to…                              | Do this                                                                |
 | ----------------------------------------- | ---------------------------------------------------------------------- |
-| Let an AI agent run while you walk away    | **Enable** → **Duration → ∞** → close the lid (plug in, or use Lid-Closed Mode) |
+| Let an AI agent run while you walk away    | **Enable** → **Duration → ∞** → close the laptop (plug in, or use **Stay Awake When Closed**) |
 | Stay awake for a long build / download    | **Enable** → **Duration → 1h** (or 2h)                                 |
 | Watch something without the screen locking| **Enable** → **Duration → ∞**                                          |
 | Auto-stop when the battery gets low       | **Battery Auto-Disable → ≤ 30%**                                       |
@@ -151,17 +151,17 @@ The real question is whether the **system** keeps running:
 | Power source                          | Lid closed → sleeps? | Reality                                                                 |
 | -------------------------------------- | :------------------: | ----------------------------------------------------------------------- |
 | **AC** + InsomniKit active             |          No          | Screen off, but downloads / builds / sync keep running.                 |
-| **Battery** + InsomniKit active        |       **Yes**        | macOS forces sleep on lid-close. `caffeinate -s` is AC-only. The menu warns you: `⚠︎ Lid-close sleeps on battery`. |
+| **Battery** + InsomniKit active        |       **Yes**        | macOS forces sleep when you close it. `caffeinate -s` is AC-only. The menu warns you: `⚠︎ Sleeps when closed on battery`. |
 | **AC + external display**              |   No (clamshell)     | Native macOS clamshell mode — InsomniKit isn't even needed.             |
 
-**TL;DR** — On AC, just close the lid; your work continues. On battery, plug in first — *or* turn on Lid-Closed Mode.
+**TL;DR** — On AC, just close the laptop; your work continues. On battery, plug in first — *or* turn on **Stay Awake When Closed**.
 
 <details>
-<summary><b>Lid-Closed Mode — for battery + lid-shut (advanced, opt-in)</b></summary>
+<summary><b>Stay Awake When Closed — for battery + lid-shut (advanced, opt-in)</b></summary>
 
 <br>
 
-Need the system awake with the lid closed **on battery**? InsomniKit can flip `pmset -c disablesleep 1` for you. Menu → **Lid-Closed Mode → Turn on…**
+Need the system awake with the laptop closed **on battery**? InsomniKit can flip `pmset -c disablesleep 1` for you. Menu → **Stay Awake When Closed → Turn on…**
 
 **What happens**
 

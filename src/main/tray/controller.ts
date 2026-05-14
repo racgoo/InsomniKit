@@ -203,13 +203,16 @@ export class TrayController {
   }
 
   /**
-   * Lid-Closed Mode is a power-user toggle with admin-prompt cost and
-   * a non-obvious benefit ("why would I want this?"). The whole feature
-   * lives in a submenu so:
+   * "Stay Awake When Closed" is a power-user toggle with admin-prompt
+   * cost and a non-obvious benefit ("why would I want this?"). The whole
+   * feature lives in a submenu so:
    *  1. The top-level menu doesn't truncate long admin labels (and the
-   *     status stays visible at a glance — "Lid-Closed Mode: Off ▸").
+   *     status stays visible at a glance — "Stay Awake When Closed: Off ▸").
    *  2. There's room inside to explain what it does and when to use
    *     it without cluttering the main menu for users who don't care.
+   *
+   * The internal name is still `lidClosed*` — only the user-facing
+   * label changed, so persisted settings keys stay stable.
    */
   private buildLidClosedMenu(): MenuItemConstructorOptions {
     const applied = this.lidClosed.isActive();
@@ -225,17 +228,17 @@ export class TrayController {
     // submenu width.
     const description: MenuItemConstructorOptions[] = applied
       ? [
-          { label: "Your Mac stays awake even when the", enabled: false },
-          { label: "lid is closed — including on battery.", enabled: false },
+          { label: "Your Mac stays awake even when you", enabled: false },
+          { label: "close it — including on battery.", enabled: false },
           { type: "separator" },
           { label: "Note: this persists across app quit.", enabled: false },
           { label: "Turn it off here when you're done.", enabled: false },
         ]
       : [
           { label: "Keeps your Mac awake when you close", enabled: false },
-          { label: "the lid — even on battery.", enabled: false },
+          { label: "the laptop — even on battery.", enabled: false },
           { type: "separator" },
-          { label: "macOS normally sleeps on lid-close.", enabled: false },
+          { label: "macOS normally sleeps when closed.", enabled: false },
           { label: "This overrides that, system-wide.", enabled: false },
           { label: "You'll be asked for your password.", enabled: false },
         ];
@@ -254,7 +257,7 @@ export class TrayController {
     ];
 
     return {
-      label: `Lid-Closed Mode: ${stateLabel === "On (system-wide)" ? "On" : stateLabel}`,
+      label: `Stay Awake When Closed: ${stateLabel === "On (system-wide)" ? "On" : stateLabel}`,
       submenu,
     };
   }
