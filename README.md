@@ -24,9 +24,18 @@ A tiny macOS menu-bar utility. No Dock icon. No windows. No telemetry. No nonsen
 
 ---
 
-!!!여기입니다. 
-<img width="1600" height="1057" alt="vibe-meme" src="https://github.com/user-attachments/assets/920f5ed0-16f3-4a8f-928f-f3f485597db4" />
 <div align="center">
+
+<img src="https://github.com/user-attachments/assets/920f5ed0-16f3-4a8f-928f-f3f485597db4" alt="Six months ago vs now: how developers carry their laptops" width="660" />
+
+**Six months ago you closed the lid and walked off.**
+**Now you tiptoe around with it cracked open like it's made of glass — just so the agent doesn't die.**
+
+### Close it. For real. InsomniKit keeps the run alive.
+
+</div>
+
+---
 
 ## ⚡ 30-second start
 
