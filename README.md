@@ -67,7 +67,7 @@ Done. InsomniKit is in `/Applications` and live in your menu bar. Click the moon
 
 <div align="center">
 
-<img src="https://github.com/user-attachments/assets/54a2bd1c-e662-44d3-ba19-76a06826dce5" alt="InsomniKit menu-bar dropdown" width="340" />
+<img src="https://github.com/user-attachments/assets/bd8a47de-ded4-418b-99e1-ea0eabebf9ae" alt="InsomniKit menu-bar dropdown" width="340" />
 
 <sub>The whole app — one click from the menu bar.</sub>
 
