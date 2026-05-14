@@ -67,7 +67,8 @@ pnpm install && pnpm run install:app
 
 <div align="center">
 
-<img src="https://github.com/user-attachments/assets/54a2bd1c-e662-44d3-ba19-76a06826dce5" alt="InsomniKit 메뉴바 드롭다운" width="340" />
+<img src="https://github.com/user-attachments/assets/bd8a47de-ded4-418b-99e1-ea0eabebf9ae" alt="InsomniKit 메뉴바 드롭다운" width="340" />
+
 
 <sub>이게 앱 전부 — 메뉴바에서 한 번 클릭.</sub>
 
