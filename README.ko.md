@@ -41,12 +41,18 @@
 ## ⚡ 30초 시작
 
 ```bash
-git clone git@github.com:racgoo/InsomniKit.git
+git clone https://github.com/racgoo/InsomniKit.git
 cd InsomniKit
 pnpm install && pnpm run install:app
 ```
 
-끝. InsomniKit이 `/Applications`에 들어갔고 메뉴바에서 돌고 있습니다. 달 아이콘 클릭 → 시간 선택 → Mac이 안 잡니다.
+끝. 위 명령은:
+
+1. 앱을 빌드해서 **`응용 프로그램` 폴더에 설치**합니다 (`/Applications/InsomniKit.app`).
+2. 자동으로 **앱을 실행**합니다.
+3. 작은 달 아이콘이 **메뉴바 우측 상단** (Wi-Fi, 배터리, 시계 옆)에 뜹니다. **Dock 아이콘도 없고 창도 없습니다** — 의도된 동작입니다.
+
+달 아이콘 클릭 → 시간 선택 → Mac이 안 잡니다.
 
 > **npm**, **yarn**, **bun** 다 됩니다 — 쓰던 거 쓰세요.
 
@@ -211,9 +217,7 @@ pnpm run dev      # tsc + electron — 같은 명령 다시 치면 hot-relaunch
 
 ## Claude Code로 만들었습니다
 
-솔직하게: InsomniKit은 **바이브 코딩**으로 만들었습니다 — 설계도 구현도 거의 전부 [Claude Code](https://claude.com/claude-code)로, 커밋 하나하나 PR 하나하나. 사람은 방향을 잡고 리뷰하고, 에이전트가 코드를 씁니다.
-
-그러니 거슬리는 부분이 보이면 — 네, 그게 바이브 코딩입니다. 이슈나 PR 남겨주시면 만든 방식 그대로 고칩니다.
+InsomniKit은 [Claude Code](https://claude.com/claude-code)와 함께 만들었습니다 — 사람이 방향을 잡고 모든 PR을 리뷰하고, 에이전트가 코드를 씁니다. 이런 개발 방식 자체에 대한 작은 실험이기도 해서, 실제 사용자분들의 피드백이 정말 도움됩니다. 개선할 부분이 보이시면 이슈나 PR 부탁드립니다.
 
 ---
 

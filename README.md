@@ -41,12 +41,18 @@ A tiny macOS menu-bar utility. No Dock icon. No windows. No telemetry. No nonsen
 ## ⚡ 30-second start
 
 ```bash
-git clone git@github.com:racgoo/InsomniKit.git
+git clone https://github.com/racgoo/InsomniKit.git
 cd InsomniKit
 pnpm install && pnpm run install:app
 ```
 
-Done. InsomniKit is in `/Applications` and live in your menu bar. Click the moon → pick a duration → your Mac stays awake.
+That's it. The script:
+
+1. **Builds** the app and **installs it to your `Applications` folder** (`/Applications/InsomniKit.app`).
+2. **Launches it** for you automatically.
+3. The icon — a small moon — appears at the **top-right of your menu bar**, alongside Wi-Fi, battery, and the clock. **There is no Dock icon and no window** — that's by design.
+
+Click the moon → pick a duration → your Mac stays awake.
 
 > Works with **npm**, **yarn**, and **bun** too — pick your poison.
 
@@ -210,9 +216,7 @@ No code signing, no notarization — this is open source meant to be cloned and 
 
 ## Built with Claude Code
 
-Full disclosure: InsomniKit is **vibe-coded** — designed and built almost entirely through [Claude Code](https://claude.com/claude-code), commit by commit, PR by PR. A human steers the direction and reviews; the agent writes the code.
-
-So if you spot a rough edge: yes, that's the deal with vibe-coding. Open an issue or a PR — it gets fixed the same way it was built.
+InsomniKit was built collaboratively with [Claude Code](https://claude.com/claude-code) — a human shapes the direction and reviews every PR; the agent writes most of the code. The project is also a small experiment in this style of development, so real-world feedback genuinely helps. If you spot something that could be better, an issue or PR is very welcome.
 
 ---
 
