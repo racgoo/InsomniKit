@@ -79,6 +79,12 @@ export class Store extends Emitter<StoreEvents> {
     this.emit("change", this.state);
   }
 
+  setAnimateIcon(enabled: boolean): void {
+    if (this.state.animateIcon === enabled) return;
+    this.state = { ...this.state, animateIcon: enabled };
+    this.emit("change", this.state);
+  }
+
   setHideTrayIcon(hidden: boolean): void {
     if (this.state.hideTrayIcon === hidden) return;
     this.state = { ...this.state, hideTrayIcon: hidden };
