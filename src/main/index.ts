@@ -108,10 +108,20 @@ app.whenReady().then(async () => {
   // removed. A follow-up refresh ~10s later catches pmset's "(no
   // estimate)" → real-number transition while macOS recalibrates,
   // without us having to crank the regular poll interval.
+  // The follow-up timer is single-slot: rapid plug/unplug (or the OS
+  // bouncing the event) would otherwise stack a fresh 10s timer on
+  // every transition, spawning a burst of `pmset` polls later. We
+  // keep only the most recent one.
+  let powerFollowUp: NodeJS.Timeout | null = null;
   const refreshOnPowerChange = (reason: "on-ac" | "on-battery"): void => {
     log.info("power source changed", { reason });
     void battery.refresh();
-    setTimeout(() => void battery.refresh(), 10_000).unref?.();
+    if (powerFollowUp) clearTimeout(powerFollowUp);
+    powerFollowUp = setTimeout(() => {
+      powerFollowUp = null;
+      void battery.refresh();
+    }, 10_000);
+    powerFollowUp.unref?.();
   };
   powerMonitor.on("on-ac", () => refreshOnPowerChange("on-ac"));
   powerMonitor.on("on-battery", () => refreshOnPowerChange("on-battery"));

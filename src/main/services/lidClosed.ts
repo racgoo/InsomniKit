@@ -89,6 +89,11 @@ export class LidClosedService extends Emitter<LidClosedEvents> {
    * it still set), treat ourselves as active so the UI is honest.
    */
   async syncFromSystem(): Promise<boolean> {
+    // If an enable/disable is mid-flight, it owns the authoritative
+    // state — reading pmset now could catch a half-applied transition
+    // and clobber `this.active` with a stale value. Skip; the in-flight
+    // op will land the correct state.
+    if (this.busy) return this.active;
     const current = await this.readSystemValue();
     this.active = current === 1;
     return this.active;
