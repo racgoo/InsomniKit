@@ -30,9 +30,12 @@ if (!app.requestSingleInstanceLock()) {
 const persisted = loadSettings();
 const store = new Store(persisted);
 
-// Reconcile launchAtLogin with the OS — the user may have toggled it
-// off in System Settings while we weren't running.
-store.setLaunchAtLogin(getLaunchAtLogin());
+// launchAtLogin: the OS↔store reconcile happens in whenReady() below.
+// Doing it here would conflict with the "re-apply persisted intent"
+// step that also runs in whenReady — the OS would get flipped on but
+// the store would already have been synced to the old (off) value,
+// leaving them inconsistent. The store keeps the persisted value until
+// whenReady decides what's authoritative.
 
 const sleep = new SleepManager(store);
 const timer = new TimerManager(store);
@@ -84,9 +87,17 @@ store.on("change", (next) => {
 
 app.whenReady().then(async () => {
   log.info("ready", { platform: process.platform, arch: process.arch });
+
+  // launchAtLogin reconcile, in order:
+  // 1. If the user's persisted intent was "on" but the OS forgot (e.g.
+  //    they toggled the login item off in System Settings), re-apply.
+  // 2. Then sync the store to whatever the OS now actually says. After
+  //    step 1, the OS reflects the user's intent, so this is consistent.
   if (persisted.launchAtLogin && !getLaunchAtLogin()) {
     setLaunchAtLogin(true);
   }
+  store.setLaunchAtLogin(getLaunchAtLogin());
+
   tray.start();
   battery.start();
 
