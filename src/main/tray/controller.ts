@@ -33,7 +33,7 @@ import {
   formatTrayTitle,
   lidCloseWarning,
 } from "./format";
-import { getActiveIcon, getInactiveIcon } from "./icons";
+import { getTrayIcon } from "./icons";
 
 const log = createLogger("tray");
 
@@ -74,7 +74,7 @@ export class TrayController {
 
   start(): void {
     if (this.tray) return;
-    this.tray = new Tray(getInactiveIcon());
+    this.tray = new Tray(getTrayIcon(false, false));
     this.tray.setToolTip("InsomniKit");
 
     this.disposeStoreListener = this.store.on("change", () => this.render());
@@ -104,7 +104,7 @@ export class TrayController {
     const remainingMs = this.timer.getRemainingMs();
     const lidApplied = this.lidClosed.isActive();
 
-    this.tray.setImage(state.active ? getActiveIcon() : getInactiveIcon());
+    this.tray.setImage(getTrayIcon(state.active, lidApplied));
     this.tray.setTitle(formatTrayTitle(state, remainingMs, lidApplied));
     this.tray.setContextMenu(this.buildMenu(state, remainingMs, lidApplied));
   }

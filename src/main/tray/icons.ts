@@ -10,11 +10,14 @@ import * as path from "path";
  * dark / light menu bar appearance; we just have to name them correctly
  * and call `setTemplateImage(true)` (Electron does this automatically
  * for files matching the `Template` suffix).
+ *
+ * Four variants cover the orthogonal Active / Lid-Closed states so the
+ * one image both shows whether sleep prevention is running AND whether
+ * the system-wide "Stay Awake When Closed" flag is on (the latter
+ * appears as a tiny padlock badge at the lower-right of the moon).
  */
 function assetPath(file: string): string {
   if (app.isPackaged) {
-    // In a packaged app, `assets/` is included via electron-builder's
-    // `files` glob and ends up alongside `dist/` inside the asar root.
     return path.join(process.resourcesPath, "app.asar", "assets", file);
   }
   return path.join(__dirname, "..", "..", "..", "assets", file);
@@ -26,10 +29,9 @@ function loadTemplateIcon(baseName: string): NativeImage {
   return img;
 }
 
-export function getInactiveIcon(): NativeImage {
+export function getTrayIcon(active: boolean, locked: boolean): NativeImage {
+  if (active && locked) return loadTemplateIcon("iconActiveLockedTemplate");
+  if (active) return loadTemplateIcon("iconActiveTemplate");
+  if (locked) return loadTemplateIcon("iconLockedTemplate");
   return loadTemplateIcon("iconTemplate");
-}
-
-export function getActiveIcon(): NativeImage {
-  return loadTemplateIcon("iconActiveTemplate");
 }
