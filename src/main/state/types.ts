@@ -89,21 +89,13 @@ export const DEFAULT_STATE: AppState = {
   timer: { duration: null, endsAt: null },
 };
 
-/** Presets shown in the menu. The user can also enter any value via "Custom…". */
-export const DURATION_PRESETS: ReadonlyArray<{ label: string; minutes: Duration }> = [
-  { label: "15 minutes", minutes: 15 },
-  { label: "30 minutes", minutes: 30 },
-  { label: "1 hour", minutes: 60 },
-  { label: "2 hours", minutes: 120 },
-  { label: "Infinite", minutes: null },
-];
-
-export const THRESHOLD_PRESETS: ReadonlyArray<{ label: string; percent: BatteryThreshold }> = [
-  { label: "Off", percent: null },
-  { label: "≤ 50%", percent: 50 },
-  { label: "≤ 30%", percent: 30 },
-  { label: "≤ 20%", percent: 20 },
-];
+/**
+ * Preset values shown in the menu. The user can also enter any value via
+ * "Custom…". Labels are produced by the i18n catalog at render time so
+ * the same set works in every locale.
+ */
+export const DURATION_PRESETS: ReadonlyArray<Duration> = [15, 30, 60, 120, null];
+export const THRESHOLD_PRESETS: ReadonlyArray<BatteryThreshold> = [null, 50, 30, 20];
 
 /** Hard limits for custom user input. */
 export const DURATION_MIN_MINUTES = 1;
@@ -121,12 +113,12 @@ export function durationToMs(d: Duration): number | null {
 
 /** True when a Duration matches one of the built-in presets. */
 export function isDurationPreset(d: Duration): boolean {
-  return DURATION_PRESETS.some((p) => p.minutes === d);
+  return DURATION_PRESETS.includes(d);
 }
 
 /** True when a threshold matches one of the built-in presets. */
 export function isThresholdPreset(t: BatteryThreshold): boolean {
-  return THRESHOLD_PRESETS.some((p) => p.percent === t);
+  return THRESHOLD_PRESETS.includes(t);
 }
 
 /** Coerce arbitrary user input into a valid Duration or return null on failure. */

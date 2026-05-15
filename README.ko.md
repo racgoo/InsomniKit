@@ -68,6 +68,7 @@ pnpm install && pnpm run install:app
 | **남은 시간 추정** | macOS 자체 추정치를 메뉴에 그대로 보여줌 — `≈ 4h 21m on battery` / `≈ 1h 5m to full`. |
 | **Stay Awake When Closed** | 옵트인: 노트북 닫아도 시스템이 돌게 함. 배터리 상태에서도. |
 | **한눈에 들어오는 트레이 아이콘** | 초승달 — 활성 시 채워짐, 비활성 시 윤곽선. **Stay Awake When Closed** 켜져있으면 작은 패들록 배지가 붙음. |
+| **이중 언어 UI (EN / KO)** | macOS 시스템 언어가 한국어면 메뉴·프롬프트·라벨이 한글로, 그 외엔 영어로 자동 전환. |
 | **확실한 정리** | 크래시, 강제종료, `kill -9` — `caffeinate` 좀비도, `pmset` 잔여 상태도 안 남음. 절대로. |
 | **다 기억함** | 시간, 배터리 기준, Launch at Login — 다음 실행 때 그대로 복원. |
 

@@ -1,4 +1,5 @@
 import { app, Menu, MenuItemConstructorOptions, Tray } from "electron";
+import { t, LidState } from "../i18n";
 import { BatteryMonitor } from "../services/battery";
 import { setLaunchAtLogin } from "../services/launchAtLogin";
 import { LidClosedService } from "../services/lidClosed";
@@ -25,7 +26,6 @@ import { promptText } from "../utils/prompt";
 import {
   formatBattery,
   formatBatteryEstimate,
-  formatDuration,
   formatPower,
   formatStatusLine,
   formatThresholdLine,
@@ -37,28 +37,13 @@ import { getTrayIcon } from "./icons";
 
 const log = createLogger("tray");
 
-/**
- * Owns the macOS menu-bar Tray.
- *
- * Rebuild strategy:
- *   On every store change (and on a 15s tick for the countdown), we
- *   rebuild the entire menu from a fresh template and call
- *   `tray.setContextMenu`. Cheap on a small menu, and it's the
- *   pattern macOS reliably reflects.
- *
- *   Why not "build once, mutate items": empirically, on macOS,
- *   mutating a `MenuItem.label` after `setContextMenu` does not
- *   propagate to the live NSMenu — labels stay frozen at the values
- *   they had when the menu was installed. v1.1.9–v1.1.10 tried the
- *   stable-refs / mutation approach and produced a menu where every
- *   dynamic row was blank. Rebuild is the proven path.
- *
- *   Known limitation of this approach: macOS NSMenu freezes once
- *   displayed, so changes that happen *while the menu is open* don't
- *   appear until the user closes and re-opens it. Live updates
- *   while-open would need a custom popover (not a native menu) — a
- *   much bigger change than is justified here.
- */
+/** Lid-closed UI state derived from `(applied, intent)`. */
+function lidState(applied: boolean, intent: boolean): LidState {
+  if (applied) return "on";
+  if (intent) return "pending";
+  return "off";
+}
+
 export class TrayController {
   private tray: Tray | null = null;
   private tickHandle: NodeJS.Timeout | null = null;
@@ -75,13 +60,11 @@ export class TrayController {
   start(): void {
     if (this.tray) return;
     this.tray = new Tray(getTrayIcon(false, false));
-    this.tray.setToolTip("InsomniKit");
+    this.tray.setToolTip(t().appName);
 
     this.disposeStoreListener = this.store.on("change", () => this.render());
     this.render();
 
-    // Tick so the "X remaining" line decrements at least every 15s
-    // (matters when the user opens the menu again — fresh value).
     this.tickHandle = setInterval(() => this.render(), 15_000);
     this.tickHandle.unref?.();
     log.info("tray started");
@@ -114,11 +97,12 @@ export class TrayController {
     remainingMs: number | null,
     lidApplied: boolean,
   ): Menu {
+    const m = t();
     const estimate = formatBatteryEstimate(state.battery);
     const warning = state.active ? lidCloseWarning(state.battery) : null;
 
     const template: MenuItemConstructorOptions[] = [
-      { label: "InsomniKit", enabled: false },
+      { label: m.appName, enabled: false },
       { type: "separator" },
       { label: formatStatusLine(state), enabled: false },
       { label: formatPower(state.battery), enabled: false },
@@ -133,7 +117,7 @@ export class TrayController {
         : []),
       { type: "separator" },
       {
-        label: state.active ? "Disable" : "Enable",
+        label: state.active ? m.disable : m.enable,
         click: () => void this.handleToggle(),
       },
       { type: "separator" },
@@ -142,14 +126,14 @@ export class TrayController {
       this.buildLidClosedMenu(state, lidApplied),
       { type: "separator" },
       {
-        label: "Launch at Login",
+        label: m.launchAtLogin,
         type: "checkbox",
         checked: state.launchAtLogin,
         click: (item) => this.handleLaunchAtLogin(item.checked),
       },
       { type: "separator" },
       {
-        label: "Quit InsomniKit",
+        label: m.quit,
         click: () => app.quit(),
       },
     ];
@@ -158,19 +142,20 @@ export class TrayController {
   }
 
   private buildDurationMenu(state: AppState): MenuItemConstructorOptions {
+    const m = t();
     const showsCustom = !isDurationPreset(state.duration);
     const submenu: MenuItemConstructorOptions[] = [
-      ...DURATION_PRESETS.map<MenuItemConstructorOptions>((opt) => ({
-        label: opt.label,
+      ...DURATION_PRESETS.map<MenuItemConstructorOptions>((d) => ({
+        label: m.durationPresetLabel(d),
         type: "radio" as const,
-        checked: !showsCustom && state.duration === opt.minutes,
-        click: () => this.handleDuration(opt.minutes),
+        checked: !showsCustom && state.duration === d,
+        click: () => this.handleDuration(d),
       })),
       { type: "separator" },
       ...(showsCustom
         ? ([
             {
-              label: `Custom: ${formatDuration(state.duration)}`,
+              label: m.customDurationLabel(state.duration),
               type: "radio" as const,
               checked: true,
               enabled: false,
@@ -178,27 +163,28 @@ export class TrayController {
           ] as MenuItemConstructorOptions[])
         : []),
       {
-        label: "Custom…",
+        label: m.customEllipsis,
         click: () => void this.handleDurationCustom(),
       },
     ];
-    return { label: "Duration", submenu };
+    return { label: m.durationSubmenu, submenu };
   }
 
   private buildThresholdMenu(state: AppState): MenuItemConstructorOptions {
+    const m = t();
     const showsCustom = !isThresholdPreset(state.batteryThreshold);
     const submenu: MenuItemConstructorOptions[] = [
-      ...THRESHOLD_PRESETS.map<MenuItemConstructorOptions>((opt) => ({
-        label: opt.label,
+      ...THRESHOLD_PRESETS.map<MenuItemConstructorOptions>((th) => ({
+        label: m.thresholdPresetLabel(th),
         type: "radio" as const,
-        checked: !showsCustom && state.batteryThreshold === opt.percent,
-        click: () => this.handleThreshold(opt.percent),
+        checked: !showsCustom && state.batteryThreshold === th,
+        click: () => this.handleThreshold(th),
       })),
       { type: "separator" },
       ...(showsCustom
         ? ([
             {
-              label: `Custom: ≤ ${state.batteryThreshold}%`,
+              label: m.customThresholdLabel(state.batteryThreshold),
               type: "radio" as const,
               checked: true,
               enabled: false,
@@ -206,58 +192,38 @@ export class TrayController {
           ] as MenuItemConstructorOptions[])
         : []),
       {
-        label: "Custom…",
+        label: m.customEllipsis,
         click: () => void this.handleThresholdCustom(),
       },
     ];
-    return { label: "Battery Auto-Disable", submenu };
+    return { label: m.thresholdSubmenu, submenu };
   }
 
   private buildLidClosedMenu(
     state: AppState,
     applied: boolean,
   ): MenuItemConstructorOptions {
-    const intent = state.lidClosedMode;
-    const stateLabel = applied
-      ? "On (system-wide)"
-      : intent
-        ? "pending…"
-        : "Off";
+    const m = t();
+    const lstate = lidState(applied, state.lidClosedMode);
+    const descLines = applied ? m.stayAwakeDescOn : m.stayAwakeDescOff;
 
-    const description: MenuItemConstructorOptions[] = applied
-      ? [
-          { label: "Your Mac stays awake even when you", enabled: false },
-          { label: "close it — including on battery.", enabled: false },
-          { type: "separator" },
-          { label: "Note: this persists across app quit.", enabled: false },
-          { label: "Turn it off here when you're done.", enabled: false },
-        ]
-      : [
-          { label: "Keeps your Mac awake when you close", enabled: false },
-          { label: "the laptop — even on battery.", enabled: false },
-          { type: "separator" },
-          { label: "macOS normally sleeps when closed.", enabled: false },
-          { label: "This overrides that, system-wide.", enabled: false },
-          { label: "You'll be asked for your password.", enabled: false },
-        ];
+    // i18n description blocks include "" entries to mark separator slots.
+    const description: MenuItemConstructorOptions[] = descLines.map((line) =>
+      line === "" ? { type: "separator" } : { label: line, enabled: false },
+    );
 
     const submenu: MenuItemConstructorOptions[] = [
-      { label: `Currently: ${stateLabel}`, enabled: false },
+      { label: m.stayAwakeStatus(lstate), enabled: false },
       { type: "separator" },
       ...description,
       { type: "separator" },
       {
-        label: applied ? "Turn off" : "Turn on…",
+        label: applied ? m.stayAwakeTurnOff : m.stayAwakeTurnOn,
         click: () => void this.handleLidClosedToggle(),
       },
     ];
 
-    return {
-      label: `Stay Awake When Closed: ${
-        stateLabel === "On (system-wide)" ? "On" : stateLabel
-      }`,
-      submenu,
-    };
+    return { label: m.stayAwakeRoot(lstate), submenu };
   }
 
   private async handleToggle(): Promise<void> {
@@ -284,11 +250,12 @@ export class TrayController {
   }
 
   private async handleDurationCustom(): Promise<void> {
+    const m = t();
     const current = this.store.get().duration;
     const defaultValue = current === null ? "60" : String(current);
     const raw = await promptText({
-      title: "InsomniKit · Custom duration",
-      message: `Enter duration in minutes (${DURATION_MIN_MINUTES}–${DURATION_MAX_MINUTES}):`,
+      title: m.promptDurationTitle,
+      message: m.promptDurationMessage(DURATION_MIN_MINUTES, DURATION_MAX_MINUTES),
       defaultValue,
     });
     if (raw === null) return;
@@ -307,11 +274,12 @@ export class TrayController {
   }
 
   private async handleThresholdCustom(): Promise<void> {
+    const m = t();
     const current = this.store.get().batteryThreshold;
     const defaultValue = current === null ? "30" : String(current);
     const raw = await promptText({
-      title: "InsomniKit · Custom battery threshold",
-      message: `Auto-disable when battery is at or below this percent (${THRESHOLD_MIN_PERCENT}–${THRESHOLD_MAX_PERCENT}):`,
+      title: m.promptThresholdTitle,
+      message: m.promptThresholdMessage(THRESHOLD_MIN_PERCENT, THRESHOLD_MAX_PERCENT),
       defaultValue,
     });
     if (raw === null) return;
@@ -325,12 +293,13 @@ export class TrayController {
   }
 
   private async handleInvalid(which: "duration" | "threshold"): Promise<void> {
+    const m = t();
     const hint =
       which === "duration"
-        ? `Please enter a whole number of minutes between ${DURATION_MIN_MINUTES} and ${DURATION_MAX_MINUTES}.`
-        : `Please enter a whole percent between ${THRESHOLD_MIN_PERCENT} and ${THRESHOLD_MAX_PERCENT}.`;
+        ? m.promptInvalidDuration(DURATION_MIN_MINUTES, DURATION_MAX_MINUTES)
+        : m.promptInvalidThreshold(THRESHOLD_MIN_PERCENT, THRESHOLD_MAX_PERCENT);
     const raw = await promptText({
-      title: "InsomniKit · Invalid value",
+      title: m.promptInvalidTitle,
       message: hint,
       defaultValue: "",
     });
