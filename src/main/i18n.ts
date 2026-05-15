@@ -1048,3 +1048,26 @@ export function initI18n(pref: LocalePref): void {
 export function t(): Messages {
   return current;
 }
+
+/**
+ * Native name of the language `app.getLocale()` would resolve to right
+ * now — independent of the user's persisted override. Used to show
+ * "System Default · 한국어" in the Language submenu so the user can
+ * see at a glance what "system" actually means on this Mac.
+ *
+ * Returns native names from the English catalog (which has them all
+ * defined identically across catalogs) so the function is locale-
+ * agnostic.
+ */
+export function getSystemResolvedNativeName(): string {
+  const { chosen } = resolveFromSystem();
+  switch (chosen) {
+    case "ko": return en.languageKoreanNative;
+    case "ja": return en.languageJapaneseNative;
+    case "zh": return en.languageChineseNative;
+    case "es": return en.languageSpanishNative;
+    case "de": return en.languageGermanNative;
+    case "fr": return en.languageFrenchNative;
+    default:   return en.languageEnglishNative;
+  }
+}

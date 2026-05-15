@@ -1,5 +1,10 @@
 import { app, dialog, Menu, MenuItemConstructorOptions, Tray } from "electron";
-import { LidState, setLocale as setI18nLocale, t } from "../i18n";
+import {
+  getSystemResolvedNativeName,
+  LidState,
+  setLocale as setI18nLocale,
+  t,
+} from "../i18n";
 import { BatteryMonitor } from "../services/battery";
 import { setLaunchAtLogin } from "../services/launchAtLogin";
 import { LidClosedService } from "../services/lidClosed";
@@ -258,8 +263,11 @@ export class TrayController {
 
   private buildLanguageMenu(state: AppState): MenuItemConstructorOptions {
     const m = t();
-    const options: { pref: LocalePref; label: string }[] = [
-      { pref: "system", label: m.languageSystem },
+    // Visible disambiguation: show what "System Default" resolves to
+    // on this Mac right now — "System Default · 한국어" reads at a
+    // glance.
+    const systemLabel = `${m.languageSystem} · ${getSystemResolvedNativeName()}`;
+    const explicit: { pref: LocalePref; label: string }[] = [
       { pref: "en", label: m.languageEnglishNative },
       { pref: "ko", label: m.languageKoreanNative },
       { pref: "ja", label: m.languageJapaneseNative },
@@ -268,12 +276,21 @@ export class TrayController {
       { pref: "de", label: m.languageGermanNative },
       { pref: "fr", label: m.languageFrenchNative },
     ];
-    const submenu: MenuItemConstructorOptions[] = options.map((opt) => ({
-      label: opt.label,
-      type: "radio" as const,
-      checked: state.locale === opt.pref,
-      click: () => this.handleLocale(opt.pref),
-    }));
+    const submenu: MenuItemConstructorOptions[] = [
+      {
+        label: systemLabel,
+        type: "radio" as const,
+        checked: state.locale === "system",
+        click: () => this.handleLocale("system"),
+      },
+      { type: "separator" }, // visual break between "auto" and explicit picks
+      ...explicit.map<MenuItemConstructorOptions>((opt) => ({
+        label: opt.label,
+        type: "radio" as const,
+        checked: state.locale === opt.pref,
+        click: () => this.handleLocale(opt.pref),
+      })),
+    ];
     return { label: m.languageSubmenu, submenu };
   }
 
