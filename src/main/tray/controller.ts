@@ -1,4 +1,4 @@
-import { app, Menu, MenuItemConstructorOptions, Tray } from "electron";
+import { app, dialog, Menu, MenuItemConstructorOptions, Tray } from "electron";
 import { LidState, setLocale as setI18nLocale, t } from "../i18n";
 import { BatteryMonitor } from "../services/battery";
 import { setLaunchAtLogin } from "../services/launchAtLogin";
@@ -34,7 +34,12 @@ import {
   formatTrayTitle,
   lidCloseWarning,
 } from "./format";
-import { getTrayIcon } from "./icons";
+import {
+  getPulseFrames,
+  getStaticTrayIcon,
+  getTrayIcon,
+  PULSE_FRAME_COUNT,
+} from "./icons";
 
 const log = createLogger("tray");
 
@@ -49,6 +54,9 @@ export class TrayController {
   private tray: Tray | null = null;
   private tickHandle: NodeJS.Timeout | null = null;
   private disposeStoreListener: (() => void) | null = null;
+  /** Pulse-animation interval, only ticking when sleep prevention is active. */
+  private pulseHandle: NodeJS.Timeout | null = null;
+  private pulseFrame = 0;
 
   constructor(
     private readonly store: Store,
@@ -76,10 +84,36 @@ export class TrayController {
       clearInterval(this.tickHandle);
       this.tickHandle = null;
     }
+    this.stopPulse();
     this.disposeStoreListener?.();
     this.disposeStoreListener = null;
     this.tray?.destroy();
     this.tray = null;
+  }
+
+  /**
+   * Start (or restart) the breathing animation on the active variant.
+   * Cycles through `PULSE_FRAME_COUNT` pre-rendered alpha levels —
+   * macOS handles the partial alpha on template images correctly so
+   * the icon visibly "breathes" in both dark and light menu bars.
+   */
+  private startPulse(locked: boolean): void {
+    this.stopPulse();
+    const frames = getPulseFrames(locked);
+    this.pulseFrame = 0;
+    this.pulseHandle = setInterval(() => {
+      if (!this.tray) return;
+      this.pulseFrame = (this.pulseFrame + 1) % PULSE_FRAME_COUNT;
+      this.tray.setImage(frames[this.pulseFrame]);
+    }, 250);
+    this.pulseHandle.unref?.();
+  }
+
+  private stopPulse(): void {
+    if (this.pulseHandle) {
+      clearInterval(this.pulseHandle);
+      this.pulseHandle = null;
+    }
   }
 
   private render(): void {
@@ -88,7 +122,16 @@ export class TrayController {
     const remainingMs = this.timer.getRemainingMs();
     const lidApplied = this.lidClosed.isActive();
 
-    this.tray.setImage(getTrayIcon(state.active, lidApplied));
+    if (state.active) {
+      // Animated state: kick the pulse loop. startPulse calls setImage
+      // immediately for the first frame and keeps cycling.
+      this.startPulse(lidApplied);
+    } else {
+      // Idle: stop the pulse and show a single static frame.
+      this.stopPulse();
+      this.tray.setImage(getStaticTrayIcon(lidApplied));
+    }
+
     this.tray.setTitle(formatTrayTitle(state, remainingMs, lidApplied));
     this.tray.setContextMenu(this.buildMenu(state, remainingMs, lidApplied));
   }
@@ -132,6 +175,10 @@ export class TrayController {
         type: "checkbox",
         checked: state.launchAtLogin,
         click: (item) => this.handleLaunchAtLogin(item.checked),
+      },
+      {
+        label: m.hideTrayIcon,
+        click: () => this.handleHideTrayIcon(),
       },
       { type: "separator" },
       {
@@ -344,6 +391,26 @@ export class TrayController {
   private handleLaunchAtLogin(enabled: boolean): void {
     setLaunchAtLogin(enabled);
     this.store.setLaunchAtLogin(enabled);
+  }
+
+  /**
+   * Show a confirmation, hide the tray on OK. The user gets the icon
+   * back by relaunching InsomniKit (Spotlight / Launchpad), which the
+   * `second-instance` handler in index.ts converts into a tray-show.
+   */
+  private handleHideTrayIcon(): void {
+    const m = t();
+    const result = dialog.showMessageBoxSync({
+      type: "info",
+      message: m.hideTrayConfirmTitle,
+      detail: m.hideTrayConfirmDetail,
+      buttons: [m.hideTrayConfirmHide, m.hideTrayConfirmCancel],
+      defaultId: 0,
+      cancelId: 1,
+    });
+    if (result !== 0) return;
+    this.store.setHideTrayIcon(true);
+    this.stop();
   }
 
   private async handleLidClosedToggle(): Promise<void> {

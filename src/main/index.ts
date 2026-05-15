@@ -94,6 +94,18 @@ app.whenReady().then(async () => {
   // reliable after whenReady fires, so this can't happen earlier.
   initI18n(store.get().locale);
 
+  // Hidden-tray mode: re-launching InsomniKit (Spotlight, Launchpad,
+  // another `open -a InsomniKit`) is the documented way to bring the
+  // icon back. The OS dispatches the second-instance event to the
+  // already-running primary — we reset the flag and restart the tray.
+  app.on("second-instance", () => {
+    if (store.get().hideTrayIcon) {
+      log.info("second-instance: unhiding tray");
+      store.setHideTrayIcon(false);
+      tray.start();
+    }
+  });
+
   // launchAtLogin reconcile, in order:
   // 1. If the user's persisted intent was "on" but the OS forgot (e.g.
   //    they toggled the login item off in System Settings), re-apply.
@@ -104,7 +116,13 @@ app.whenReady().then(async () => {
   }
   store.setLaunchAtLogin(getLaunchAtLogin());
 
-  tray.start();
+  // Respect the persisted "hidden tray" preference. Services still
+  // run regardless — only the menu-bar icon is suppressed.
+  if (!store.get().hideTrayIcon) {
+    tray.start();
+  } else {
+    log.info("tray suppressed (hideTrayIcon=true). Relaunch InsomniKit to bring it back.");
+  }
   battery.start();
 
   // The 60s polling cadence leaves the menu showing stale battery info

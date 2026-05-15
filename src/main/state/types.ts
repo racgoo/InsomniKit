@@ -85,6 +85,13 @@ export interface AppState {
   lidClosedMode: boolean;
   /** User's chosen UI language. `"system"` follows macOS. */
   locale: LocalePref;
+  /**
+   * When true, the menu-bar icon is not shown. The app keeps running
+   * in the background; the user brings the tray back by launching
+   * InsomniKit again (Spotlight / Launchpad) — the second-instance
+   * event resets this flag.
+   */
+  hideTrayIcon: boolean;
   battery: BatterySnapshot;
   timer: TimerSnapshot;
 }
@@ -97,6 +104,7 @@ export const DEFAULT_STATE: AppState = {
   launchAtLogin: false,
   lidClosedMode: false,
   locale: "system",
+  hideTrayIcon: false,
   battery: { percent: null, charging: false, onACOnly: false, timeRemainingMin: null },
   timer: { duration: null, endsAt: null },
 };

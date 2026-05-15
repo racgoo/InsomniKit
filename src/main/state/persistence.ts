@@ -32,6 +32,7 @@ interface PersistedSettings {
   launchAtLogin: boolean;
   lidClosedMode: boolean;
   locale: LocalePref;
+  hideTrayIcon: boolean;
 }
 
 const VALID_STRATEGIES: ReadonlyArray<SleepStrategyKind> = [
@@ -156,6 +157,9 @@ function validate(input: unknown): Partial<PersistedSettings> {
   ) {
     out.locale = o.locale as LocalePref;
   }
+  if (typeof o.hideTrayIcon === "boolean") {
+    out.hideTrayIcon = o.hideTrayIcon;
+  }
   return out;
 }
 
@@ -193,6 +197,7 @@ export function attachPersistence(store: Store): () => void {
       launchAtLogin: s.launchAtLogin,
       lidClosedMode: s.lidClosedMode,
       locale: s.locale,
+      hideTrayIcon: s.hideTrayIcon,
     };
     try {
       const file = settingsPath();
