@@ -43,7 +43,7 @@ A tiny macOS menu-bar utility. No Dock icon. No windows. No telemetry. No nonsen
 ```bash
 git clone https://github.com/racgoo/InsomniKit.git
 cd InsomniKit
-pnpm install && pnpm run install:app
+./install.sh
 ```
 
 That's it. The script:
@@ -130,7 +130,7 @@ The menu always shows your current custom value (`Custom: 47 minutes`) so you're
 ## Updating
 
 ```bash
-git pull && pnpm install && pnpm run install:app
+git pull && ./install.sh
 ```
 
 Same command as install. It quits the running app, rebuilds, reinstalls, relaunches — and your settings carry over untouched.
