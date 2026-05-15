@@ -1,4 +1,5 @@
 import { spawn, spawnSync } from "child_process";
+import { t } from "../i18n";
 import { Emitter } from "../utils/emitter";
 import { createLogger } from "../utils/logger";
 
@@ -111,7 +112,7 @@ export class LidClosedService extends Emitter<LidClosedEvents> {
     try {
       const ok = await this.runWithAdmin(
         "/usr/bin/pmset -a disablesleep 1",
-        "InsomniKit needs admin access to keep your Mac awake when the lid is closed.",
+        t().promptLidEnableReason,
       );
       if (!ok) {
         throw new Error("Admin authorization was cancelled or failed");
@@ -133,7 +134,7 @@ export class LidClosedService extends Emitter<LidClosedEvents> {
     try {
       const ok = await this.runWithAdmin(
         "/usr/bin/pmset -a disablesleep 0",
-        "InsomniKit needs admin access to restore the default sleep behavior.",
+        t().promptLidDisableReason,
       );
       if (!ok) {
         throw new Error("Admin authorization was cancelled or failed");
@@ -157,7 +158,7 @@ export class LidClosedService extends Emitter<LidClosedEvents> {
     if (!this.active) return;
     const script = osascriptScript(
       "/usr/bin/pmset -a disablesleep 0",
-      "InsomniKit is quitting and needs admin access to restore the default sleep behavior.",
+      t().promptLidQuitReason,
     );
     try {
       const res = spawnSync("/usr/bin/osascript", ["-e", script], {

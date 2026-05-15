@@ -1,117 +1,51 @@
+import { t } from "../i18n";
 import { AppState, BatterySnapshot, Duration } from "../state/types";
 
 /**
- * Pure helpers for rendering menu labels. Kept dependency-free and
- * synchronous so they're trivial to unit-test later.
+ * Thin adapters over the i18n catalog. The controller / icon tick code
+ * keeps calling `formatX(state)` for readability; the actual strings
+ * live in `i18n.ts` per locale.
  */
 
 export function formatBattery(b: BatterySnapshot): string {
-  if (b.onACOnly && b.percent === null) return "Battery: n/a (desktop)";
-  if (b.percent === null) return "Battery: …";
-  const suffix = b.charging ? " ⚡" : "";
-  return `Battery: ${b.percent}%${suffix}`;
+  return t().batteryLine(b);
 }
 
-/**
- * Human label for the current power source. Used to set expectations
- * about what closing the lid will do — on AC caffeinate keeps the
- * system awake; on battery macOS sleeps on lid-close regardless.
- */
 export function formatPower(b: BatterySnapshot): string {
-  if (b.onACOnly) return "Power: AC (desktop)";
-  return b.charging ? "Power: AC" : "Power: Battery";
+  return t().powerLine(b);
 }
 
-/**
- * Battery-time estimate line, surfacing macOS's own `pmset` estimate.
- * Returns `null` when there's nothing useful to show — the menu drops
- * the row entirely rather than render "Estimated: —" noise.
- *
- * Phrasing changes with charging state:
- *   discharging → "≈ 4h 21m on battery"   (time until empty)
- *   charging    → "≈ 1h 5m to full"        (time until 100%)
- * The "≈" makes it visible at a glance that this is an estimate.
- */
-export function formatBatteryEstimate(b: BatterySnapshot): string | null {
-  if (b.onACOnly) return null;
-  if (b.timeRemainingMin === null) return null;
-  const h = Math.floor(b.timeRemainingMin / 60);
-  const m = b.timeRemainingMin % 60;
-  const time =
-    h === 0 ? `${m}m` : m === 0 ? `${h}h` : `${h}h ${m}m`;
-  return b.charging ? `≈ ${time} to full` : `≈ ${time} on battery`;
-}
-
-/**
- * Returns a one-line caveat when the current setup means closing the
- * lid will still sleep the Mac, or `null` when no warning is needed.
- */
 export function lidCloseWarning(b: BatterySnapshot): string | null {
-  if (b.onACOnly) return null;
-  if (b.charging) return null;
-  return "⚠︎  Sleeps when closed on battery";
+  return t().lidCloseWarning(b);
 }
 
-/**
- * Render a duration as a friendly label.
- *
- * - null         → "Infinite"
- * - 1            → "1 minute"
- * - 59           → "59 minutes"
- * - 60           → "1 hour"
- * - 90           → "1h 30m"
- * - 120          → "2 hours"
- */
 export function formatDuration(d: Duration): string {
-  if (d === null) return "Infinite";
-  if (d < 60) return d === 1 ? "1 minute" : `${d} minutes`;
-  const h = Math.floor(d / 60);
-  const m = d % 60;
-  if (m === 0) return h === 1 ? "1 hour" : `${h} hours`;
-  return `${h}h ${m}m`;
-}
-
-/**
- * Render a human-friendly "Xh Ym remaining" / "Xm remaining" /
- * "<1m remaining" string from a millisecond delta.
- */
-export function formatRemaining(ms: number): string {
-  if (ms <= 0) return "<1m remaining";
-  const totalMin = Math.ceil(ms / 60_000);
-  if (totalMin < 60) {
-    if (totalMin < 1) return "<1m remaining";
-    return `${totalMin}m remaining`;
-  }
-  const h = Math.floor(totalMin / 60);
-  const m = totalMin % 60;
-  return m === 0 ? `${h}h remaining` : `${h}h ${m}m remaining`;
+  return t().durationPresetLabel(d);
 }
 
 export function formatTimerLine(
   state: AppState,
   remainingMs: number | null,
 ): string {
-  if (state.duration === null) return "Timer: Infinite";
-  if (remainingMs === null) return `Timer: ${formatDuration(state.duration)} (idle)`;
-  return `Timer: ${formatRemaining(remainingMs)}`;
+  return t().timerLine(state.duration, remainingMs);
 }
 
 export function formatThresholdLine(state: AppState): string {
-  if (state.batteryThreshold === null) return "Auto-disable: Off";
-  return `Auto-disable: ≤ ${state.batteryThreshold}%`;
+  return t().thresholdLine(state.batteryThreshold);
 }
 
 export function formatStatusLine(state: AppState): string {
-  return state.active ? "● Active" : "○ Inactive";
+  return t().status(state.active);
+}
+
+export function formatBatteryEstimate(b: BatterySnapshot): string | null {
+  return t().batteryEstimate(b);
 }
 
 /**
  * Short status string for the tray title (the text next to the icon).
- *
- * Only carries the timer countdown now — the "Stay Awake When Closed"
- * signal moved into the tray icon itself (a small padlock badge on the
- * crescent), which is consistent with macOS template-icon conventions
- * and avoids cramming a coloured emoji into the menu bar.
+ * Carries only the timer countdown — the "Stay Awake When Closed" badge
+ * lives in the icon itself.
  */
 export function formatTrayTitle(
   state: AppState,

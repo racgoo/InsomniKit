@@ -1,4 +1,5 @@
 import { app, powerMonitor } from "electron";
+import { initI18n } from "./i18n";
 import { BatteryMonitor } from "./services/battery";
 import {
   getLaunchAtLogin,
@@ -87,6 +88,10 @@ store.on("change", (next) => {
 
 app.whenReady().then(async () => {
   log.info("ready", { platform: process.platform, arch: process.arch });
+
+  // Resolve the catalog from the OS locale BEFORE the tray reads any
+  // labels. `app.getLocale()` is only reliable after whenReady fires.
+  initI18n();
 
   // launchAtLogin reconcile, in order:
   // 1. If the user's persisted intent was "on" but the OS forgot (e.g.

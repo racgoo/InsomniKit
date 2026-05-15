@@ -68,6 +68,7 @@ Click the moon → pick a duration → your Mac stays awake.
 | **Time-remaining estimate** | Surfaces macOS's own battery figure right in the menu — `≈ 4h 21m on battery` / `≈ 1h 5m to full`. |
 | **Stay Awake When Closed** | Opt-in: keep the system running when you shut the laptop, even on battery. |
 | **At-a-glance tray icon** | A crescent moon — filled when active, outline when idle. A tiny padlock badge appears when **Stay Awake When Closed** is on. |
+| **Bilingual UI (EN / KO)** | Menu, prompts, and labels auto-switch to Korean on a Korean-locale Mac; English everywhere else. |
 | **Bulletproof cleanup** | Crash, force-quit, `kill -9` — no orphaned `caffeinate`, no stuck `pmset` state. Ever. |
 | **Remembers everything** | Duration, threshold, Launch-at-Login — all restored on next launch. |
 
