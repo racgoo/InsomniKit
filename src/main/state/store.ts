@@ -5,6 +5,7 @@ import {
   BatteryThreshold,
   DEFAULT_STATE,
   Duration,
+  LocalePref,
   SleepStrategyKind,
   TimerSnapshot,
 } from "./types";
@@ -69,6 +70,12 @@ export class Store extends Emitter<StoreEvents> {
   setLidClosedMode(enabled: boolean): void {
     if (this.state.lidClosedMode === enabled) return;
     this.state = { ...this.state, lidClosedMode: enabled };
+    this.emit("change", this.state);
+  }
+
+  setLocale(locale: LocalePref): void {
+    if (this.state.locale === locale) return;
+    this.state = { ...this.state, locale };
     this.emit("change", this.state);
   }
 

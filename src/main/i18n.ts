@@ -3,6 +3,7 @@ import {
   BatterySnapshot,
   BatteryThreshold,
   Duration,
+  LocalePref,
 } from "./state/types";
 import { createLogger } from "./utils/logger";
 
@@ -43,6 +44,17 @@ export interface Messages {
   customEllipsis: string;
   launchAtLogin: string;
   quit: string;
+
+  // ── Language submenu ──────────────────────────
+  languageSubmenu: string;
+  languageSystem: string;
+  /**
+   * Native names for the supported languages — kept in their own
+   * language ("English", "한국어") so the choice reads correctly in
+   * any catalog.
+   */
+  languageEnglishNative: string;
+  languageKoreanNative: string;
 
   // ── Stay Awake When Closed ────────────────────
   stayAwakeRoot: (state: LidState) => string; // top-level row
@@ -143,6 +155,11 @@ const en: Messages = {
   customEllipsis: "Custom…",
   launchAtLogin: "Launch at Login",
   quit: "Quit InsomniKit",
+
+  languageSubmenu: "Language",
+  languageSystem: "System Default",
+  languageEnglishNative: "English",
+  languageKoreanNative: "한국어",
 
   stayAwakeRoot: (state) =>
     state === "on"
@@ -263,6 +280,11 @@ const ko: Messages = {
   launchAtLogin: "로그인 시 실행",
   quit: "InsomniKit 종료",
 
+  languageSubmenu: "언어",
+  languageSystem: "시스템 기본값",
+  languageEnglishNative: "English",
+  languageKoreanNative: "한국어",
+
   stayAwakeRoot: (state) =>
     state === "on"
       ? "닫아도 깨어있기: 켜짐"
@@ -321,16 +343,38 @@ const ko: Messages = {
 
 let current: Messages = en;
 
-/** Pick the catalog from the OS locale. Call this in `app.whenReady`. */
-export function initI18n(): void {
+function resolveFromSystem(): { messages: Messages; chosen: "ko" | "en" } {
   const sys = app.getLocale().toLowerCase();
-  if (sys.startsWith("ko")) {
+  if (sys.startsWith("ko")) return { messages: ko, chosen: "ko" };
+  return { messages: en, chosen: "en" };
+}
+
+/**
+ * Apply a locale preference. `"system"` follows `app.getLocale()`;
+ * `"en"` / `"ko"` force that catalog regardless of OS.
+ *
+ * `app.getLocale()` is only reliable after `app.whenReady`, so the
+ * first call should happen from there (the bootstrap does so via
+ * `initI18n`). Subsequent calls from the menu handler are safe at
+ * any point — the app is already ready.
+ */
+export function setLocale(pref: LocalePref): void {
+  if (pref === "system") {
+    const { messages, chosen } = resolveFromSystem();
+    current = messages;
+    log.info("locale set", { pref, chosen });
+  } else if (pref === "ko") {
     current = ko;
-    log.info("locale resolved", { sys, chosen: "ko" });
+    log.info("locale set", { pref, chosen: "ko" });
   } else {
     current = en;
-    log.info("locale resolved", { sys, chosen: "en (fallback)" });
+    log.info("locale set", { pref, chosen: "en" });
   }
+}
+
+/** Apply persisted locale at startup. Equivalent to `setLocale`. */
+export function initI18n(pref: LocalePref): void {
+  setLocale(pref);
 }
 
 /** Read the current locale catalog. */

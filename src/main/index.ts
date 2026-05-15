@@ -89,9 +89,10 @@ store.on("change", (next) => {
 app.whenReady().then(async () => {
   log.info("ready", { platform: process.platform, arch: process.arch });
 
-  // Resolve the catalog from the OS locale BEFORE the tray reads any
-  // labels. `app.getLocale()` is only reliable after whenReady fires.
-  initI18n();
+  // Resolve the catalog before the tray reads any labels. The user's
+  // saved override (or "system") wins; `app.getLocale()` is only
+  // reliable after whenReady fires, so this can't happen earlier.
+  initI18n(store.get().locale);
 
   // launchAtLogin reconcile, in order:
   // 1. If the user's persisted intent was "on" but the OS forgot (e.g.

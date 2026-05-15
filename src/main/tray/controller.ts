@@ -1,5 +1,5 @@
 import { app, Menu, MenuItemConstructorOptions, Tray } from "electron";
-import { t, LidState } from "../i18n";
+import { LidState, setLocale as setI18nLocale, t } from "../i18n";
 import { BatteryMonitor } from "../services/battery";
 import { setLaunchAtLogin } from "../services/launchAtLogin";
 import { LidClosedService } from "../services/lidClosed";
@@ -13,6 +13,7 @@ import {
   DURATION_MIN_MINUTES,
   DURATION_PRESETS,
   Duration,
+  LocalePref,
   THRESHOLD_MAX_PERCENT,
   THRESHOLD_MIN_PERCENT,
   THRESHOLD_PRESETS,
@@ -125,6 +126,7 @@ export class TrayController {
       this.buildThresholdMenu(state),
       this.buildLidClosedMenu(state, lidApplied),
       { type: "separator" },
+      this.buildLanguageMenu(state),
       {
         label: m.launchAtLogin,
         type: "checkbox",
@@ -197,6 +199,32 @@ export class TrayController {
       },
     ];
     return { label: m.thresholdSubmenu, submenu };
+  }
+
+  private buildLanguageMenu(state: AppState): MenuItemConstructorOptions {
+    const m = t();
+    const options: { pref: LocalePref; label: string }[] = [
+      { pref: "system", label: m.languageSystem },
+      { pref: "en", label: m.languageEnglishNative },
+      { pref: "ko", label: m.languageKoreanNative },
+    ];
+    const submenu: MenuItemConstructorOptions[] = options.map((opt) => ({
+      label: opt.label,
+      type: "radio" as const,
+      checked: state.locale === opt.pref,
+      click: () => this.handleLocale(opt.pref),
+    }));
+    return { label: m.languageSubmenu, submenu };
+  }
+
+  private handleLocale(pref: LocalePref): void {
+    if (this.store.get().locale === pref) return;
+    setI18nLocale(pref);
+    this.store.setLocale(pref);
+    // setLocale fires `change` → render() → menu rebuilt with the new
+    // catalog, so all visible labels switch in place. (User still has
+    // to close + reopen if the menu was open — macOS NSMenu limitation
+    // we've already documented.)
   }
 
   private buildLidClosedMenu(

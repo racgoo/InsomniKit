@@ -37,6 +37,15 @@ export type BatteryThreshold = number | null;
  */
 export type SleepStrategyKind = "caffeinate" | "pmset";
 
+/**
+ * Locale override choice:
+ *   - `"system"`: follow the macOS system locale (default)
+ *   - `"en"` / `"ko"`: force that catalog regardless of OS
+ */
+export type LocalePref = "system" | "en" | "ko";
+
+export const LOCALE_PREFS: ReadonlyArray<LocalePref> = ["system", "en", "ko"];
+
 export interface BatterySnapshot {
   /** 0–100, or `null` when no battery is present (desktop Mac). */
   percent: number | null;
@@ -74,6 +83,8 @@ export interface AppState {
    * mid-prompt and the tray reconciles by reading both.
    */
   lidClosedMode: boolean;
+  /** User's chosen UI language. `"system"` follows macOS. */
+  locale: LocalePref;
   battery: BatterySnapshot;
   timer: TimerSnapshot;
 }
@@ -85,6 +96,7 @@ export const DEFAULT_STATE: AppState = {
   batteryThreshold: null,
   launchAtLogin: false,
   lidClosedMode: false,
+  locale: "system",
   battery: { percent: null, charging: false, onACOnly: false, timeRemainingMin: null },
   timer: { duration: null, endsAt: null },
 };
