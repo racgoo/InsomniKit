@@ -102,6 +102,8 @@ export interface AppState {
   lidClosedMode: boolean;
   /** User's chosen UI language. `"system"` follows macOS. */
   locale: LocalePref;
+  /** When true, the tray icon gently pulses while sleep prevention is active. */
+  animateIcon: boolean;
   /**
    * When true, the menu-bar icon is not shown. The app keeps running
    * in the background; the user brings the tray back by launching
@@ -121,6 +123,7 @@ export const DEFAULT_STATE: AppState = {
   launchAtLogin: false,
   lidClosedMode: false,
   locale: "system",
+  animateIcon: true,
   hideTrayIcon: false,
   battery: { percent: null, charging: false, onACOnly: false, timeRemainingMin: null },
   timer: { duration: null, endsAt: null },

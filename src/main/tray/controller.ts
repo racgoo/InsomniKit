@@ -36,9 +36,9 @@ import {
 } from "./format";
 import {
   getPulseFrames,
-  getStaticTrayIcon,
-  getTrayIcon,
+  getStaticIcon,
   PULSE_FRAME_COUNT,
+  PULSE_FRAME_MS,
 } from "./icons";
 
 const log = createLogger("tray");
@@ -68,7 +68,7 @@ export class TrayController {
 
   start(): void {
     if (this.tray) return;
-    this.tray = new Tray(getTrayIcon(false, false));
+    this.tray = new Tray(getStaticIcon(false, false));
     this.tray.setToolTip(t().appName);
 
     this.disposeStoreListener = this.store.on("change", () => this.render());
@@ -105,7 +105,7 @@ export class TrayController {
       if (!this.tray) return;
       this.pulseFrame = (this.pulseFrame + 1) % PULSE_FRAME_COUNT;
       this.tray.setImage(frames[this.pulseFrame]);
-    }, 250);
+    }, PULSE_FRAME_MS);
     this.pulseHandle.unref?.();
   }
 
@@ -122,14 +122,16 @@ export class TrayController {
     const remainingMs = this.timer.getRemainingMs();
     const lidApplied = this.lidClosed.isActive();
 
-    if (state.active) {
+    if (state.active && state.animateIcon) {
       // Animated state: kick the pulse loop. startPulse calls setImage
       // immediately for the first frame and keeps cycling.
       this.startPulse(lidApplied);
     } else {
-      // Idle: stop the pulse and show a single static frame.
+      // Idle, or active-but-animation-disabled: stop the pulse and
+      // show a single static frame (the full-alpha active icon when
+      // active, the outline crescent when idle).
       this.stopPulse();
-      this.tray.setImage(getStaticTrayIcon(lidApplied));
+      this.tray.setImage(getStaticIcon(state.active, lidApplied));
     }
 
     this.tray.setTitle(formatTrayTitle(state, remainingMs, lidApplied));
@@ -175,6 +177,12 @@ export class TrayController {
         type: "checkbox",
         checked: state.launchAtLogin,
         click: (item) => this.handleLaunchAtLogin(item.checked),
+      },
+      {
+        label: m.animateIcon,
+        type: "checkbox",
+        checked: state.animateIcon,
+        click: (item) => this.store.setAnimateIcon(item.checked),
       },
       {
         label: m.hideTrayIcon,

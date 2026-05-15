@@ -6,10 +6,10 @@ import * as path from "path";
  * are bundled inside `app.asar` in packaged builds — `process.resourcesPath`
  * resolves both cases.
  *
- * Active variants come with 6-frame "pulse" sequences so the
- * controller can animate a gentle breathing effect while sleep
- * prevention is engaged. Inactive variants are single images — no
- * pulse when idle.
+ * Active variants ship with a 24-frame sinusoidal "breathing" pulse
+ * (alpha 1.0 → 0.75 → 1.0, ~100ms per frame for a ~2.4s cycle). The
+ * curve and frame count were tuned after user feedback that the
+ * previous 6-frame 250ms pulse felt "choppy / blinking".
  */
 function assetPath(file: string): string {
   if (app.isPackaged) {
@@ -24,14 +24,19 @@ function loadTemplateIcon(baseName: string): NativeImage {
   return img;
 }
 
-/** Single icon for the static states (idle, idle + locked). */
-export function getStaticTrayIcon(locked: boolean): NativeImage {
-  return loadTemplateIcon(
-    locked ? "iconLockedTemplate" : "iconTemplate",
-  );
-}
+export const PULSE_FRAME_COUNT = 24;
+export const PULSE_FRAME_MS = 100;
 
-export const PULSE_FRAME_COUNT = 6;
+/**
+ * Static icon for any (active, locked) combination. Use this when the
+ * pulse animation is disabled, or for the initial `new Tray(...)` call.
+ */
+export function getStaticIcon(active: boolean, locked: boolean): NativeImage {
+  if (active && locked) return loadTemplateIcon("iconActiveLockedTemplate");
+  if (active) return loadTemplateIcon("iconActiveTemplate");
+  if (locked) return loadTemplateIcon("iconLockedTemplate");
+  return loadTemplateIcon("iconTemplate");
+}
 
 /** Pulse frames for the active state (with or without lock badge). */
 export function getPulseFrames(locked: boolean): NativeImage[] {
@@ -44,11 +49,10 @@ export function getPulseFrames(locked: boolean): NativeImage[] {
 }
 
 /**
- * Backward-compatible single-image picker — returns frame 0 of the
- * active pulse, used by the initial `new Tray(...)` call before the
- * pulse loop kicks in.
+ * @deprecated use {@link getStaticIcon} for static or
+ *   {@link getPulseFrames} for animated. Kept temporarily for the
+ *   initial Tray-constructor call.
  */
 export function getTrayIcon(active: boolean, locked: boolean): NativeImage {
-  if (active) return getPulseFrames(locked)[0];
-  return getStaticTrayIcon(locked);
+  return getStaticIcon(active, locked);
 }

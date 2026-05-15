@@ -61,6 +61,9 @@ export interface Messages {
   languageGermanNative: string;
   languageFrenchNative: string;
 
+  // ── Animate icon (pulse on/off) ───────────────
+  animateIcon: string;
+
   // ── Hide tray icon ────────────────────────────
   hideTrayIcon: string;
   hideTrayConfirmTitle: string;
@@ -181,6 +184,7 @@ const en: Messages = {
   languageGermanNative: "Deutsch",
   languageFrenchNative: "Français",
 
+  animateIcon: "Animate icon",
   hideTrayIcon: "Hide tray icon…",
   hideTrayConfirmTitle: "Hide the tray icon?",
   hideTrayConfirmDetail:
@@ -318,6 +322,7 @@ const ko: Messages = {
   languageGermanNative: "Deutsch",
   languageFrenchNative: "Français",
 
+  animateIcon: "아이콘 애니메이션",
   hideTrayIcon: "트레이 아이콘 숨기기…",
   hideTrayConfirmTitle: "트레이 아이콘을 숨길까요?",
   hideTrayConfirmDetail:
@@ -444,6 +449,7 @@ const ja: Messages = {
   languageGermanNative: "Deutsch",
   languageFrenchNative: "Français",
 
+  animateIcon: "アイコンをアニメーション",
   hideTrayIcon: "トレイアイコンを隠す…",
   hideTrayConfirmTitle: "トレイアイコンを隠しますか？",
   hideTrayConfirmDetail:
@@ -566,6 +572,7 @@ const zh: Messages = {
   languageGermanNative: "Deutsch",
   languageFrenchNative: "Français",
 
+  animateIcon: "图标动画",
   hideTrayIcon: "隐藏菜单栏图标…",
   hideTrayConfirmTitle: "隐藏菜单栏图标？",
   hideTrayConfirmDetail:
@@ -687,6 +694,7 @@ const es: Messages = {
   languageGermanNative: "Deutsch",
   languageFrenchNative: "Français",
 
+  animateIcon: "Animar icono",
   hideTrayIcon: "Ocultar icono de la barra de menús…",
   hideTrayConfirmTitle: "¿Ocultar el icono?",
   hideTrayConfirmDetail:
@@ -809,6 +817,7 @@ const de: Messages = {
   languageGermanNative: "Deutsch",
   languageFrenchNative: "Français",
 
+  animateIcon: "Symbol animieren",
   hideTrayIcon: "Menüleisten-Symbol ausblenden…",
   hideTrayConfirmTitle: "Symbol ausblenden?",
   hideTrayConfirmDetail:
@@ -931,6 +940,7 @@ const fr: Messages = {
   languageGermanNative: "Deutsch",
   languageFrenchNative: "Français",
 
+  animateIcon: "Animer l'icône",
   hideTrayIcon: "Masquer l'icône de la barre de menus…",
   hideTrayConfirmTitle: "Masquer l'icône ?",
   hideTrayConfirmDetail:

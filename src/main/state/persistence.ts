@@ -32,6 +32,7 @@ interface PersistedSettings {
   launchAtLogin: boolean;
   lidClosedMode: boolean;
   locale: LocalePref;
+  animateIcon: boolean;
   hideTrayIcon: boolean;
 }
 
@@ -157,6 +158,9 @@ function validate(input: unknown): Partial<PersistedSettings> {
   ) {
     out.locale = o.locale as LocalePref;
   }
+  if (typeof o.animateIcon === "boolean") {
+    out.animateIcon = o.animateIcon;
+  }
   if (typeof o.hideTrayIcon === "boolean") {
     out.hideTrayIcon = o.hideTrayIcon;
   }
@@ -197,6 +201,7 @@ export function attachPersistence(store: Store): () => void {
       launchAtLogin: s.launchAtLogin,
       lidClosedMode: s.lidClosedMode,
       locale: s.locale,
+      animateIcon: s.animateIcon,
       hideTrayIcon: s.hideTrayIcon,
     };
     try {
