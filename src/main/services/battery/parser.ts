@@ -32,6 +32,7 @@ export function parseBattery(output: string): BatterySnapshot {
   let percent: number | null = null;
   let chargingHint: boolean | null = null;
   let sawBatteryLine = false;
+  let timeRemainingMin: number | null = null;
 
   for (const raw of lines) {
     const line = raw.trim();
@@ -56,6 +57,19 @@ export function parseBattery(output: string): BatterySnapshot {
       else if (/;\s*charging\b/i.test(line)) chargingHint = true;
       else if (/;\s*finishing charge\b/i.test(line)) chargingHint = true;
       else if (/;\s*discharging\b/i.test(line)) chargingHint = false;
+
+      // "H:MM remaining" — minutes until empty (discharging) or until
+      // full (charging). pmset writes "(no estimate)" while it
+      // recalibrates after a power change; we treat that and 0:00 as
+      // "unknown" so the UI hides the line cleanly.
+      const timeMatch = line.match(/(\d+):(\d{2})\s+remaining/i);
+      if (timeMatch) {
+        const h = Number(timeMatch[1]);
+        const m = Number(timeMatch[2]);
+        if (Number.isFinite(h) && Number.isFinite(m) && (h > 0 || m > 0)) {
+          timeRemainingMin = h * 60 + m;
+        }
+      }
     }
   }
 
@@ -65,9 +79,10 @@ export function parseBattery(output: string): BatterySnapshot {
       percent: null,
       charging: sawDrawingHeader ? onACHeader : false,
       onACOnly: true,
+      timeRemainingMin: null,
     };
   }
 
   const charging = chargingHint !== null ? chargingHint : onACHeader;
-  return { percent, charging, onACOnly: false };
+  return { percent, charging, onACOnly: false, timeRemainingMin };
 }
