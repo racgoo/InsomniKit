@@ -38,7 +38,19 @@ A tiny macOS menu-bar utility. No Dock icon. No windows. No telemetry. No nonsen
 
 ---
 
+## Requirements
+
+- **macOS 12+** (Apple Silicon or Intel)
+- **Node.js ≥ 18** — `brew install node`, or grab an installer from [nodejs.org](https://nodejs.org)
+- **git** — usually pre-installed; if not, `xcode-select --install`
+
+A package manager — **pnpm** (preferred), **npm**, **yarn**, or **bun** — whichever you already have works.
+
+---
+
 ## ⚡ 30-second start
+
+**Option A — one-shot (recommended).** Auto-detects whichever package manager you have (pnpm / npm / yarn / bun) and handles everything:
 
 ```bash
 git clone https://github.com/racgoo/InsomniKit.git
@@ -46,15 +58,28 @@ cd InsomniKit
 ./install.sh
 ```
 
-That's it. The script:
+**Option B — manual.** Same outcome, two explicit steps — use whichever package manager you prefer:
 
-1. **Builds** the app and **installs it to your `Applications` folder** (`/Applications/InsomniKit.app`).
-2. **Launches it** for you automatically.
-3. The icon — a small moon — appears at the **top-right of your menu bar**, alongside Wi-Fi, battery, and the clock. **There is no Dock icon and no window** — that's by design.
+```bash
+git clone https://github.com/racgoo/InsomniKit.git
+cd InsomniKit
+
+# with pnpm
+pnpm install && pnpm run install:app
+
+# — or with npm
+npm install && npm run install:app
+
+# — or yarn / bun (same pattern)
+```
+
+Either way:
+
+1. The app **builds and installs to your `Applications` folder** (`/Applications/InsomniKit.app`).
+2. **Launches** automatically.
+3. The icon — a small moon — appears at the **top-right of your menu bar**, alongside Wi-Fi, battery, and the clock. **No Dock icon, no window** — that's by design.
 
 Click the moon → pick a duration → your Mac stays awake.
-
-> Works with **npm**, **yarn**, and **bun** too — pick your poison.
 
 ---
 
@@ -67,10 +92,11 @@ Click the moon → pick a duration → your Mac stays awake.
 | **Battery-aware** | Auto-stops when the battery dips below your threshold. Set it to 50 / 30 / 20 % or anything 1–99. |
 | **Time-remaining estimate** | Surfaces macOS's own battery figure right in the menu — `≈ 4h 21m on battery` / `≈ 1h 5m to full`. |
 | **Stay Awake When Closed** | Opt-in: keep the system running when you shut the laptop, even on battery. |
-| **At-a-glance tray icon** | A crescent moon — filled when active, outline when idle. A tiny padlock badge appears when **Stay Awake When Closed** is on. |
-| **Bilingual UI (EN / KO)** | Menu, prompts, and labels auto-switch to Korean on a Korean-locale Mac; English everywhere else. |
+| **At-a-glance tray icon** | A crescent moon — filled when active, outline when idle. A tiny padlock badge appears when **Stay Awake When Closed** is on. Gentle breathing pulse while active (24-frame sinusoidal); toggle off any time from the menu. |
+| **Multilingual UI** | Seven languages — **English · 한국어 · 日本語 · 中文 · Español · Deutsch · Français** — auto-picked from the macOS system locale, or pinned manually from the **🌐 Language** submenu. |
+| **Hide-the-icon mode** | One menu click hides the tray icon entirely; the app keeps running in the background. Relaunch InsomniKit (Spotlight) to bring it back. |
 | **Bulletproof cleanup** | Crash, force-quit, `kill -9` — no orphaned `caffeinate`, no stuck `pmset` state. Ever. |
-| **Remembers everything** | Duration, threshold, Launch-at-Login — all restored on next launch. |
+| **Remembers everything** | Duration, threshold, Launch-at-Login, language choice, animation toggle — all restored on next launch. |
 
 <br>
 
@@ -130,10 +156,15 @@ The menu always shows your current custom value (`Custom: 47 minutes`) so you're
 ## Updating
 
 ```bash
+# Option A — one-shot
 git pull && ./install.sh
+
+# Option B — manual (use any package manager)
+git pull && pnpm install && pnpm run install:app
+git pull && npm install && npm run install:app
 ```
 
-Same command as install. It quits the running app, rebuilds, reinstalls, relaunches — and your settings carry over untouched.
+Either way: running app quits, rebuilds, reinstalls, relaunches — settings carry over untouched.
 
 <details>
 <summary><b>What <code>install:app</code> actually does</b></summary>
