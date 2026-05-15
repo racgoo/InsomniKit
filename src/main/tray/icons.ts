@@ -7,9 +7,11 @@ import * as path from "path";
  * resolves both cases.
  *
  * Active variants ship with a 24-frame sinusoidal "breathing" pulse
- * (alpha 1.0 → 0.75 → 1.0, ~100ms per frame for a ~2.4s cycle). The
- * curve and frame count were tuned after user feedback that the
- * previous 6-frame 250ms pulse felt "choppy / blinking".
+ * (alpha 1.0 → 0.60 → 1.0, 80 ms per frame for a ~1.9 s cycle). The
+ * 25% earlier swing was too subtle on the menu bar — users reported
+ * the icon looked static. 40% swing + slightly faster cadence is the
+ * compromise between "visible" and "calm". 24 frames + sinusoidal
+ * easing keeps it smooth (no choppy stepping).
  */
 function assetPath(file: string): string {
   if (app.isPackaged) {
@@ -25,7 +27,7 @@ function loadTemplateIcon(baseName: string): NativeImage {
 }
 
 export const PULSE_FRAME_COUNT = 24;
-export const PULSE_FRAME_MS = 100;
+export const PULSE_FRAME_MS = 80;
 
 /**
  * Static icon for any (active, locked) combination. Use this when the
