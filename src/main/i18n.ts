@@ -156,7 +156,10 @@ const en: Messages = {
   launchAtLogin: "Launch at Login",
   quit: "Quit InsomniKit",
 
-  languageSubmenu: "Language",
+  // Bilingual + globe glyph on purpose: a user who accidentally
+  // switched to a language they can't read still needs to be able to
+  // find the language menu. Same string in every catalog.
+  languageSubmenu: "🌐 Language / 언어",
   languageSystem: "System Default",
   languageEnglishNative: "English",
   languageKoreanNative: "한국어",
@@ -280,7 +283,8 @@ const ko: Messages = {
   launchAtLogin: "로그인 시 실행",
   quit: "InsomniKit 종료",
 
-  languageSubmenu: "언어",
+  // Identical to the English catalog by design — see note there.
+  languageSubmenu: "🌐 Language / 언어",
   languageSystem: "시스템 기본값",
   languageEnglishNative: "English",
   languageKoreanNative: "한국어",
