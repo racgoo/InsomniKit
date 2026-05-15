@@ -24,6 +24,7 @@ import { createLogger } from "../utils/logger";
 import { promptText } from "../utils/prompt";
 import {
   formatBattery,
+  formatBatteryEstimate,
   formatDuration,
   formatPower,
   formatStatusLine,
@@ -98,6 +99,7 @@ export class TrayController {
     remainingMs: number | null,
   ): Menu {
     const warning = state.active ? lidCloseWarning(state.battery) : null;
+    const estimate = formatBatteryEstimate(state.battery);
 
     const template: MenuItemConstructorOptions[] = [
       { label: "InsomniKit", enabled: false },
@@ -105,6 +107,9 @@ export class TrayController {
       { label: formatStatusLine(state), enabled: false },
       { label: formatPower(state.battery), enabled: false },
       { label: formatBattery(state.battery), enabled: false },
+      ...(estimate
+        ? ([{ label: estimate, enabled: false }] as MenuItemConstructorOptions[])
+        : []),
       { label: formatTimerLine(state, remainingMs), enabled: false },
       { label: formatThresholdLine(state), enabled: false },
       ...(warning

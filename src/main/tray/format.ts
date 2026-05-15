@@ -23,6 +23,26 @@ export function formatPower(b: BatterySnapshot): string {
 }
 
 /**
+ * Battery-time estimate line, surfacing macOS's own `pmset` estimate.
+ * Returns `null` when there's nothing useful to show — the menu drops
+ * the row entirely rather than render "Estimated: —" noise.
+ *
+ * Phrasing changes with charging state:
+ *   discharging → "≈ 4h 21m on battery"   (time until empty)
+ *   charging    → "≈ 1h 5m to full"        (time until 100%)
+ * The "≈" makes it visible at a glance that this is an estimate.
+ */
+export function formatBatteryEstimate(b: BatterySnapshot): string | null {
+  if (b.onACOnly) return null;
+  if (b.timeRemainingMin === null) return null;
+  const h = Math.floor(b.timeRemainingMin / 60);
+  const m = b.timeRemainingMin % 60;
+  const time =
+    h === 0 ? `${m}m` : m === 0 ? `${h}h` : `${h}h ${m}m`;
+  return b.charging ? `≈ ${time} to full` : `≈ ${time} on battery`;
+}
+
+/**
  * Returns a one-line caveat when the current setup means closing the
  * lid will still sleep the Mac, or `null` when no warning is needed.
  */

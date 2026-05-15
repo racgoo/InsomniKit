@@ -44,6 +44,15 @@ export interface BatterySnapshot {
   charging: boolean;
   /** True when no battery hardware is reported by pmset. */
   onACOnly: boolean;
+  /**
+   * Minutes remaining per macOS's own estimate (`pmset -g batt`'s
+   * `H:MM remaining` field). Meaning depends on `charging`:
+   * - discharging → minutes until empty
+   * - charging    → minutes until full
+   * `null` when pmset reports `(no estimate)` (right after a power
+   * change, while it recalibrates) or when the figure is 0:00 / N/A.
+   */
+  timeRemainingMin: number | null;
 }
 
 export interface TimerSnapshot {
@@ -76,7 +85,7 @@ export const DEFAULT_STATE: AppState = {
   batteryThreshold: null,
   launchAtLogin: false,
   lidClosedMode: false,
-  battery: { percent: null, charging: false, onACOnly: false },
+  battery: { percent: null, charging: false, onACOnly: false, timeRemainingMin: null },
   timer: { duration: null, endsAt: null },
 };
 

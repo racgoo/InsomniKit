@@ -77,7 +77,8 @@ export class Store extends Emitter<StoreEvents> {
     if (
       prev.percent === battery.percent &&
       prev.charging === battery.charging &&
-      prev.onACOnly === battery.onACOnly
+      prev.onACOnly === battery.onACOnly &&
+      prev.timeRemainingMin === battery.timeRemainingMin
     ) {
       return;
     }
