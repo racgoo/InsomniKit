@@ -171,10 +171,12 @@ const en: Messages = {
   launchAtLogin: "Launch at Login",
   quit: "Quit InsomniKit",
 
-  // Bilingual + globe glyph on purpose: a user who accidentally
-  // switched to a language they can't read still needs to be able to
-  // find the language menu. Same string in every catalog.
-  languageSubmenu: "🌐 Language / 언어",
+  // The English word "Language" stays in every catalog as a universal
+  // escape hatch — a user who accidentally switched to a script they
+  // can't read can still recognise this row. Non-English catalogs
+  // append their own native word ("언어", "言語", "Sprache", …) so
+  // the row reads naturally for that locale's intended speaker too.
+  languageSubmenu: "🌐 Language",
   languageSystem: "System Default",
   languageEnglishNative: "English",
   languageKoreanNative: "한국어",
@@ -311,7 +313,7 @@ const ko: Messages = {
   launchAtLogin: "로그인 시 실행",
   quit: "InsomniKit 종료",
 
-  // Identical to the English catalog by design — see note there.
+  // Native-word suffix — see note in the English catalog above.
   languageSubmenu: "🌐 Language / 언어",
   languageSystem: "시스템 기본값",
   languageEnglishNative: "English",
@@ -439,7 +441,7 @@ const ja: Messages = {
   launchAtLogin: "ログイン時に起動",
   quit: "InsomniKit を終了",
 
-  languageSubmenu: "🌐 Language / 언어",
+  languageSubmenu: "🌐 Language / 言語",
   languageSystem: "システムのデフォルト",
   languageEnglishNative: "English",
   languageKoreanNative: "한국어",
@@ -562,7 +564,7 @@ const zh: Messages = {
   launchAtLogin: "登录时启动",
   quit: "退出 InsomniKit",
 
-  languageSubmenu: "🌐 Language / 언어",
+  languageSubmenu: "🌐 Language / 语言",
   languageSystem: "系统默认",
   languageEnglishNative: "English",
   languageKoreanNative: "한국어",
@@ -684,7 +686,7 @@ const es: Messages = {
   launchAtLogin: "Iniciar al iniciar sesión",
   quit: "Salir de InsomniKit",
 
-  languageSubmenu: "🌐 Language / 언어",
+  languageSubmenu: "🌐 Language / Idioma",
   languageSystem: "Predeterminado del sistema",
   languageEnglishNative: "English",
   languageKoreanNative: "한국어",
@@ -807,7 +809,7 @@ const de: Messages = {
   launchAtLogin: "Beim Anmelden starten",
   quit: "InsomniKit beenden",
 
-  languageSubmenu: "🌐 Language / 언어",
+  languageSubmenu: "🌐 Language / Sprache",
   languageSystem: "Systemstandard",
   languageEnglishNative: "English",
   languageKoreanNative: "한국어",
@@ -930,7 +932,7 @@ const fr: Messages = {
   launchAtLogin: "Lancer à la connexion",
   quit: "Quitter InsomniKit",
 
-  languageSubmenu: "🌐 Language / 언어",
+  languageSubmenu: "🌐 Language / Langue",
   languageSystem: "Par défaut du système",
   languageEnglishNative: "English",
   languageKoreanNative: "한국어",
