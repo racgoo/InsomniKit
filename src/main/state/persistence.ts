@@ -9,6 +9,8 @@ import {
   DURATION_MAX_MINUTES,
   DURATION_MIN_MINUTES,
   Duration,
+  LOCALE_PREFS,
+  LocalePref,
   SleepStrategyKind,
   THRESHOLD_MAX_PERCENT,
   THRESHOLD_MIN_PERCENT,
@@ -29,6 +31,7 @@ interface PersistedSettings {
   batteryThreshold: BatteryThreshold;
   launchAtLogin: boolean;
   lidClosedMode: boolean;
+  locale: LocalePref;
 }
 
 const VALID_STRATEGIES: ReadonlyArray<SleepStrategyKind> = [
@@ -147,6 +150,12 @@ function validate(input: unknown): Partial<PersistedSettings> {
   if (typeof o.lidClosedMode === "boolean") {
     out.lidClosedMode = o.lidClosedMode;
   }
+  if (
+    typeof o.locale === "string" &&
+    (LOCALE_PREFS as ReadonlyArray<string>).includes(o.locale)
+  ) {
+    out.locale = o.locale as LocalePref;
+  }
   return out;
 }
 
@@ -183,6 +192,7 @@ export function attachPersistence(store: Store): () => void {
       batteryThreshold: s.batteryThreshold,
       launchAtLogin: s.launchAtLogin,
       lidClosedMode: s.lidClosedMode,
+      locale: s.locale,
     };
     try {
       const file = settingsPath();
