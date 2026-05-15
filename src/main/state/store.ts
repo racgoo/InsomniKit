@@ -79,6 +79,12 @@ export class Store extends Emitter<StoreEvents> {
     this.emit("change", this.state);
   }
 
+  setHideTrayIcon(hidden: boolean): void {
+    if (this.state.hideTrayIcon === hidden) return;
+    this.state = { ...this.state, hideTrayIcon: hidden };
+    this.emit("change", this.state);
+  }
+
   setBattery(battery: BatterySnapshot): void {
     const prev = this.state.battery;
     if (

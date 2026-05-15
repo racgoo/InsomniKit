@@ -56,6 +56,13 @@ export interface Messages {
   languageEnglishNative: string;
   languageKoreanNative: string;
 
+  // ── Hide tray icon ────────────────────────────
+  hideTrayIcon: string;
+  hideTrayConfirmTitle: string;
+  hideTrayConfirmDetail: string;
+  hideTrayConfirmHide: string;
+  hideTrayConfirmCancel: string;
+
   // ── Stay Awake When Closed ────────────────────
   stayAwakeRoot: (state: LidState) => string; // top-level row
   stayAwakeStatus: (state: LidState) => string; // "Currently: ..."
@@ -163,6 +170,13 @@ const en: Messages = {
   languageSystem: "System Default",
   languageEnglishNative: "English",
   languageKoreanNative: "한국어",
+
+  hideTrayIcon: "Hide tray icon…",
+  hideTrayConfirmTitle: "Hide the tray icon?",
+  hideTrayConfirmDetail:
+    "InsomniKit will keep running in the background. To bring the icon back, open Spotlight and launch InsomniKit again.",
+  hideTrayConfirmHide: "Hide",
+  hideTrayConfirmCancel: "Cancel",
 
   stayAwakeRoot: (state) =>
     state === "on"
@@ -288,6 +302,13 @@ const ko: Messages = {
   languageSystem: "시스템 기본값",
   languageEnglishNative: "English",
   languageKoreanNative: "한국어",
+
+  hideTrayIcon: "트레이 아이콘 숨기기…",
+  hideTrayConfirmTitle: "트레이 아이콘을 숨길까요?",
+  hideTrayConfirmDetail:
+    "InsomniKit은 백그라운드에서 계속 동작합니다. 아이콘을 다시 보이게 하려면 Spotlight에서 InsomniKit을 다시 실행하세요.",
+  hideTrayConfirmHide: "숨기기",
+  hideTrayConfirmCancel: "취소",
 
   stayAwakeRoot: (state) =>
     state === "on"
