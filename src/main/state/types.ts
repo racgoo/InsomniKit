@@ -42,9 +42,26 @@ export type SleepStrategyKind = "caffeinate" | "pmset";
  *   - `"system"`: follow the macOS system locale (default)
  *   - `"en"` / `"ko"`: force that catalog regardless of OS
  */
-export type LocalePref = "system" | "en" | "ko";
+export type LocalePref =
+  | "system"
+  | "en"
+  | "ko"
+  | "ja"
+  | "zh"
+  | "es"
+  | "de"
+  | "fr";
 
-export const LOCALE_PREFS: ReadonlyArray<LocalePref> = ["system", "en", "ko"];
+export const LOCALE_PREFS: ReadonlyArray<LocalePref> = [
+  "system",
+  "en",
+  "ko",
+  "ja",
+  "zh",
+  "es",
+  "de",
+  "fr",
+];
 
 export interface BatterySnapshot {
   /** 0–100, or `null` when no battery is present (desktop Mac). */

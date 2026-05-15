@@ -254,6 +254,11 @@ export class TrayController {
       { pref: "system", label: m.languageSystem },
       { pref: "en", label: m.languageEnglishNative },
       { pref: "ko", label: m.languageKoreanNative },
+      { pref: "ja", label: m.languageJapaneseNative },
+      { pref: "zh", label: m.languageChineseNative },
+      { pref: "es", label: m.languageSpanishNative },
+      { pref: "de", label: m.languageGermanNative },
+      { pref: "fr", label: m.languageFrenchNative },
     ];
     const submenu: MenuItemConstructorOptions[] = options.map((opt) => ({
       label: opt.label,
