@@ -55,6 +55,11 @@ export interface Messages {
    */
   languageEnglishNative: string;
   languageKoreanNative: string;
+  languageJapaneseNative: string;
+  languageChineseNative: string;
+  languageSpanishNative: string;
+  languageGermanNative: string;
+  languageFrenchNative: string;
 
   // ── Hide tray icon ────────────────────────────
   hideTrayIcon: string;
@@ -170,6 +175,11 @@ const en: Messages = {
   languageSystem: "System Default",
   languageEnglishNative: "English",
   languageKoreanNative: "한국어",
+  languageJapaneseNative: "日本語",
+  languageChineseNative: "中文 (简体)",
+  languageSpanishNative: "Español",
+  languageGermanNative: "Deutsch",
+  languageFrenchNative: "Français",
 
   hideTrayIcon: "Hide tray icon…",
   hideTrayConfirmTitle: "Hide the tray icon?",
@@ -302,6 +312,11 @@ const ko: Messages = {
   languageSystem: "시스템 기본값",
   languageEnglishNative: "English",
   languageKoreanNative: "한국어",
+  languageJapaneseNative: "日本語",
+  languageChineseNative: "中文 (简体)",
+  languageSpanishNative: "Español",
+  languageGermanNative: "Deutsch",
+  languageFrenchNative: "Français",
 
   hideTrayIcon: "트레이 아이콘 숨기기…",
   hideTrayConfirmTitle: "트레이 아이콘을 숨길까요?",
@@ -363,14 +378,632 @@ const ko: Messages = {
 };
 
 // ─────────────────────────────────────────────────
+// Japanese
+// ─────────────────────────────────────────────────
+
+const ja: Messages = {
+  status: (active) => (active ? "● 有効" : "○ 無効"),
+  powerLine: (b) => {
+    if (b.onACOnly) return "電源: AC (デスクトップ)";
+    return b.charging ? "電源: AC" : "電源: バッテリー";
+  },
+  batteryLine: (b) => {
+    if (b.onACOnly && b.percent === null) return "バッテリー: なし (デスクトップ)";
+    if (b.percent === null) return "バッテリー: …";
+    return `バッテリー: ${b.percent}%${b.charging ? " ⚡" : ""}`;
+  },
+  batteryEstimate: (b) => {
+    if (b.onACOnly || b.timeRemainingMin === null) return null;
+    const h = Math.floor(b.timeRemainingMin / 60);
+    const m = b.timeRemainingMin % 60;
+    const time = h === 0 ? `${m}分` : m === 0 ? `${h}時間` : `${h}時間 ${m}分`;
+    return b.charging ? `≈ ${time} (満充電まで)` : `≈ ${time} (バッテリー)`;
+  },
+  timerLine: (duration, remainingMs) => {
+    if (duration === null) return "タイマー: 無制限";
+    if (remainingMs === null) return `タイマー: ${ja.durationPresetLabel(duration)} (待機)`;
+    if (remainingMs <= 0) return "タイマー: 残り 1分未満";
+    const { h, m, totalMin } = hm(remainingMs);
+    if (totalMin < 60) return `タイマー: 残り ${totalMin}分`;
+    if (m === 0) return `タイマー: 残り ${h}時間`;
+    return `タイマー: 残り ${h}時間 ${m}分`;
+  },
+  thresholdLine: (t) => (t === null ? "自動解除: オフ" : `自動解除: ${t}% 以下`),
+  lidCloseWarning: (b) => {
+    if (b.onACOnly || b.charging) return null;
+    return "⚠︎  バッテリー時は閉じると休止";
+  },
+  durationPresetLabel: (d) => {
+    if (d === null) return "無制限";
+    if (d < 60) return `${d}分`;
+    const h = Math.floor(d / 60);
+    const m = d % 60;
+    if (m === 0) return `${h}時間`;
+    return `${h}時間 ${m}分`;
+  },
+  customDurationLabel: (d) => `カスタム: ${ja.durationPresetLabel(d)}`,
+  thresholdPresetLabel: (t) => (t === null ? "オフ" : `${t}% 以下`),
+  customThresholdLabel: (t) => `カスタム: ${t}% 以下`,
+
+  appName: "InsomniKit",
+  enable: "有効化",
+  disable: "無効化",
+  durationSubmenu: "持続時間",
+  thresholdSubmenu: "バッテリー自動解除",
+  customEllipsis: "カスタム…",
+  launchAtLogin: "ログイン時に起動",
+  quit: "InsomniKit を終了",
+
+  languageSubmenu: "🌐 Language / 언어",
+  languageSystem: "システムのデフォルト",
+  languageEnglishNative: "English",
+  languageKoreanNative: "한국어",
+  languageJapaneseNative: "日本語",
+  languageChineseNative: "中文 (简体)",
+  languageSpanishNative: "Español",
+  languageGermanNative: "Deutsch",
+  languageFrenchNative: "Français",
+
+  hideTrayIcon: "トレイアイコンを隠す…",
+  hideTrayConfirmTitle: "トレイアイコンを隠しますか？",
+  hideTrayConfirmDetail:
+    "InsomniKit はバックグラウンドで動作し続けます。アイコンを再表示するには、Spotlight から InsomniKit を再起動してください。",
+  hideTrayConfirmHide: "隠す",
+  hideTrayConfirmCancel: "キャンセル",
+
+  stayAwakeRoot: (state) =>
+    state === "on"
+      ? "閉じても起きたまま: オン"
+      : state === "pending"
+        ? "閉じても起きたまま: 待機中…"
+        : "閉じても起きたまま: オフ",
+  stayAwakeStatus: (state) =>
+    state === "on"
+      ? "現在: オン (システム全体)"
+      : state === "pending"
+        ? "現在: 待機中…"
+        : "現在: オフ",
+  stayAwakeDescOff: [
+    "Mac を閉じても起きたまま保ちます",
+    "— バッテリー時も含めて。",
+    "",
+    "macOS は通常閉じると休止します。",
+    "システム全体でこれを上書きします。",
+    "パスワードを求められます。",
+  ],
+  stayAwakeDescOn: [
+    "Mac は閉じても起きたままです",
+    "— バッテリー時も含めて。",
+    "",
+    "メモ: 終了後も保持されます。",
+    "完了したらここでオフにしてください。",
+  ],
+  stayAwakeTurnOn: "オンにする…",
+  stayAwakeTurnOff: "オフにする",
+
+  promptDurationTitle: "InsomniKit · カスタム時間",
+  promptDurationMessage: (min, max) => `持続時間を分単位で入力 (${min}–${max}):`,
+  promptThresholdTitle: "InsomniKit · カスタムバッテリーしきい値",
+  promptThresholdMessage: (min, max) =>
+    `バッテリーがこのパーセント以下のとき自動解除 (${min}–${max}):`,
+  promptInvalidTitle: "InsomniKit · 無効な値",
+  promptInvalidDuration: (min, max) =>
+    `${min} から ${max} の整数(分)を入力してください。`,
+  promptInvalidThreshold: (min, max) =>
+    `${min} から ${max} の整数パーセントを入力してください。`,
+  promptLidEnableReason:
+    "Mac を閉じても起きたままにするには管理者権限が必要です。",
+  promptLidDisableReason:
+    "デフォルトの休止動作に戻すには管理者権限が必要です。",
+  promptLidQuitReason:
+    "InsomniKit を終了します。デフォルトの休止動作に戻すには管理者権限が必要です。",
+};
+
+// ─────────────────────────────────────────────────
+// Chinese (Simplified)
+// ─────────────────────────────────────────────────
+
+const zh: Messages = {
+  status: (active) => (active ? "● 已开启" : "○ 已关闭"),
+  powerLine: (b) => {
+    if (b.onACOnly) return "电源: 交流 (台式机)";
+    return b.charging ? "电源: 交流" : "电源: 电池";
+  },
+  batteryLine: (b) => {
+    if (b.onACOnly && b.percent === null) return "电池: 无 (台式机)";
+    if (b.percent === null) return "电池: …";
+    return `电池: ${b.percent}%${b.charging ? " ⚡" : ""}`;
+  },
+  batteryEstimate: (b) => {
+    if (b.onACOnly || b.timeRemainingMin === null) return null;
+    const h = Math.floor(b.timeRemainingMin / 60);
+    const m = b.timeRemainingMin % 60;
+    const time = h === 0 ? `${m}分钟` : m === 0 ? `${h}小时` : `${h}小时 ${m}分`;
+    return b.charging ? `≈ ${time} (充满)` : `≈ ${time} (电池)`;
+  },
+  timerLine: (duration, remainingMs) => {
+    if (duration === null) return "计时器: 无限";
+    if (remainingMs === null) return `计时器: ${zh.durationPresetLabel(duration)} (空闲)`;
+    if (remainingMs <= 0) return "计时器: 剩余不到 1分钟";
+    const { h, m, totalMin } = hm(remainingMs);
+    if (totalMin < 60) return `计时器: 剩余 ${totalMin}分钟`;
+    if (m === 0) return `计时器: 剩余 ${h}小时`;
+    return `计时器: 剩余 ${h}小时 ${m}分`;
+  },
+  thresholdLine: (t) => (t === null ? "自动关闭: 关" : `自动关闭: ≤ ${t}%`),
+  lidCloseWarning: (b) => {
+    if (b.onACOnly || b.charging) return null;
+    return "⚠︎  电池模式下合盖会休眠";
+  },
+  durationPresetLabel: (d) => {
+    if (d === null) return "无限";
+    if (d < 60) return `${d} 分钟`;
+    const h = Math.floor(d / 60);
+    const m = d % 60;
+    if (m === 0) return `${h} 小时`;
+    return `${h}小时 ${m}分`;
+  },
+  customDurationLabel: (d) => `自定义: ${zh.durationPresetLabel(d)}`,
+  thresholdPresetLabel: (t) => (t === null ? "关" : `≤ ${t}%`),
+  customThresholdLabel: (t) => `自定义: ≤ ${t}%`,
+
+  appName: "InsomniKit",
+  enable: "开启",
+  disable: "关闭",
+  durationSubmenu: "持续时间",
+  thresholdSubmenu: "电池自动关闭",
+  customEllipsis: "自定义…",
+  launchAtLogin: "登录时启动",
+  quit: "退出 InsomniKit",
+
+  languageSubmenu: "🌐 Language / 언어",
+  languageSystem: "系统默认",
+  languageEnglishNative: "English",
+  languageKoreanNative: "한국어",
+  languageJapaneseNative: "日本語",
+  languageChineseNative: "中文 (简体)",
+  languageSpanishNative: "Español",
+  languageGermanNative: "Deutsch",
+  languageFrenchNative: "Français",
+
+  hideTrayIcon: "隐藏菜单栏图标…",
+  hideTrayConfirmTitle: "隐藏菜单栏图标？",
+  hideTrayConfirmDetail:
+    "InsomniKit 将继续在后台运行。要重新显示图标，请通过 Spotlight 再次启动 InsomniKit。",
+  hideTrayConfirmHide: "隐藏",
+  hideTrayConfirmCancel: "取消",
+
+  stayAwakeRoot: (state) =>
+    state === "on"
+      ? "合盖保持唤醒: 开"
+      : state === "pending"
+        ? "合盖保持唤醒: 等待中…"
+        : "合盖保持唤醒: 关",
+  stayAwakeStatus: (state) =>
+    state === "on"
+      ? "当前: 开 (系统全局)"
+      : state === "pending"
+        ? "当前: 等待中…"
+        : "当前: 关",
+  stayAwakeDescOff: [
+    "关闭笔记本盖子时保持 Mac 唤醒",
+    "— 即使在电池模式下。",
+    "",
+    "macOS 通常会在合盖时休眠。",
+    "这将在系统范围内覆盖此行为。",
+    "需要您的密码。",
+  ],
+  stayAwakeDescOn: [
+    "您的 Mac 在合盖时保持唤醒",
+    "— 即使在电池模式下。",
+    "",
+    "注意: 应用退出后此设置仍保持。",
+    "完成后在此处关闭。",
+  ],
+  stayAwakeTurnOn: "开启…",
+  stayAwakeTurnOff: "关闭",
+
+  promptDurationTitle: "InsomniKit · 自定义时长",
+  promptDurationMessage: (min, max) => `请输入以分钟为单位的持续时间 (${min}–${max}):`,
+  promptThresholdTitle: "InsomniKit · 自定义电池阈值",
+  promptThresholdMessage: (min, max) => `当电池低于此百分比时自动关闭 (${min}–${max}):`,
+  promptInvalidTitle: "InsomniKit · 无效值",
+  promptInvalidDuration: (min, max) =>
+    `请输入 ${min} 到 ${max} 之间的整数分钟。`,
+  promptInvalidThreshold: (min, max) =>
+    `请输入 ${min} 到 ${max} 之间的整数百分比。`,
+  promptLidEnableReason:
+    "InsomniKit 需要管理员权限才能在合盖时保持 Mac 唤醒。",
+  promptLidDisableReason:
+    "InsomniKit 需要管理员权限才能恢复默认的休眠行为。",
+  promptLidQuitReason:
+    "InsomniKit 正在退出，需要管理员权限恢复默认的休眠行为。",
+};
+
+// ─────────────────────────────────────────────────
+// Spanish
+// ─────────────────────────────────────────────────
+
+const es: Messages = {
+  status: (active) => (active ? "● Activo" : "○ Inactivo"),
+  powerLine: (b) => {
+    if (b.onACOnly) return "Energía: CA (escritorio)";
+    return b.charging ? "Energía: CA" : "Energía: Batería";
+  },
+  batteryLine: (b) => {
+    if (b.onACOnly && b.percent === null) return "Batería: n/d (escritorio)";
+    if (b.percent === null) return "Batería: …";
+    return `Batería: ${b.percent}%${b.charging ? " ⚡" : ""}`;
+  },
+  batteryEstimate: (b) => {
+    if (b.onACOnly || b.timeRemainingMin === null) return null;
+    const h = Math.floor(b.timeRemainingMin / 60);
+    const m = b.timeRemainingMin % 60;
+    const time = h === 0 ? `${m}m` : m === 0 ? `${h}h` : `${h}h ${m}m`;
+    return b.charging ? `≈ ${time} hasta carga completa` : `≈ ${time} con batería`;
+  },
+  timerLine: (duration, remainingMs) => {
+    if (duration === null) return "Temporizador: Infinito";
+    if (remainingMs === null) return `Temporizador: ${es.durationPresetLabel(duration)} (en espera)`;
+    if (remainingMs <= 0) return "Temporizador: <1m restante";
+    const { h, m, totalMin } = hm(remainingMs);
+    if (totalMin < 60) return `Temporizador: ${totalMin}m restante${totalMin === 1 ? "" : "s"}`;
+    if (m === 0) return `Temporizador: ${h}h restante${h === 1 ? "" : "s"}`;
+    return `Temporizador: ${h}h ${m}m restantes`;
+  },
+  thresholdLine: (t) => (t === null ? "Auto-desactivar: Desactivado" : `Auto-desactivar: ≤ ${t}%`),
+  lidCloseWarning: (b) => {
+    if (b.onACOnly || b.charging) return null;
+    return "⚠︎  Se duerme al cerrar con batería";
+  },
+  durationPresetLabel: (d) => {
+    if (d === null) return "Infinito";
+    if (d < 60) return d === 1 ? "1 minuto" : `${d} minutos`;
+    const h = Math.floor(d / 60);
+    const m = d % 60;
+    if (m === 0) return h === 1 ? "1 hora" : `${h} horas`;
+    return `${h}h ${m}m`;
+  },
+  customDurationLabel: (d) => `Personalizado: ${es.durationPresetLabel(d)}`,
+  thresholdPresetLabel: (t) => (t === null ? "Desactivado" : `≤ ${t}%`),
+  customThresholdLabel: (t) => `Personalizado: ≤ ${t}%`,
+
+  appName: "InsomniKit",
+  enable: "Activar",
+  disable: "Desactivar",
+  durationSubmenu: "Duración",
+  thresholdSubmenu: "Auto-desactivar con batería",
+  customEllipsis: "Personalizado…",
+  launchAtLogin: "Iniciar al iniciar sesión",
+  quit: "Salir de InsomniKit",
+
+  languageSubmenu: "🌐 Language / 언어",
+  languageSystem: "Predeterminado del sistema",
+  languageEnglishNative: "English",
+  languageKoreanNative: "한국어",
+  languageJapaneseNative: "日本語",
+  languageChineseNative: "中文 (简体)",
+  languageSpanishNative: "Español",
+  languageGermanNative: "Deutsch",
+  languageFrenchNative: "Français",
+
+  hideTrayIcon: "Ocultar icono de la barra de menús…",
+  hideTrayConfirmTitle: "¿Ocultar el icono?",
+  hideTrayConfirmDetail:
+    "InsomniKit seguirá ejecutándose en segundo plano. Para volver a mostrar el icono, abre Spotlight y reinicia InsomniKit.",
+  hideTrayConfirmHide: "Ocultar",
+  hideTrayConfirmCancel: "Cancelar",
+
+  stayAwakeRoot: (state) =>
+    state === "on"
+      ? "Mantener despierto al cerrar: Activado"
+      : state === "pending"
+        ? "Mantener despierto al cerrar: pendiente…"
+        : "Mantener despierto al cerrar: Desactivado",
+  stayAwakeStatus: (state) =>
+    state === "on"
+      ? "Actualmente: Activado (en todo el sistema)"
+      : state === "pending"
+        ? "Actualmente: pendiente…"
+        : "Actualmente: Desactivado",
+  stayAwakeDescOff: [
+    "Mantiene tu Mac despierto cuando",
+    "cierras el portátil — incluso con batería.",
+    "",
+    "macOS normalmente se duerme al cerrar.",
+    "Esto lo anula, en todo el sistema.",
+    "Se te pedirá tu contraseña.",
+  ],
+  stayAwakeDescOn: [
+    "Tu Mac sigue despierto incluso cuando",
+    "lo cierras — incluso con batería.",
+    "",
+    "Nota: persiste tras cerrar la app.",
+    "Desactívalo aquí cuando termines.",
+  ],
+  stayAwakeTurnOn: "Activar…",
+  stayAwakeTurnOff: "Desactivar",
+
+  promptDurationTitle: "InsomniKit · Duración personalizada",
+  promptDurationMessage: (min, max) => `Introduce la duración en minutos (${min}–${max}):`,
+  promptThresholdTitle: "InsomniKit · Umbral de batería personalizado",
+  promptThresholdMessage: (min, max) =>
+    `Auto-desactivar cuando la batería esté en este porcentaje o menos (${min}–${max}):`,
+  promptInvalidTitle: "InsomniKit · Valor inválido",
+  promptInvalidDuration: (min, max) =>
+    `Por favor introduce un número entero de minutos entre ${min} y ${max}.`,
+  promptInvalidThreshold: (min, max) =>
+    `Por favor introduce un porcentaje entero entre ${min} y ${max}.`,
+  promptLidEnableReason:
+    "InsomniKit necesita permisos de administrador para mantener tu Mac despierto cuando se cierra la tapa.",
+  promptLidDisableReason:
+    "InsomniKit necesita permisos de administrador para restaurar el comportamiento de suspensión predeterminado.",
+  promptLidQuitReason:
+    "InsomniKit se está cerrando y necesita permisos de administrador para restaurar el comportamiento de suspensión predeterminado.",
+};
+
+// ─────────────────────────────────────────────────
+// German
+// ─────────────────────────────────────────────────
+
+const de: Messages = {
+  status: (active) => (active ? "● Aktiv" : "○ Inaktiv"),
+  powerLine: (b) => {
+    if (b.onACOnly) return "Stromversorgung: Netzteil (Desktop)";
+    return b.charging ? "Stromversorgung: Netzteil" : "Stromversorgung: Akku";
+  },
+  batteryLine: (b) => {
+    if (b.onACOnly && b.percent === null) return "Akku: nicht verfügbar (Desktop)";
+    if (b.percent === null) return "Akku: …";
+    return `Akku: ${b.percent}%${b.charging ? " ⚡" : ""}`;
+  },
+  batteryEstimate: (b) => {
+    if (b.onACOnly || b.timeRemainingMin === null) return null;
+    const h = Math.floor(b.timeRemainingMin / 60);
+    const m = b.timeRemainingMin % 60;
+    const time = h === 0 ? `${m}m` : m === 0 ? `${h}h` : `${h}h ${m}m`;
+    return b.charging ? `≈ ${time} bis voll` : `≈ ${time} im Akkubetrieb`;
+  },
+  timerLine: (duration, remainingMs) => {
+    if (duration === null) return "Timer: Unbegrenzt";
+    if (remainingMs === null) return `Timer: ${de.durationPresetLabel(duration)} (Leerlauf)`;
+    if (remainingMs <= 0) return "Timer: <1m verbleibend";
+    const { h, m, totalMin } = hm(remainingMs);
+    if (totalMin < 60) return `Timer: ${totalMin}m verbleibend`;
+    if (m === 0) return `Timer: ${h}h verbleibend`;
+    return `Timer: ${h}h ${m}m verbleibend`;
+  },
+  thresholdLine: (t) => (t === null ? "Auto-Deaktivierung: Aus" : `Auto-Deaktivierung: ≤ ${t}%`),
+  lidCloseWarning: (b) => {
+    if (b.onACOnly || b.charging) return null;
+    return "⚠︎  Schläft im Akkubetrieb beim Schließen";
+  },
+  durationPresetLabel: (d) => {
+    if (d === null) return "Unbegrenzt";
+    if (d < 60) return d === 1 ? "1 Minute" : `${d} Minuten`;
+    const h = Math.floor(d / 60);
+    const m = d % 60;
+    if (m === 0) return h === 1 ? "1 Stunde" : `${h} Stunden`;
+    return `${h}h ${m}m`;
+  },
+  customDurationLabel: (d) => `Benutzerdefiniert: ${de.durationPresetLabel(d)}`,
+  thresholdPresetLabel: (t) => (t === null ? "Aus" : `≤ ${t}%`),
+  customThresholdLabel: (t) => `Benutzerdefiniert: ≤ ${t}%`,
+
+  appName: "InsomniKit",
+  enable: "Aktivieren",
+  disable: "Deaktivieren",
+  durationSubmenu: "Dauer",
+  thresholdSubmenu: "Akku-Auto-Deaktivierung",
+  customEllipsis: "Benutzerdefiniert…",
+  launchAtLogin: "Beim Anmelden starten",
+  quit: "InsomniKit beenden",
+
+  languageSubmenu: "🌐 Language / 언어",
+  languageSystem: "Systemstandard",
+  languageEnglishNative: "English",
+  languageKoreanNative: "한국어",
+  languageJapaneseNative: "日本語",
+  languageChineseNative: "中文 (简体)",
+  languageSpanishNative: "Español",
+  languageGermanNative: "Deutsch",
+  languageFrenchNative: "Français",
+
+  hideTrayIcon: "Menüleisten-Symbol ausblenden…",
+  hideTrayConfirmTitle: "Symbol ausblenden?",
+  hideTrayConfirmDetail:
+    "InsomniKit läuft weiter im Hintergrund. Um das Symbol wieder einzublenden, öffne Spotlight und starte InsomniKit erneut.",
+  hideTrayConfirmHide: "Ausblenden",
+  hideTrayConfirmCancel: "Abbrechen",
+
+  stayAwakeRoot: (state) =>
+    state === "on"
+      ? "Beim Schließen wach bleiben: Ein"
+      : state === "pending"
+        ? "Beim Schließen wach bleiben: wird übernommen…"
+        : "Beim Schließen wach bleiben: Aus",
+  stayAwakeStatus: (state) =>
+    state === "on"
+      ? "Aktuell: Ein (systemweit)"
+      : state === "pending"
+        ? "Aktuell: wird übernommen…"
+        : "Aktuell: Aus",
+  stayAwakeDescOff: [
+    "Hält deinen Mac wach, wenn du",
+    "das Notebook schließt — auch im Akkubetrieb.",
+    "",
+    "macOS schläft normalerweise beim Schließen.",
+    "Dies überschreibt das systemweit.",
+    "Du wirst nach deinem Passwort gefragt.",
+  ],
+  stayAwakeDescOn: [
+    "Dein Mac bleibt wach, auch wenn du",
+    "ihn schließt — auch im Akkubetrieb.",
+    "",
+    "Hinweis: bleibt nach App-Beendigung erhalten.",
+    "Hier deaktivieren, wenn du fertig bist.",
+  ],
+  stayAwakeTurnOn: "Aktivieren…",
+  stayAwakeTurnOff: "Deaktivieren",
+
+  promptDurationTitle: "InsomniKit · Benutzerdefinierte Dauer",
+  promptDurationMessage: (min, max) => `Gib die Dauer in Minuten ein (${min}–${max}):`,
+  promptThresholdTitle: "InsomniKit · Benutzerdefinierter Akku-Schwellwert",
+  promptThresholdMessage: (min, max) =>
+    `Auto-deaktivieren, wenn der Akku bei diesem Prozentwert oder darunter ist (${min}–${max}):`,
+  promptInvalidTitle: "InsomniKit · Ungültiger Wert",
+  promptInvalidDuration: (min, max) =>
+    `Bitte gib eine ganze Zahl an Minuten zwischen ${min} und ${max} ein.`,
+  promptInvalidThreshold: (min, max) =>
+    `Bitte gib einen ganzzahligen Prozentwert zwischen ${min} und ${max} ein.`,
+  promptLidEnableReason:
+    "InsomniKit benötigt Administratorrechte, um deinen Mac wach zu halten, wenn das Display geschlossen ist.",
+  promptLidDisableReason:
+    "InsomniKit benötigt Administratorrechte, um das Standard-Ruhezustandsverhalten wiederherzustellen.",
+  promptLidQuitReason:
+    "InsomniKit wird beendet und benötigt Administratorrechte, um das Standard-Ruhezustandsverhalten wiederherzustellen.",
+};
+
+// ─────────────────────────────────────────────────
+// French
+// ─────────────────────────────────────────────────
+
+const fr: Messages = {
+  status: (active) => (active ? "● Actif" : "○ Inactif"),
+  powerLine: (b) => {
+    if (b.onACOnly) return "Alimentation: Secteur (bureau)";
+    return b.charging ? "Alimentation: Secteur" : "Alimentation: Batterie";
+  },
+  batteryLine: (b) => {
+    if (b.onACOnly && b.percent === null) return "Batterie: non disponible (bureau)";
+    if (b.percent === null) return "Batterie: …";
+    return `Batterie: ${b.percent}%${b.charging ? " ⚡" : ""}`;
+  },
+  batteryEstimate: (b) => {
+    if (b.onACOnly || b.timeRemainingMin === null) return null;
+    const h = Math.floor(b.timeRemainingMin / 60);
+    const m = b.timeRemainingMin % 60;
+    const time = h === 0 ? `${m}m` : m === 0 ? `${h}h` : `${h}h ${m}m`;
+    return b.charging ? `≈ ${time} jusqu'à pleine charge` : `≈ ${time} sur batterie`;
+  },
+  timerLine: (duration, remainingMs) => {
+    if (duration === null) return "Minuteur: Illimité";
+    if (remainingMs === null) return `Minuteur: ${fr.durationPresetLabel(duration)} (en attente)`;
+    if (remainingMs <= 0) return "Minuteur: <1m restant";
+    const { h, m, totalMin } = hm(remainingMs);
+    if (totalMin < 60) return `Minuteur: ${totalMin}m restant${totalMin === 1 ? "" : "es"}`;
+    if (m === 0) return `Minuteur: ${h}h restante${h === 1 ? "" : "s"}`;
+    return `Minuteur: ${h}h ${m}m restantes`;
+  },
+  thresholdLine: (t) => (t === null ? "Auto-désactiver: Désactivé" : `Auto-désactiver: ≤ ${t}%`),
+  lidCloseWarning: (b) => {
+    if (b.onACOnly || b.charging) return null;
+    return "⚠︎  Dort en fermant le capot sur batterie";
+  },
+  durationPresetLabel: (d) => {
+    if (d === null) return "Illimité";
+    if (d < 60) return d === 1 ? "1 minute" : `${d} minutes`;
+    const h = Math.floor(d / 60);
+    const m = d % 60;
+    if (m === 0) return h === 1 ? "1 heure" : `${h} heures`;
+    return `${h}h ${m}m`;
+  },
+  customDurationLabel: (d) => `Personnalisé: ${fr.durationPresetLabel(d)}`,
+  thresholdPresetLabel: (t) => (t === null ? "Désactivé" : `≤ ${t}%`),
+  customThresholdLabel: (t) => `Personnalisé: ≤ ${t}%`,
+
+  appName: "InsomniKit",
+  enable: "Activer",
+  disable: "Désactiver",
+  durationSubmenu: "Durée",
+  thresholdSubmenu: "Auto-désactiver sur batterie",
+  customEllipsis: "Personnalisé…",
+  launchAtLogin: "Lancer à la connexion",
+  quit: "Quitter InsomniKit",
+
+  languageSubmenu: "🌐 Language / 언어",
+  languageSystem: "Par défaut du système",
+  languageEnglishNative: "English",
+  languageKoreanNative: "한국어",
+  languageJapaneseNative: "日本語",
+  languageChineseNative: "中文 (简体)",
+  languageSpanishNative: "Español",
+  languageGermanNative: "Deutsch",
+  languageFrenchNative: "Français",
+
+  hideTrayIcon: "Masquer l'icône de la barre de menus…",
+  hideTrayConfirmTitle: "Masquer l'icône ?",
+  hideTrayConfirmDetail:
+    "InsomniKit continuera à fonctionner en arrière-plan. Pour réafficher l'icône, ouvrez Spotlight et relancez InsomniKit.",
+  hideTrayConfirmHide: "Masquer",
+  hideTrayConfirmCancel: "Annuler",
+
+  stayAwakeRoot: (state) =>
+    state === "on"
+      ? "Rester éveillé fermé: Activé"
+      : state === "pending"
+        ? "Rester éveillé fermé: en attente…"
+        : "Rester éveillé fermé: Désactivé",
+  stayAwakeStatus: (state) =>
+    state === "on"
+      ? "Actuellement: Activé (système entier)"
+      : state === "pending"
+        ? "Actuellement: en attente…"
+        : "Actuellement: Désactivé",
+  stayAwakeDescOff: [
+    "Garde votre Mac éveillé quand vous",
+    "fermez le capot — même sur batterie.",
+    "",
+    "macOS s'endort normalement à la fermeture.",
+    "Cela l'écrase, à l'échelle du système.",
+    "Votre mot de passe sera demandé.",
+  ],
+  stayAwakeDescOn: [
+    "Votre Mac reste éveillé même quand",
+    "vous le fermez — même sur batterie.",
+    "",
+    "Note: persiste après fermeture de l'app.",
+    "Désactivez ici une fois terminé.",
+  ],
+  stayAwakeTurnOn: "Activer…",
+  stayAwakeTurnOff: "Désactiver",
+
+  promptDurationTitle: "InsomniKit · Durée personnalisée",
+  promptDurationMessage: (min, max) => `Entrez la durée en minutes (${min}–${max}):`,
+  promptThresholdTitle: "InsomniKit · Seuil de batterie personnalisé",
+  promptThresholdMessage: (min, max) =>
+    `Auto-désactiver lorsque la batterie est à ce pourcentage ou en dessous (${min}–${max}):`,
+  promptInvalidTitle: "InsomniKit · Valeur invalide",
+  promptInvalidDuration: (min, max) =>
+    `Veuillez entrer un nombre entier de minutes entre ${min} et ${max}.`,
+  promptInvalidThreshold: (min, max) =>
+    `Veuillez entrer un pourcentage entier entre ${min} et ${max}.`,
+  promptLidEnableReason:
+    "InsomniKit a besoin des droits administrateur pour garder votre Mac éveillé lorsque le capot est fermé.",
+  promptLidDisableReason:
+    "InsomniKit a besoin des droits administrateur pour rétablir le comportement de mise en veille par défaut.",
+  promptLidQuitReason:
+    "InsomniKit se ferme et a besoin des droits administrateur pour rétablir le comportement de mise en veille par défaut.",
+};
+
+// ─────────────────────────────────────────────────
 // Locale picker
 // ─────────────────────────────────────────────────
 
+const CATALOGS: Record<Exclude<LocalePref, "system">, Messages> = {
+  en, ko, ja, zh, es, de, fr,
+};
+
 let current: Messages = en;
 
-function resolveFromSystem(): { messages: Messages; chosen: "ko" | "en" } {
+function resolveFromSystem(): { messages: Messages; chosen: string } {
   const sys = app.getLocale().toLowerCase();
   if (sys.startsWith("ko")) return { messages: ko, chosen: "ko" };
+  if (sys.startsWith("ja")) return { messages: ja, chosen: "ja" };
+  if (sys.startsWith("zh")) return { messages: zh, chosen: "zh" };
+  if (sys.startsWith("es")) return { messages: es, chosen: "es" };
+  if (sys.startsWith("de")) return { messages: de, chosen: "de" };
+  if (sys.startsWith("fr")) return { messages: fr, chosen: "fr" };
   return { messages: en, chosen: "en" };
 }
 
@@ -388,13 +1021,10 @@ export function setLocale(pref: LocalePref): void {
     const { messages, chosen } = resolveFromSystem();
     current = messages;
     log.info("locale set", { pref, chosen });
-  } else if (pref === "ko") {
-    current = ko;
-    log.info("locale set", { pref, chosen: "ko" });
-  } else {
-    current = en;
-    log.info("locale set", { pref, chosen: "en" });
+    return;
   }
+  current = CATALOGS[pref];
+  log.info("locale set", { pref, chosen: pref });
 }
 
 /** Apply persisted locale at startup. Equivalent to `setLocale`. */
