@@ -1,4 +1,4 @@
-import { app } from "electron";
+import { app, powerMonitor } from "electron";
 import { BatteryMonitor } from "./services/battery";
 import {
   getLaunchAtLogin,
@@ -89,6 +89,21 @@ app.whenReady().then(async () => {
   }
   tray.start();
   battery.start();
+
+  // The 60s polling cadence leaves the menu showing stale battery info
+  // for up to a minute after a power-source change ("≈ 1h 5m to full"
+  // stuck on screen after the user unplugs). Hook Electron's
+  // powerMonitor to refresh immediately when AC is plugged in or
+  // removed. A follow-up refresh ~10s later catches pmset's "(no
+  // estimate)" → real-number transition while macOS recalibrates,
+  // without us having to crank the regular poll interval.
+  const refreshOnPowerChange = (reason: "on-ac" | "on-battery"): void => {
+    log.info("power source changed", { reason });
+    void battery.refresh();
+    setTimeout(() => void battery.refresh(), 10_000).unref?.();
+  };
+  powerMonitor.on("on-ac", () => refreshOnPowerChange("on-ac"));
+  powerMonitor.on("on-battery", () => refreshOnPowerChange("on-battery"));
 
   // Lid-Closed Mode reconcile:
   // 1. Sync from current system state (no prompt).
