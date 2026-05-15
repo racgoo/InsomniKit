@@ -1,4 +1,4 @@
-import { app, Menu, MenuItem, Tray } from "electron";
+import { app, Menu, MenuItem, MenuItemConstructorOptions, Tray } from "electron";
 import { BatteryMonitor } from "../services/battery";
 import { setLaunchAtLogin } from "../services/launchAtLogin";
 import { LidClosedService } from "../services/lidClosed";
@@ -40,23 +40,25 @@ const log = createLogger("tray");
  * Owns the macOS menu-bar Tray.
  *
  * Live-update strategy:
- *   The menu is built ONCE in `start()`. After that we only ever
- *   *mutate* properties (`label`, `checked`, `visible`) on the existing
- *   MenuItem instances — never call `setContextMenu` again.
+ *   The menu is built ONCE via `Menu.buildFromTemplate`. After that we
+ *   only mutate properties (`label`, `checked`, `visible`) on the
+ *   existing MenuItem instances — never call `setContextMenu` again.
  *
- *   Reason: macOS's native NSMenu freezes when displayed. Calling
- *   `setContextMenu(newMenu)` while the menu is open is a no-op for
- *   the user — they have to close and reopen to see the new menu.
- *   But mutating an existing MenuItem's `.title` / `.state` / `.hidden`
- *   IS reflected live by NSMenu, even with the menu open.
+ *   Why buildFromTemplate (vs `new MenuItem` + `menu.append`):
+ *   only items registered through buildFromTemplate are properly
+ *   bridged to the native NSMenu on macOS. Items created standalone
+ *   and `append`-ed can render but later property mutations don't
+ *   propagate to the live NSMenu — the visible labels stay frozen at
+ *   their construction-time values. (Empirically: an earlier refactor
+ *   that used the standalone-construct pattern produced a menu where
+ *   every dynamic row showed up blank.)
  *
- *   So we maintain stable refs to every dynamic item and tweak their
- *   properties in `applyState()`. Conditional rows (e.g. the battery-
- *   time-remaining line, the on-battery warning) are always present
- *   but toggle `visible`.
+ *   So: build via template with stable `id`s, look up MenuItem refs
+ *   via `menu.getMenuItemById`, then mutate properties from
+ *   `applyState`.
  *
- *   `tray.setImage` and `tray.setTitle` are unaffected — they update
- *   live regardless and don't need this dance.
+ *   `applyState` is also called BEFORE `setContextMenu` at startup so
+ *   the menu's first-ever appearance already has correct labels.
  */
 export class TrayController {
   private tray: Tray | null = null;
@@ -64,8 +66,7 @@ export class TrayController {
   private tickHandle: NodeJS.Timeout | null = null;
   private disposeStoreListener: (() => void) | null = null;
 
-  // Stable refs to every dynamic item, so `applyState` can mutate them
-  // in place. Initialized in createMenu().
+  // Stable refs to every dynamic item, resolved from the menu via id.
   private mi!: {
     status: MenuItem;
     power: MenuItem;
@@ -76,15 +77,15 @@ export class TrayController {
     warning: MenuItem;
     enableDisable: MenuItem;
     launchAtLogin: MenuItem;
-    durationOptions: Map<string, MenuItem>; // keyed by `${minutes}` or "infinite"
+    durationOptions: Map<string, MenuItem>;
     durationCustomShown: MenuItem;
-    thresholdOptions: Map<string, MenuItem>; // keyed by `${percent}` or "off"
+    thresholdOptions: Map<string, MenuItem>;
     thresholdCustomShown: MenuItem;
-    lidClosedRoot: MenuItem; // top-level "Stay Awake When Closed: ..." row
-    lidClosedStatus: MenuItem; // "Currently: ..." inside the submenu
-    lidClosedDescOff: MenuItem[]; // 6 description items shown when OFF
-    lidClosedDescOn: MenuItem[]; // 5 description items shown when ON
-    lidClosedAction: MenuItem; // "Turn on…" / "Turn off"
+    lidClosedRoot: MenuItem;
+    lidClosedStatus: MenuItem;
+    lidClosedDescOff: MenuItem[];
+    lidClosedDescOn: MenuItem[];
+    lidClosedAction: MenuItem;
   };
 
   constructor(
@@ -101,18 +102,20 @@ export class TrayController {
     this.tray.setToolTip("InsomniKit");
 
     this.menu = this.createMenu();
-    this.tray.setContextMenu(this.menu);
-    this.applyState();
+    this.resolveItemRefs(this.menu);
 
-    // Re-apply on every state change. We never rebuild the menu —
-    // applyState mutates properties on the existing MenuItem refs,
-    // which macOS reflects even while the menu is open.
+    // Seed labels BEFORE setContextMenu so the very first menu display
+    // already has correct text (buildFromTemplate registers items with
+    // their initial labels — we want those initial labels to be real,
+    // not empty placeholders).
+    this.applyState();
+    this.tray.setContextMenu(this.menu);
+
     this.disposeStoreListener = this.store.on("change", () =>
       this.applyState(),
     );
 
     // Tick so the "X remaining" line decrements while the menu is open.
-    // 15s is fine — the line displays minutes.
     this.tickHandle = setInterval(() => this.applyState(), 15_000);
     this.tickHandle.unref?.();
 
@@ -132,215 +135,184 @@ export class TrayController {
   }
 
   /**
-   * Build the menu and every dynamic MenuItem once. Click handlers are
-   * bound here so closures capture `this` cleanly. Items keep their
-   * roles for the lifetime of the tray.
+   * Construct the menu via `Menu.buildFromTemplate`. Every dynamic item
+   * carries a stable `id` so `applyState` can find and mutate it.
    */
   private createMenu(): Menu {
-    const menu = new Menu();
-
-    menu.append(new MenuItem({ label: "InsomniKit", enabled: false }));
-    menu.append(new MenuItem({ type: "separator" }));
-
-    const status = new MenuItem({ label: "", enabled: false });
-    const power = new MenuItem({ label: "", enabled: false });
-    const battery = new MenuItem({ label: "", enabled: false });
-    const estimate = new MenuItem({ label: "", enabled: false, visible: false });
-    const timer = new MenuItem({ label: "", enabled: false });
-    const threshold = new MenuItem({ label: "", enabled: false });
-    const warning = new MenuItem({ label: "", enabled: false, visible: false });
-    [status, power, battery, estimate, timer, threshold, warning].forEach((m) =>
-      menu.append(m),
-    );
-
-    menu.append(new MenuItem({ type: "separator" }));
-
-    const enableDisable = new MenuItem({
-      label: "Enable",
-      click: () => void this.handleToggle(),
-    });
-    menu.append(enableDisable);
-
-    menu.append(new MenuItem({ type: "separator" }));
-
-    // Duration submenu
-    const durationOptions = new Map<string, MenuItem>();
-    const durationSubmenu = new Menu();
-    for (const opt of DURATION_PRESETS) {
-      const mi = new MenuItem({
+    const durationSubmenu: MenuItemConstructorOptions[] = [
+      ...DURATION_PRESETS.map<MenuItemConstructorOptions>((opt) => ({
+        id: `duration:${durationKey(opt.minutes)}`,
         label: opt.label,
-        type: "radio",
+        type: "radio" as const,
         checked: false,
         click: () => this.handleDuration(opt.minutes),
-      });
-      durationOptions.set(durationKey(opt.minutes), mi);
-      durationSubmenu.append(mi);
-    }
-    durationSubmenu.append(new MenuItem({ type: "separator" }));
-    const durationCustomShown = new MenuItem({
-      label: "",
-      type: "radio",
-      checked: true,
-      enabled: false,
-      visible: false,
-    });
-    durationSubmenu.append(durationCustomShown);
-    durationSubmenu.append(
-      new MenuItem({
+      })),
+      { type: "separator" },
+      {
+        id: "duration:customShown",
+        label: "Custom",
+        type: "radio" as const,
+        checked: true,
+        enabled: false,
+        visible: false,
+      },
+      {
         label: "Custom…",
         click: () => void this.handleDurationCustom(),
-      }),
-    );
-    menu.append(
-      new MenuItem({ label: "Duration", submenu: durationSubmenu }),
-    );
+      },
+    ];
 
-    // Battery threshold submenu
-    const thresholdOptions = new Map<string, MenuItem>();
-    const thresholdSubmenu = new Menu();
-    for (const opt of THRESHOLD_PRESETS) {
-      const mi = new MenuItem({
+    const thresholdSubmenu: MenuItemConstructorOptions[] = [
+      ...THRESHOLD_PRESETS.map<MenuItemConstructorOptions>((opt) => ({
+        id: `threshold:${thresholdKey(opt.percent)}`,
         label: opt.label,
-        type: "radio",
+        type: "radio" as const,
         checked: false,
         click: () => this.handleThreshold(opt.percent),
-      });
-      thresholdOptions.set(thresholdKey(opt.percent), mi);
-      thresholdSubmenu.append(mi);
-    }
-    thresholdSubmenu.append(new MenuItem({ type: "separator" }));
-    const thresholdCustomShown = new MenuItem({
-      label: "",
-      type: "radio",
-      checked: true,
-      enabled: false,
-      visible: false,
-    });
-    thresholdSubmenu.append(thresholdCustomShown);
-    thresholdSubmenu.append(
-      new MenuItem({
+      })),
+      { type: "separator" },
+      {
+        id: "threshold:customShown",
+        label: "Custom",
+        type: "radio" as const,
+        checked: true,
+        enabled: false,
+        visible: false,
+      },
+      {
         label: "Custom…",
         click: () => void this.handleThresholdCustom(),
-      }),
-    );
-    menu.append(
-      new MenuItem({
-        label: "Battery Auto-Disable",
-        submenu: thresholdSubmenu,
-      }),
-    );
-
-    // Stay Awake When Closed submenu — see comment in this file's
-    // header about why all description rows are always present and
-    // toggled via .visible rather than spliced in.
-    const lidClosedSubmenu = new Menu();
-    const lidClosedStatus = new MenuItem({ label: "", enabled: false });
-    lidClosedSubmenu.append(lidClosedStatus);
-    lidClosedSubmenu.append(new MenuItem({ type: "separator" }));
-
-    const lidClosedDescOff: MenuItem[] = [
-      new MenuItem({
-        label: "Keeps your Mac awake when you close",
-        enabled: false,
-      }),
-      new MenuItem({ label: "the laptop — even on battery.", enabled: false }),
-      new MenuItem({ type: "separator" }),
-      new MenuItem({
-        label: "macOS normally sleeps when closed.",
-        enabled: false,
-      }),
-      new MenuItem({
-        label: "This overrides that, system-wide.",
-        enabled: false,
-      }),
-      new MenuItem({
-        label: "You'll be asked for your password.",
-        enabled: false,
-      }),
+      },
     ];
-    const lidClosedDescOn: MenuItem[] = [
-      new MenuItem({
-        label: "Your Mac stays awake even when you",
-        enabled: false,
-      }),
-      new MenuItem({
-        label: "close it — including on battery.",
-        enabled: false,
-      }),
-      new MenuItem({ type: "separator" }),
-      new MenuItem({
-        label: "Note: this persists across app quit.",
-        enabled: false,
-      }),
-      new MenuItem({
-        label: "Turn it off here when you're done.",
-        enabled: false,
-      }),
+
+    const lidClosedSubmenu: MenuItemConstructorOptions[] = [
+      { id: "lid:status", label: "Currently: Off", enabled: false },
+      { type: "separator" },
+      // 6-item OFF description block (always present, hidden when ON).
+      { id: "lid:descOff:0", label: "Keeps your Mac awake when you close", enabled: false },
+      { id: "lid:descOff:1", label: "the laptop — even on battery.", enabled: false },
+      { id: "lid:descOff:2", type: "separator" },
+      { id: "lid:descOff:3", label: "macOS normally sleeps when closed.", enabled: false },
+      { id: "lid:descOff:4", label: "This overrides that, system-wide.", enabled: false },
+      { id: "lid:descOff:5", label: "You'll be asked for your password.", enabled: false },
+      // 5-item ON description block (always present, hidden when OFF).
+      { id: "lid:descOn:0", label: "Your Mac stays awake even when you", enabled: false, visible: false },
+      { id: "lid:descOn:1", label: "close it — including on battery.", enabled: false, visible: false },
+      { id: "lid:descOn:2", type: "separator", visible: false },
+      { id: "lid:descOn:3", label: "Note: this persists across app quit.", enabled: false, visible: false },
+      { id: "lid:descOn:4", label: "Turn it off here when you're done.", enabled: false, visible: false },
+      { type: "separator" },
+      {
+        id: "lid:action",
+        label: "Turn on…",
+        click: () => void this.handleLidClosedToggle(),
+      },
     ];
-    for (const m of lidClosedDescOff) lidClosedSubmenu.append(m);
-    for (const m of lidClosedDescOn) lidClosedSubmenu.append(m);
 
-    lidClosedSubmenu.append(new MenuItem({ type: "separator" }));
-    const lidClosedAction = new MenuItem({
-      label: "Turn on…",
-      click: () => void this.handleLidClosedToggle(),
-    });
-    lidClosedSubmenu.append(lidClosedAction);
-
-    const lidClosedRoot = new MenuItem({
-      label: "Stay Awake When Closed: Off",
-      submenu: lidClosedSubmenu,
-    });
-    menu.append(lidClosedRoot);
-
-    menu.append(new MenuItem({ type: "separator" }));
-
-    const launchAtLoginItem = new MenuItem({
-      label: "Launch at Login",
-      type: "checkbox",
-      checked: false,
-      click: (item) => this.handleLaunchAtLogin(item.checked),
-    });
-    menu.append(launchAtLoginItem);
-
-    menu.append(new MenuItem({ type: "separator" }));
-    menu.append(
-      new MenuItem({
+    const template: MenuItemConstructorOptions[] = [
+      { label: "InsomniKit", enabled: false },
+      { type: "separator" },
+      { id: "status", label: "○ Inactive", enabled: false },
+      { id: "power", label: "Power: …", enabled: false },
+      { id: "battery", label: "Battery: …", enabled: false },
+      { id: "estimate", label: "", enabled: false, visible: false },
+      { id: "timer", label: "Timer: Infinite", enabled: false },
+      { id: "threshold", label: "Auto-disable: Off", enabled: false },
+      { id: "warning", label: "", enabled: false, visible: false },
+      { type: "separator" },
+      {
+        id: "enableDisable",
+        label: "Enable",
+        click: () => void this.handleToggle(),
+      },
+      { type: "separator" },
+      { label: "Duration", submenu: durationSubmenu },
+      { label: "Battery Auto-Disable", submenu: thresholdSubmenu },
+      {
+        id: "lid:root",
+        label: "Stay Awake When Closed: Off",
+        submenu: lidClosedSubmenu,
+      },
+      { type: "separator" },
+      {
+        id: "launchAtLogin",
+        label: "Launch at Login",
+        type: "checkbox",
+        checked: false,
+        click: (item) => this.handleLaunchAtLogin(item.checked),
+      },
+      { type: "separator" },
+      {
         label: "Quit InsomniKit",
         click: () => app.quit(),
-      }),
-    );
+      },
+    ];
 
-    this.mi = {
-      status,
-      power,
-      battery,
-      estimate,
-      timer,
-      threshold,
-      warning,
-      enableDisable,
-      launchAtLogin: launchAtLoginItem,
-      durationOptions,
-      durationCustomShown,
-      thresholdOptions,
-      thresholdCustomShown,
-      lidClosedRoot,
-      lidClosedStatus,
-      lidClosedDescOff,
-      lidClosedDescOn,
-      lidClosedAction,
+    return Menu.buildFromTemplate(template);
+  }
+
+  /** Resolve every dynamic id once into `this.mi` for fast access. */
+  private resolveItemRefs(menu: Menu): void {
+    const get = (id: string): MenuItem => {
+      const item = menu.getMenuItemById(id);
+      if (!item) throw new Error(`menu item not found: ${id}`);
+      return item;
     };
 
-    return menu;
+    const durationOptions = new Map<string, MenuItem>();
+    for (const opt of DURATION_PRESETS) {
+      durationOptions.set(
+        durationKey(opt.minutes),
+        get(`duration:${durationKey(opt.minutes)}`),
+      );
+    }
+    const thresholdOptions = new Map<string, MenuItem>();
+    for (const opt of THRESHOLD_PRESETS) {
+      thresholdOptions.set(
+        thresholdKey(opt.percent),
+        get(`threshold:${thresholdKey(opt.percent)}`),
+      );
+    }
+
+    this.mi = {
+      status: get("status"),
+      power: get("power"),
+      battery: get("battery"),
+      estimate: get("estimate"),
+      timer: get("timer"),
+      threshold: get("threshold"),
+      warning: get("warning"),
+      enableDisable: get("enableDisable"),
+      launchAtLogin: get("launchAtLogin"),
+      durationOptions,
+      durationCustomShown: get("duration:customShown"),
+      thresholdOptions,
+      thresholdCustomShown: get("threshold:customShown"),
+      lidClosedRoot: get("lid:root"),
+      lidClosedStatus: get("lid:status"),
+      lidClosedDescOff: [
+        get("lid:descOff:0"),
+        get("lid:descOff:1"),
+        get("lid:descOff:2"),
+        get("lid:descOff:3"),
+        get("lid:descOff:4"),
+        get("lid:descOff:5"),
+      ],
+      lidClosedDescOn: [
+        get("lid:descOn:0"),
+        get("lid:descOn:1"),
+        get("lid:descOn:2"),
+        get("lid:descOn:3"),
+        get("lid:descOn:4"),
+      ],
+      lidClosedAction: get("lid:action"),
+    };
   }
 
   /**
    * Mutate the existing MenuItem refs to reflect current state. macOS
-   * picks up these property changes live, even with the menu open.
-   *
-   * Also updates the tray icon image and the title text (which always
-   * update live regardless).
+   * NSMenu picks up these property changes live, even with the menu
+   * open. Also updates the tray icon image and the title text.
    */
   private applyState(): void {
     if (!this.tray || !this.mi) return;
@@ -348,11 +320,9 @@ export class TrayController {
     const remainingMs = this.timer.getRemainingMs();
     const lidApplied = this.lidClosed.isActive();
 
-    // tray image + title
     this.tray.setImage(state.active ? getActiveIcon() : getInactiveIcon());
     this.tray.setTitle(formatTrayTitle(state, remainingMs, lidApplied));
 
-    // top status block
     this.mi.status.label = formatStatusLine(state);
     this.mi.power.label = formatPower(state.battery);
     this.mi.battery.label = formatBattery(state.battery);
@@ -376,10 +346,9 @@ export class TrayController {
       this.mi.warning.visible = false;
     }
 
-    // main toggle
     this.mi.enableDisable.label = state.active ? "Disable" : "Enable";
 
-    // duration submenu
+    // Duration submenu
     const dShowsCustom = !isDurationPreset(state.duration);
     for (const opt of DURATION_PRESETS) {
       const mi = this.mi.durationOptions.get(durationKey(opt.minutes));
@@ -392,11 +361,12 @@ export class TrayController {
       this.mi.durationCustomShown.visible = false;
     }
 
-    // battery threshold submenu
+    // Battery threshold submenu
     const tShowsCustom = !isThresholdPreset(state.batteryThreshold);
     for (const opt of THRESHOLD_PRESETS) {
       const mi = this.mi.thresholdOptions.get(thresholdKey(opt.percent));
-      if (mi) mi.checked = !tShowsCustom && state.batteryThreshold === opt.percent;
+      if (mi)
+        mi.checked = !tShowsCustom && state.batteryThreshold === opt.percent;
     }
     if (tShowsCustom) {
       this.mi.thresholdCustomShown.label = `Custom: ≤ ${state.batteryThreshold}%`;
@@ -405,7 +375,7 @@ export class TrayController {
       this.mi.thresholdCustomShown.visible = false;
     }
 
-    // lid-closed submenu
+    // Stay Awake When Closed
     const intent = state.lidClosedMode;
     const stateLabel = lidApplied
       ? "On (system-wide)"
@@ -420,7 +390,6 @@ export class TrayController {
     for (const m of this.mi.lidClosedDescOn) m.visible = lidApplied;
     this.mi.lidClosedAction.label = lidApplied ? "Turn off" : "Turn on…";
 
-    // launch-at-login checkbox
     this.mi.launchAtLogin.checked = state.launchAtLogin;
   }
 
@@ -488,10 +457,7 @@ export class TrayController {
     this.handleThreshold(parsed);
   }
 
-  /** Single-retry error sheet for invalid Custom… input. */
-  private async handleInvalid(
-    which: "duration" | "threshold",
-  ): Promise<void> {
+  private async handleInvalid(which: "duration" | "threshold"): Promise<void> {
     const hint =
       which === "duration"
         ? `Please enter a whole number of minutes between ${DURATION_MIN_MINUTES} and ${DURATION_MAX_MINUTES}.`
@@ -536,12 +502,10 @@ export class TrayController {
   }
 }
 
-/** Key for the durationOptions Map — `null` becomes the string "infinite". */
 function durationKey(d: Duration): string {
   return d === null ? "infinite" : String(d);
 }
 
-/** Key for the thresholdOptions Map — `null` becomes the string "off". */
 function thresholdKey(t: BatteryThreshold): string {
   return t === null ? "off" : String(t);
 }
