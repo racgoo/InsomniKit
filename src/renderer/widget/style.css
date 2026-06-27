@@ -39,6 +39,7 @@ body { font-family: -apple-system, "SF Pro Text", system-ui, sans-serif; color: 
 
 .widget {
   -webkit-app-region: drag;
+  position: relative;
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -50,12 +51,32 @@ body { font-family: -apple-system, "SF Pro Text", system-ui, sans-serif; color: 
   backdrop-filter: saturate(170%) blur(30px);
   box-shadow: 0 14px 36px rgba(30, 20, 70, 0.4),
     inset 0 0 0 0.5px var(--hairline);
+  overflow: hidden;
   animation: wIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @keyframes wIn {
   from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: none; }
 }
+
+/* Same soft pink/lavender shimmer as the main window, scaled down. */
+.widget::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(40% 38% at 80% 8%, rgba(247, 150, 200, 0.34), transparent 60%),
+    radial-gradient(44% 42% at 14% 90%, rgba(150, 134, 255, 0.32), transparent 62%);
+  filter: blur(26px);
+  animation: wdrift 22s ease-in-out infinite alternate;
+}
+@keyframes wdrift {
+  0% { transform: translate(-4%, -3%) scale(1); }
+  100% { transform: translate(6%, 5%) scale(1.18); }
+}
+.widget > * { position: relative; z-index: 1; }
 
 .wtop { display: flex; align-items: center; justify-content: space-between; }
 .wbrand { display: flex; align-items: center; gap: 7px; }
@@ -163,5 +184,5 @@ body { font-family: -apple-system, "SF Pro Text", system-ui, sans-serif; color: 
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, .widget, .wdot.on { animation: none !important; }
+  *, .widget, .widget::before, .wdot.on { animation: none !important; }
 }
