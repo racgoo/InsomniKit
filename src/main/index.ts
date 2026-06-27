@@ -1,4 +1,5 @@
 import { app, powerMonitor } from "electron";
+import { AppActions } from "./core/actions";
 import { initI18n } from "./i18n";
 import { BatteryMonitor } from "./services/battery";
 import {
@@ -11,6 +12,7 @@ import { TimerManager } from "./services/timer";
 import { Store, attachPersistence, loadSettings } from "./state";
 import { TrayController } from "./tray";
 import { installCleanupHandlers } from "./utils/cleanup";
+import { WindowManager } from "./windows/manager";
 import { rootLogger } from "./utils/logger";
 
 const log = rootLogger.child("main");
@@ -42,7 +44,9 @@ const sleep = new SleepManager(store);
 const timer = new TimerManager(store);
 const battery = new BatteryMonitor(store);
 const lidClosed = new LidClosedService();
-const tray = new TrayController(store, sleep, timer, battery, lidClosed);
+const actions = new AppActions(store, sleep, timer, battery, lidClosed);
+const windows = new WindowManager(store, timer, lidClosed, actions);
+const tray = new TrayController(store, sleep, timer, battery, lidClosed, windows);
 const detachPersistence = attachPersistence(store);
 
 // Crash safety — restore caffeinate / pmset on every conceivable exit
@@ -94,17 +98,40 @@ app.whenReady().then(async () => {
   // reliable after whenReady fires, so this can't happen earlier.
   initI18n(store.get().locale);
 
-  // Hidden-tray mode: re-launching InsomniKit (Spotlight, Launchpad,
-  // another `open -a InsomniKit`) is the documented way to bring the
-  // icon back. The OS dispatches the second-instance event to the
-  // already-running primary — we reset the flag and restart the tray.
+  // Stand up the IPC bridge + change-push loop for the optional window
+  // and widget surfaces. Cheap when nothing is open (no windows exist
+  // until the user asks for one).
+  windows.init();
+
+  // Re-launching InsomniKit (double-clicking the app in Finder /
+  // Launchpad, Spotlight, `open -a InsomniKit`) dispatches
+  // second-instance to the already-running primary. Two jobs:
+  //   1. If the tray was hidden, bring it back (the documented escape).
+  //   2. Open the main window — this is the whole point of "click the
+  //      app to get a real window" for users who lost the menu-bar icon
+  //      among too many others.
   app.on("second-instance", () => {
     if (store.get().hideTrayIcon) {
       log.info("second-instance: unhiding tray");
       store.setHideTrayIcon(false);
       tray.start();
     }
+    windows.openMain();
   });
+
+  // Clicking the app while it's already running in the background
+  // (Dock, Launchpad, Finder, Spotlight) doesn't spawn a new process —
+  // macOS just "reopens" the running one, firing `activate`. Without
+  // this handler the click did nothing; now it surfaces the window.
+  app.on("activate", () => windows.openMain());
+
+  // A user-initiated launch should show the window (that's how you
+  // "open the app"). A launch-at-login boot should NOT — it stays a
+  // quiet menu-bar utility until asked for. macOS tells us which via
+  // `wasOpenedAtLogin`.
+  if (!app.getLoginItemSettings().wasOpenedAtLogin) {
+    windows.openMain();
+  }
 
   // launchAtLogin reconcile, in order:
   // 1. If the user's persisted intent was "on" but the OS forgot (e.g.
@@ -184,6 +211,7 @@ app.on("window-all-closed", (event: Electron.Event) => {
 });
 
 app.on("before-quit", () => {
+  windows.destroy();
   tray.stop();
   battery.stop();
   timer.cancel();

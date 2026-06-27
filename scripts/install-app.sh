@@ -79,6 +79,10 @@ done
 step "Building $APP_NAME for $ARCH..."
 rm -rf dist release
 ./node_modules/.bin/tsc -p tsconfig.json
+# Copy the renderer's static HTML/CSS into dist/ — tsc only emits the
+# compiled .js, so without this the packaged app's window/widget have no
+# markup or styles to load and would render blank.
+node scripts/copy-renderer.js
 # electron-builder is a Node tool — ELECTRON_RUN_AS_NODE doesn't affect
 # it, but we unset just in case a parent shell sets it.
 env -u ELECTRON_RUN_AS_NODE ./node_modules/.bin/electron-builder --mac --dir >/dev/null

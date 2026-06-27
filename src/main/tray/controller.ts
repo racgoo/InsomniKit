@@ -4,6 +4,7 @@ import {
   LidState,
   setLocale as setI18nLocale,
   t,
+  windowLabels,
 } from "../i18n";
 import { BatteryMonitor } from "../services/battery";
 import { setLaunchAtLogin } from "../services/launchAtLogin";
@@ -11,6 +12,7 @@ import { LidClosedService } from "../services/lidClosed";
 import { SleepManager } from "../services/sleep";
 import { TimerManager } from "../services/timer";
 import { Store } from "../state/store";
+import { WindowManager } from "../windows/manager";
 import {
   AppState,
   BatteryThreshold,
@@ -62,6 +64,7 @@ export class TrayController {
   /** Pulse-animation interval, only ticking when sleep prevention is active. */
   private pulseHandle: NodeJS.Timeout | null = null;
   private pulseFrame = 0;
+  private disposeLidListener: (() => void) | null = null;
 
   constructor(
     private readonly store: Store,
@@ -69,6 +72,7 @@ export class TrayController {
     private readonly timer: TimerManager,
     private readonly battery: BatteryMonitor,
     private readonly lidClosed: LidClosedService,
+    private readonly windows: WindowManager,
   ) {}
 
   start(): void {
@@ -77,6 +81,12 @@ export class TrayController {
     this.tray.setToolTip(t().appName);
 
     this.disposeStoreListener = this.store.on("change", () => this.render());
+    // The lid-closed "applied" flag lives outside the store (it flips
+    // after an admin prompt that the window may trigger), so listen for
+    // its own event to keep the icon's locked badge honest.
+    const onLid = (): void => this.render();
+    this.lidClosed.on("changed", onLid);
+    this.disposeLidListener = () => this.lidClosed.off("changed", onLid);
     this.render();
 
     this.tickHandle = setInterval(() => this.render(), 15_000);
@@ -92,6 +102,8 @@ export class TrayController {
     this.stopPulse();
     this.disposeStoreListener?.();
     this.disposeStoreListener = null;
+    this.disposeLidListener?.();
+    this.disposeLidListener = null;
     this.tray?.destroy();
     this.tray = null;
   }
@@ -149,6 +161,7 @@ export class TrayController {
     lidApplied: boolean,
   ): Menu {
     const m = t();
+    const w = windowLabels();
     const estimate = formatBatteryEstimate(state.battery);
     const warning = state.active ? lidCloseWarning(state.battery) : null;
 
@@ -170,6 +183,15 @@ export class TrayController {
       {
         label: state.active ? m.disable : m.enable,
         click: () => void this.handleToggle(),
+      },
+      { type: "separator" },
+      {
+        label: w.openWindow,
+        click: () => this.windows.openMain(),
+      },
+      {
+        label: this.windows.isWidgetOpen() ? w.hideWidget : w.showWidget,
+        click: () => this.windows.toggleWidget(),
       },
       { type: "separator" },
       this.buildDurationMenu(state),

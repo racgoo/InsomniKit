@@ -1,7 +1,7 @@
 {
   "name": "insomnikit",
   "productName": "InsomniKit",
-  "version": "1.1.31",
+  "version": "1.1.32",
   "description": "Minimal macOS menu bar utility that prevents sleep, with timer and battery-aware auto-disable.",
   "main": "dist/main/index.js",
   "author": "racgoo",
@@ -12,15 +12,16 @@
   },
   "scripts": {
     "clean": "rm -rf dist release",
-    "build": "tsc -p tsconfig.json",
+    "copy:renderer": "node scripts/copy-renderer.js",
+    "build": "tsc -p tsconfig.json && node scripts/copy-renderer.js",
     "build:watch": "tsc -p tsconfig.json --watch",
-    "start": "tsc -p tsconfig.json && env -u ELECTRON_RUN_AS_NODE electron .",
-    "dev": "tsc -p tsconfig.json && env -u ELECTRON_RUN_AS_NODE electron .",
+    "start": "tsc -p tsconfig.json && node scripts/copy-renderer.js && env -u ELECTRON_RUN_AS_NODE electron .",
+    "dev": "tsc -p tsconfig.json && node scripts/copy-renderer.js && env -u ELECTRON_RUN_AS_NODE electron .",
     "lint": "tsc -p tsconfig.json --noEmit",
-    "pack": "rm -rf dist release && tsc -p tsconfig.json && electron-builder --mac --dir",
+    "pack": "rm -rf dist release && tsc -p tsconfig.json && node scripts/copy-renderer.js && electron-builder --mac --dir",
     "install:app": "bash scripts/install-app.sh",
-    "dist": "rm -rf dist release && tsc -p tsconfig.json && electron-builder --mac --arm64 --x64",
-    "dist:dir": "rm -rf dist release && tsc -p tsconfig.json && electron-builder --mac --arm64 --x64 --dir"
+    "dist": "rm -rf dist release && tsc -p tsconfig.json && node scripts/copy-renderer.js && electron-builder --mac --arm64 --x64",
+    "dist:dir": "rm -rf dist release && tsc -p tsconfig.json && node scripts/copy-renderer.js && electron-builder --mac --arm64 --x64 --dir"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

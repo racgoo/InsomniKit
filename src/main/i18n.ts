@@ -1010,6 +1010,8 @@ const CATALOGS: Record<Exclude<LocalePref, "system">, Messages> = {
 };
 
 let current: Messages = en;
+/** The resolved catalog key (never "system") — drives WINDOW_LABELS. */
+let currentKey: Exclude<LocalePref, "system"> = "en";
 
 function resolveFromSystem(): { messages: Messages; chosen: string } {
   const sys = app.getLocale().toLowerCase();
@@ -1035,10 +1037,12 @@ export function setLocale(pref: LocalePref): void {
   if (pref === "system") {
     const { messages, chosen } = resolveFromSystem();
     current = messages;
+    currentKey = chosen as Exclude<LocalePref, "system">;
     log.info("locale set", { pref, chosen });
     return;
   }
   current = CATALOGS[pref];
+  currentKey = pref;
   log.info("locale set", { pref, chosen: pref });
 }
 
@@ -1073,4 +1077,117 @@ export function getSystemResolvedNativeName(): string {
     case "fr": return en.languageFrenchNative;
     default:   return en.languageEnglishNative;
   }
+}
+
+// ─────────────────────────────────────────────────
+// Window / widget UI strings
+//
+// Kept separate from `Messages` (the tray catalog) because these labels
+// only exist for the app window and the desktop widget. Same per-locale
+// shape; resolved through `currentKey` so they switch in lockstep with
+// the tray when the user changes language.
+// ─────────────────────────────────────────────────
+export interface WindowLabels {
+  openWindow: string; // tray menu row: bring the window up
+  showWidget: string; // tray menu + window button
+  hideWidget: string; // tray menu + window button
+  statusSection: string;
+  settingsSection: string;
+  stayAwakeWhenClosed: string;
+  tagline: string;
+  custom: string;
+  minutesAbbrev: string;
+  percentAbbrev: string;
+}
+
+const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
+  en: {
+    openWindow: "Open Window",
+    showWidget: "Show Widget",
+    hideWidget: "Hide Widget",
+    statusSection: "Status",
+    settingsSection: "Settings",
+    stayAwakeWhenClosed: "Stay Awake When Closed",
+    tagline: "Keep your Mac awake",
+    custom: "Custom",
+    minutesAbbrev: "min",
+    percentAbbrev: "%",
+  },
+  ko: {
+    openWindow: "창 열기",
+    showWidget: "위젯 표시",
+    hideWidget: "위젯 숨기기",
+    statusSection: "상태",
+    settingsSection: "설정",
+    stayAwakeWhenClosed: "닫아도 깨어 있기",
+    tagline: "Mac을 깨어 있게 유지",
+    custom: "사용자 지정",
+    minutesAbbrev: "분",
+    percentAbbrev: "%",
+  },
+  ja: {
+    openWindow: "ウィンドウを開く",
+    showWidget: "ウィジェットを表示",
+    hideWidget: "ウィジェットを隠す",
+    statusSection: "ステータス",
+    settingsSection: "設定",
+    stayAwakeWhenClosed: "閉じても起動を維持",
+    tagline: "Mac をスリープさせない",
+    custom: "カスタム",
+    minutesAbbrev: "分",
+    percentAbbrev: "%",
+  },
+  zh: {
+    openWindow: "打开窗口",
+    showWidget: "显示小组件",
+    hideWidget: "隐藏小组件",
+    statusSection: "状态",
+    settingsSection: "设置",
+    stayAwakeWhenClosed: "合盖时保持唤醒",
+    tagline: "让你的 Mac 保持唤醒",
+    custom: "自定义",
+    minutesAbbrev: "分钟",
+    percentAbbrev: "%",
+  },
+  es: {
+    openWindow: "Abrir ventana",
+    showWidget: "Mostrar widget",
+    hideWidget: "Ocultar widget",
+    statusSection: "Estado",
+    settingsSection: "Ajustes",
+    stayAwakeWhenClosed: "Activo al cerrar",
+    tagline: "Mantén tu Mac despierto",
+    custom: "Personalizado",
+    minutesAbbrev: "min",
+    percentAbbrev: "%",
+  },
+  de: {
+    openWindow: "Fenster öffnen",
+    showWidget: "Widget anzeigen",
+    hideWidget: "Widget ausblenden",
+    statusSection: "Status",
+    settingsSection: "Einstellungen",
+    stayAwakeWhenClosed: "Wach bei geschlossenem Deckel",
+    tagline: "Halte deinen Mac wach",
+    custom: "Benutzerdefiniert",
+    minutesAbbrev: "Min",
+    percentAbbrev: "%",
+  },
+  fr: {
+    openWindow: "Ouvrir la fenêtre",
+    showWidget: "Afficher le widget",
+    hideWidget: "Masquer le widget",
+    statusSection: "État",
+    settingsSection: "Réglages",
+    stayAwakeWhenClosed: "Éveil capot fermé",
+    tagline: "Gardez votre Mac éveillé",
+    custom: "Personnalisé",
+    minutesAbbrev: "min",
+    percentAbbrev: "%",
+  },
+};
+
+/** Window/widget UI strings for the currently resolved locale. */
+export function windowLabels(): WindowLabels {
+  return WINDOW_LABELS[currentKey];
 }
