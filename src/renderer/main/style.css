@@ -85,24 +85,28 @@ body::before {
     radial-gradient(50% 46% at 18% 22%, var(--wave-1), transparent 66%),
     radial-gradient(52% 48% at 88% 10%, var(--wave-2), transparent 64%),
     radial-gradient(40% 36% at 60% 40%, var(--wave-3), transparent 66%);
-  filter: blur(38px);
-  animation: drift1 19s ease-in-out infinite alternate;
+  filter: blur(34px);
+  animation: drift1 16s ease-in-out infinite;
 }
 body::after {
   background:
     radial-gradient(58% 52% at 78% 86%, var(--wave-3), transparent 64%),
     radial-gradient(50% 48% at 16% 82%, var(--wave-2), transparent 64%),
     radial-gradient(40% 36% at 96% 52%, var(--wave-1), transparent 66%);
-  filter: blur(48px);
-  animation: drift2 27s ease-in-out infinite alternate;
+  filter: blur(44px);
+  animation: drift2 22s ease-in-out infinite;
 }
+/* Continuous loops (start == end) so the shimmer never snaps. Bigger
+   translate + a scale/opacity pulse make the undulation clearly visible. */
 @keyframes drift1 {
-  0% { transform: translate(-4%, -3%) scale(1) rotate(0deg); }
-  100% { transform: translate(5%, 5%) scale(1.16) rotate(7deg); }
+  0%   { transform: translate(-7%, -5%) scale(1.05) rotate(0deg); opacity: 0.85; }
+  50%  { transform: translate(7%, 6%) scale(1.24) rotate(9deg); opacity: 1; }
+  100% { transform: translate(-7%, -5%) scale(1.05) rotate(0deg); opacity: 0.85; }
 }
 @keyframes drift2 {
-  0% { transform: translate(4%, 3%) scale(1.1) rotate(0deg); }
-  100% { transform: translate(-6%, -5%) scale(1) rotate(-6deg); }
+  0%   { transform: translate(6%, 5%) scale(1.2) rotate(0deg); opacity: 1; }
+  50%  { transform: translate(-8%, -7%) scale(1) rotate(-10deg); opacity: 0.82; }
+  100% { transform: translate(6%, 5%) scale(1.2) rotate(0deg); opacity: 1; }
 }
 
 .app {
@@ -249,8 +253,14 @@ body::after {
   backdrop-filter: blur(22px) saturate(160%);
   box-shadow: var(--shadow), inset 0 0 0 0.5px var(--hairline);
 }
-.stat { display: flex; align-items: center; gap: 7px; min-width: 0; }
-.stat-ico { font-size: 12px; opacity: 0.85; flex: none; }
+.stat { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.stat-ico {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  color: var(--accent-bright);
+  opacity: 0.92;
+}
 .stat-v {
   font-size: 12px;
   white-space: nowrap;
@@ -296,6 +306,14 @@ body::after {
 .field-label { display: flex; align-items: center; }
 .field-row { justify-content: space-between; }
 .field-label { font-size: 12.5px; font-weight: 550; }
+.field-label.with-ico { gap: 7px; }
+.label-ico {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  color: var(--accent-bright);
+  opacity: 0.92;
+}
 
 /* segmented control */
 .segment {

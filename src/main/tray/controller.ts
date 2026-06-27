@@ -163,7 +163,11 @@ export class TrayController {
     const m = t();
     const w = windowLabels();
     const estimate = formatBatteryEstimate(state.battery);
-    const warning = state.active ? lidCloseWarning(state.battery) : null;
+    // Suppress the battery/lid warning when Stay-Awake-When-Closed is
+    // applied — pmset disablesleep keeps it awake with the lid shut, so
+    // "sleeps when closed on battery" would be a lie.
+    const warning =
+      state.active && !lidApplied ? lidCloseWarning(state.battery) : null;
 
     const template: MenuItemConstructorOptions[] = [
       { label: m.appName, enabled: false },

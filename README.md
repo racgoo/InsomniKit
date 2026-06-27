@@ -7,7 +7,7 @@
 ### Keep your Mac awake — *exactly* as long as you want.
 
 Close the lid, walk away, let your agent keep coding.
-A tiny macOS menu-bar utility. No Dock icon. No windows. No telemetry. No nonsense.
+A tiny **macOS-only** menu-bar utility — tray-first, with an optional window and desktop widget. No telemetry. No nonsense.
 
 <br>
 
@@ -82,7 +82,7 @@ Either way:
 
 1. The app **builds and installs to your `Applications` folder** (`/Applications/InsomniKit.app`).
 2. **Launches** automatically.
-3. The icon — a small moon — appears at the **top-right of your menu bar**, alongside Wi-Fi, battery, and the clock. **No Dock icon, no window** — that's by design.
+3. The icon — a small moon — appears at the **top-right of your menu bar**, alongside Wi-Fi, battery, and the clock. It's **tray-first by design** — no Dock icon while it just runs. Want a full window? Click the app (or use the tray menu) — there's an optional window and a desktop widget too.
 
 Click the moon → pick a duration → your Mac stays awake.
 
