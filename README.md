@@ -81,6 +81,8 @@ Either way:
 
 Click the moon → pick a duration → your Mac stays awake.
 
+> 💡 **Already installed?** Just run `./install.sh` again — it auto-pulls the latest `main`, rebuilds, and reinstalls in place. Same command installs *and* updates; your settings persist. See [Updating](#updating).
+
 ---
 
 ## What you get
@@ -155,16 +157,16 @@ The menu always shows your current custom value (`Custom: 47 minutes`) so you're
 
 ## Updating
 
-```bash
-# Option A — one-shot
-git pull && ./install.sh
+**Re-running `./install.sh` _is_ the update.** It pulls the latest `main` from git for you, rebuilds, and reinstalls — the running app quits and relaunches, and your settings carry over untouched. You don't need to `git pull` first; the installer does it (and skips the pull only if you have uncommitted local changes).
 
-# Option B — manual (use any package manager)
+```bash
+# Recommended — pulls the latest main, rebuilds, reinstalls
+./install.sh
+
+# Manual (advanced / any package manager) — pull yourself
 git pull && pnpm install && pnpm run install:app
 git pull && npm install && npm run install:app
 ```
-
-Either way: running app quits, rebuilds, reinstalls, relaunches — settings carry over untouched.
 
 <details>
 <summary><b>What <code>install:app</code> actually does</b></summary>
@@ -240,13 +242,6 @@ No code signing, no notarization — this is open source meant to be cloned and 
 **Stack:** Electron · TypeScript · zero runtime dependencies. The whole thing is `caffeinate` / `pmset` / `osascript` orchestrated from the main process — no renderer, no framework.
 
 ---
-
-## Roadmap
-
-- [ ] Strategy picker — choose `caffeinate` vs `pmset` from the menu
-- [ ] AC-power-only mode
-- [ ] External-display detection
-- [ ] Activity-based wake lock
 
 ## Built with Claude Code
 
