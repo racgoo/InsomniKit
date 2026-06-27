@@ -32,6 +32,14 @@ const WIDGET_MARGIN = 24;
 export class WindowManager {
   private mainWindow: BrowserWindow | null = null;
   private widget: BrowserWindow | null = null;
+  /**
+   * Whether the user wants the widget open — the source of truth, kept
+   * separate from `widget.isVisible()`. Toggling the Dock flips the app's
+   * macOS activation policy, which can transiently order-out the widget;
+   * tracking intent here lets us re-assert it instead of believing the
+   * stale visibility and reporting the widget as "closed".
+   */
+  private widgetVisible = false;
   private pushHandle: NodeJS.Timeout | null = null;
   private disposers: Array<() => void> = [];
 
@@ -77,18 +85,24 @@ export class WindowManager {
   }
 
   isWidgetOpen(): boolean {
-    return !!this.widget && !this.widget.isDestroyed() && this.widget.isVisible();
+    return this.widgetVisible && !!this.widget && !this.widget.isDestroyed();
   }
 
   openWidget(): void {
     if (!this.widget || this.widget.isDestroyed()) {
       this.widget = this.createWidget();
     }
+    this.widgetVisible = true;
     this.widget.showInactive();
+    // Re-assert "float above everything, on every Space" each show — the
+    // levels can be reset when the window was hidden or the Dock toggled.
+    this.widget.setAlwaysOnTop(true, "floating");
+    this.widget.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
     this.push();
   }
 
   closeWidget(): void {
+    this.widgetVisible = false;
     if (this.widget && !this.widget.isDestroyed()) this.widget.hide();
     this.push();
   }
@@ -192,6 +206,7 @@ export class WindowManager {
     win.on("close", (evt) => {
       if (win.isDestroyed()) return;
       evt.preventDefault();
+      this.widgetVisible = false;
       win.hide();
       this.push();
     });
@@ -201,6 +216,7 @@ export class WindowManager {
 
   private showDock(): void {
     if (process.platform === "darwin" && app.dock) void app.dock.show();
+    this.reassertWidget();
   }
 
   /** Hide the Dock icon once the main window is no longer visible. */
@@ -212,6 +228,25 @@ export class WindowManager {
     if (!mainVisible && process.platform === "darwin" && app.dock) {
       app.dock.hide();
     }
+    this.reassertWidget();
+  }
+
+  /**
+   * Toggling the Dock changes the app's activation policy, and macOS can
+   * order-out the floating widget when that happens — so closing the main
+   * window made the open widget vanish. Re-show it (on the next tick, so
+   * the policy change has settled) whenever the user still wants it open.
+   */
+  private reassertWidget(): void {
+    if (!this.widgetVisible) return;
+    const w = this.widget;
+    if (!w || w.isDestroyed()) return;
+    setImmediate(() => {
+      if (w.isDestroyed() || !this.widgetVisible) return;
+      if (!w.isVisible()) w.showInactive();
+      w.setAlwaysOnTop(true, "floating");
+      w.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+    });
   }
 
   private anyVisible(): boolean {
@@ -235,8 +270,15 @@ export class WindowManager {
   private push(): void {
     if (!this.anyVisible()) return;
     const vm = this.viewModel();
-    for (const win of [this.mainWindow, this.widget]) {
-      if (win && !win.isDestroyed() && win.isVisible()) {
+    // Main: gate on real visibility. Widget: gate on intent — it may be
+    // transiently ordered-out by a Dock policy flip but should still get
+    // fresh state so it's correct the instant reassertWidget re-shows it.
+    const targets: Array<[BrowserWindow | null, boolean]> = [
+      [this.mainWindow, !!this.mainWindow && this.mainWindow.isVisible()],
+      [this.widget, this.widgetVisible],
+    ];
+    for (const [win, wanted] of targets) {
+      if (win && !win.isDestroyed() && wanted) {
         win.webContents.send(IPC.pushViewModel, vm);
       }
     }

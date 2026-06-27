@@ -33,19 +33,27 @@
 
       <section class="stat-grid">
         <div class="stat">
-          <span class="stat-ico">🔋</span>
+          <svg class="stat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="8" width="16" height="9" rx="2.5" /><path d="M21 11.5v2" />
+          </svg>
           <span class="stat-v" id="batteryLine">—</span>
         </div>
         <div class="stat">
-          <span class="stat-ico">⏱</span>
+          <svg class="stat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12.5" r="8.5" /><path d="M12 8v4.5l3 2" />
+          </svg>
           <span class="stat-v" id="timerLine">—</span>
         </div>
         <div class="stat">
-          <span class="stat-ico">🌙</span>
+          <svg class="stat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3.5v9" /><path d="M7 12.5l5 5 5-5" /><path d="M5 20.5h14" />
+          </svg>
           <span class="stat-v" id="thresholdLine">—</span>
         </div>
         <div class="stat">
-          <span class="stat-ico">⚡</span>
+          <svg class="stat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M13 2.5L5 13.5h6l-1 8 8-11h-6z" />
+          </svg>
           <span class="stat-v" id="estimateLine">—</span>
         </div>
       </section>
@@ -93,7 +101,13 @@
         </label>
 
         <div class="field-row">
-          <div class="field-label" id="languageLabel">Language</div>
+          <div class="field-label with-ico">
+            <svg class="label-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" /><path d="M3 12h18" />
+              <path d="M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" />
+            </svg>
+            <span id="languageLabel">Language</span>
+          </div>
           <div class="select-wrap">
             <select class="select" id="langSelect"></select>
             <span class="select-caret" aria-hidden="true">▾</span>

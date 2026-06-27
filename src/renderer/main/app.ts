@@ -166,7 +166,8 @@
     lidLabel.textContent = L.stayAwakeWhenClosed;
     loginLabel.textContent = L.launchAtLogin;
     animateLabel.textContent = L.animateIcon;
-    languageLabel.textContent = L.language;
+    // The label has its own globe SVG now — drop the 🌐 from the text.
+    languageLabel.textContent = L.language.replace(/\s*🌐/u, "");
 
     // preset labels + selected state (no DOM rebuild)
     vm.durationPresets.forEach((opt, i) => {

@@ -116,7 +116,14 @@ export function buildViewModel(
     batteryEstimate: formatBatteryEstimate(state.battery),
     timerLine: formatTimerLine(state, remainingMs),
     thresholdLine: formatThresholdLine(state),
-    warning: state.active ? lidCloseWarning(state.battery) : null,
+    // Only warn about "sleeps when closed on battery" when that's
+    // actually true: active, on battery, AND Stay-Awake-When-Closed is
+    // NOT applied. With lid-closed mode on, pmset disablesleep keeps the
+    // system awake with the lid shut, so the warning would be wrong.
+    warning:
+      state.active && !lidClosed.isActive()
+        ? lidCloseWarning(state.battery)
+        : null,
     battery: state.battery,
     duration: state.duration,
     batteryThreshold: state.batteryThreshold,
