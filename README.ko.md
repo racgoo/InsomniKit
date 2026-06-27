@@ -40,11 +40,16 @@
 
 ## 요구 사항
 
-- **macOS 12+** (Apple Silicon 또는 Intel)
-- **Node.js ≥ 18** — `brew install node`, 또는 [nodejs.org](https://nodejs.org)에서 설치
-- **git** — 보통 기본 설치돼 있음. 없으면 `xcode-select --install`
+> **macOS 전용입니다.** InsomniKit은 macOS 전용 도구(`caffeinate`, `pmset`, `osascript`)와 메뉴바(`NSStatusItem`) API 위에서 동작합니다. **Windows·Linux에서는 실행되지 않습니다.**
 
-패키지 매니저는 **pnpm** (권장), **npm**, **yarn**, **bun** 중 아무거나 깔려 있으면 됩니다.
+설치 스크립트를 돌리기 **전에** 아래를 먼저 깔아두세요 — 번들로 포함돼 있지 않고, 빌드에 필요합니다:
+
+- **macOS 12 (Monterey) 이상** — Apple Silicon 또는 Intel.
+- **Xcode Command Line Tools** — `xcode-select --install`. `git`과 커맨드라인 빌드 도구를 제공합니다. (전체 Xcode 앱은 필요 없습니다.)
+- **Node.js 18 이상** — `brew install node`, 또는 [nodejs.org](https://nodejs.org)에서 설치. `node -v`로 확인.
+- **패키지 매니저** — **pnpm** (권장), 또는 **npm** / **yarn** / **bun** 중 이미 깔려 있는 것.
+
+설치 스크립트는 macOS 여부와 Node 버전을 먼저 확인하고, 빠진 게 있으면 명확한 메시지와 함께 멈춥니다. 코드 서명·공증 과정은 없습니다 — 로컬에서 직접 빌드합니다.
 
 ---
 

@@ -40,11 +40,16 @@ A tiny macOS menu-bar utility. No Dock icon. No windows. No telemetry. No nonsen
 
 ## Requirements
 
-- **macOS 12+** (Apple Silicon or Intel)
-- **Node.js ≥ 18** — `brew install node`, or grab an installer from [nodejs.org](https://nodejs.org)
-- **git** — usually pre-installed; if not, `xcode-select --install`
+> **macOS only.** InsomniKit is built on macOS-specific tools (`caffeinate`, `pmset`, `osascript`) and the menu-bar (`NSStatusItem`) API. It does **not** run on Windows or Linux.
 
-A package manager — **pnpm** (preferred), **npm**, **yarn**, or **bun** — whichever you already have works.
+Install these **before** running the installer — they aren't bundled, and the build needs them:
+
+- **macOS 12 (Monterey) or newer** — Apple Silicon or Intel.
+- **Xcode Command Line Tools** — `xcode-select --install`. Gives you `git` and the command-line build tooling. (No full Xcode app needed.)
+- **Node.js 18 or newer** — `brew install node`, or an installer from [nodejs.org](https://nodejs.org). Verify with `node -v`.
+- **A package manager** — **pnpm** (preferred), or **npm** / **yarn** / **bun** — whichever you already have.
+
+The installer checks macOS and your Node version up front and stops with a clear message if something's missing. No code signing or notarization is involved — you build it locally.
 
 ---
 
