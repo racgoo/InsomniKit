@@ -14,7 +14,7 @@ const PRELOAD = path.join(__dirname, "..", "..", "preload", "index.js");
 const MAIN_HTML = path.join(__dirname, "..", "..", "renderer", "main", "index.html");
 const WIDGET_HTML = path.join(__dirname, "..", "..", "renderer", "widget", "index.html");
 
-const MAIN_SIZE = { width: 384, height: 700 };
+const MAIN_SIZE = { width: 388, height: 724 };
 const WIDGET_SIZE = { width: 250, height: 212 };
 const WIDGET_MARGIN = 24;
 
