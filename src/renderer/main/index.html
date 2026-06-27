@@ -33,7 +33,7 @@
 
       <section class="stat-grid">
         <div class="stat">
-          <svg class="stat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg class="stat-ico" id="batteryIco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="2" y="8" width="16" height="9" rx="2.5" /><path d="M21 11.5v2" />
           </svg>
           <span class="stat-v" id="batteryLine">—</span>
@@ -85,8 +85,11 @@
           </div>
         </div>
 
-        <label class="switch-row" for="lidSwitch">
-          <span class="switch-label" id="lidLabel">Stay Awake When Closed</span>
+        <label class="switch-row lid-row" for="lidSwitch">
+          <span class="switch-text">
+            <span class="switch-label" id="lidLabel">Stay awake with lid closed</span>
+            <span class="switch-hint" id="lidHint">Keep running when you close the laptop.</span>
+          </span>
           <span class="switch"><input type="checkbox" id="lidSwitch" /><span class="track"></span></span>
         </label>
 

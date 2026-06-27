@@ -22,6 +22,7 @@
   const powerLine = el("powerLine");
   const powerBtn = el<HTMLButtonElement>("powerBtn");
   const batteryLine = el("batteryLine");
+  const batteryIco = el("batteryIco");
   const timerLine = el("timerLine");
   const thresholdLine = el("thresholdLine");
   const estimateLine = el("estimateLine");
@@ -38,6 +39,7 @@
   const thresholdCustomTag = el("thresholdCustomTag");
   const thresholdUnit = el("thresholdUnit");
   const lidLabel = el("lidLabel");
+  const lidHint = el("lidHint");
   const lidSwitch = el<HTMLInputElement>("lidSwitch");
   const loginLabel = el("loginLabel");
   const loginSwitch = el<HTMLInputElement>("loginSwitch");
@@ -49,8 +51,20 @@
 
   let cur: IKViewModel | null = null;
   let built = false;
+  let lastCharging: boolean | null = null;
   const durBtns: HTMLButtonElement[] = [];
   const thrBtns: HTMLButtonElement[] = [];
+
+  // Battery icon: plain outline, or outline + bolt when charging. Swapped
+  // in place of the old ⚡ emoji in the battery text.
+  const BATTERY_PLAIN =
+    '<rect x="2" y="8" width="16" height="9" rx="2.5"/><path d="M21 11.5v2"/>';
+  const BATTERY_CHARGING =
+    BATTERY_PLAIN +
+    '<path d="M10.6 9.4l-2.4 3.3h2.3l-0.9 2.7 2.8-3.6h-2.3z" fill="currentColor" stroke="none"/>';
+  // Strip any emoji/pictographic (e.g. the charging ⚡) from a status line.
+  const noEmoji = (s: string): string =>
+    s.replace(/\s*\p{Extended_Pictographic}/gu, "").trim();
 
   // ── static handlers (attached once) ──
   powerBtn.addEventListener("click", () => send({ type: "toggleActive" }));
@@ -144,7 +158,12 @@
     widgetBtn.textContent = vm.widgetOpen ? L.hideWidget : L.showWidget;
     widgetBtn.classList.toggle("on", vm.widgetOpen);
 
-    batteryLine.textContent = vm.batteryLine;
+    batteryLine.textContent = noEmoji(vm.batteryLine);
+    if (vm.battery.charging !== lastCharging) {
+      lastCharging = vm.battery.charging;
+      batteryIco.classList.toggle("charging", vm.battery.charging);
+      batteryIco.innerHTML = vm.battery.charging ? BATTERY_CHARGING : BATTERY_PLAIN;
+    }
     timerLine.textContent = vm.timerLine;
     thresholdLine.textContent = vm.thresholdLine;
     estimateLine.textContent = vm.batteryEstimate ?? "—";
@@ -164,6 +183,7 @@
     durationUnit.textContent = L.minutesAbbrev;
     thresholdUnit.textContent = L.percentAbbrev;
     lidLabel.textContent = L.stayAwakeWhenClosed;
+    lidHint.textContent = L.stayAwakeHint;
     loginLabel.textContent = L.launchAtLogin;
     animateLabel.textContent = L.animateIcon;
     // The label has its own globe SVG now — drop the 🌐 from the text.
