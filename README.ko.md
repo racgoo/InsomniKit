@@ -81,6 +81,8 @@ npm install && npm run install:app
 
 달 아이콘 클릭 → 시간 선택 → Mac이 안 잡니다.
 
+> 💡 **이미 설치돼 있나요?** 그냥 `./install.sh`를 다시 실행하세요 — 최신 `main`을 알아서 받아와 재빌드·재설치합니다. **같은 명령이 설치이자 곧 업데이트**이고, 설정은 유지됩니다. [업데이트](#업데이트) 참고.
+
 ---
 
 ## 뭘 해주냐면
@@ -156,16 +158,16 @@ InsomniKit은 같은 IOKit 어설션을, 두 번의 클릭으로 감싸고, 타�
 
 ## 업데이트
 
-```bash
-# 옵션 A — 한 줄
-git pull && ./install.sh
+**`./install.sh`를 다시 실행하는 것이 곧 업데이트입니다.** 알아서 최신 `main`을 git에서 받아와(`git pull`) 재빌드·재설치까지 합니다 — 실행 중인 앱은 종료 후 재실행되고, 설정은 그대로 유지됩니다. 먼저 `git pull` 할 필요 없이 설치 스크립트가 대신 해줍니다(커밋하지 않은 로컬 변경이 있을 때만 pull을 건너뜁니다).
 
-# 옵션 B — 직접 (어느 패키지 매니저든 OK)
+```bash
+# 권장 — 최신 main을 받아서 재빌드·재설치
+./install.sh
+
+# 직접 (고급 / 어느 패키지 매니저든 OK) — pull은 본인이
 git pull && pnpm install && pnpm run install:app
 git pull && npm install && npm run install:app
 ```
-
-둘 중 어느 쪽이든: 실행 중인 앱 종료 → 재빌드 → 재설치 → 재실행, 설정은 그대로 유지됩니다.
 
 <details>
 <summary><b><code>install:app</code>이 실제로 하는 일</b></summary>
@@ -241,13 +243,6 @@ pnpm run dev      # tsc + electron — 같은 명령 다시 치면 hot-relaunch
 **스택:** Electron · TypeScript · 런타임 의존성 0개. 전부 `caffeinate` / `pmset` / `osascript`를 메인 프로세스에서 조율하는 구조 — renderer도, 프레임워크도 없음.
 
 ---
-
-## 로드맵
-
-- [ ] 전략 선택 — 메뉴에서 `caffeinate` vs `pmset` 직접 고르기
-- [ ] AC 전용 모드
-- [ ] 외장 디스플레이 감지
-- [ ] 활동 기반 wake lock
 
 ## Claude Code로 만들었습니다
 
