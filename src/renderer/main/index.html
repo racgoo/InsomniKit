@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;" />
+    <title>InsomniKit</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app" id="app">
+      <header class="hero">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div class="brand-text">
+            <div class="title" id="appName">InsomniKit</div>
+            <div class="tagline" id="tagline">Keep your Mac awake</div>
+          </div>
+        </div>
+        <button class="ghost-btn" id="widgetBtn" type="button">Show Widget</button>
+      </header>
+
+      <section class="power-card" id="powerCard">
+        <div class="power-status">
+          <span class="dot" id="dot"></span>
+          <div class="power-text">
+            <span class="status-text" id="statusText">Inactive</span>
+            <span class="status-sub" id="powerLine">—</span>
+          </div>
+        </div>
+        <button class="power-btn" id="powerBtn" type="button">Enable</button>
+      </section>
+
+      <section class="stat-grid">
+        <div class="stat">
+          <span class="stat-ico">🔋</span>
+          <span class="stat-v" id="batteryLine">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat-ico">⏱</span>
+          <span class="stat-v" id="timerLine">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat-ico">🌙</span>
+          <span class="stat-v" id="thresholdLine">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat-ico">⚡</span>
+          <span class="stat-v" id="estimateLine">—</span>
+        </div>
+      </section>
+
+      <div class="warning" id="warning" hidden></div>
+
+      <section class="settings">
+        <div class="section-title" id="settingsTitle">Settings</div>
+
+        <div class="field">
+          <div class="field-label" id="durationLabel">Duration</div>
+          <div class="segment" id="durationSeg"></div>
+          <div class="custom-row">
+            <span class="custom-tag" id="durationCustomTag">Custom</span>
+            <input class="custom-input" id="durationCustom" type="number"
+              inputmode="numeric" min="1" max="1440" placeholder="—" />
+            <span class="custom-unit" id="durationUnit">min</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-label" id="thresholdLabel">Battery Auto-Disable</div>
+          <div class="segment" id="thresholdSeg"></div>
+          <div class="custom-row">
+            <span class="custom-tag" id="thresholdCustomTag">Custom</span>
+            <input class="custom-input" id="thresholdCustom" type="number"
+              inputmode="numeric" min="1" max="99" placeholder="—" />
+            <span class="custom-unit" id="thresholdUnit">%</span>
+          </div>
+        </div>
+
+        <label class="switch-row" for="lidSwitch">
+          <span class="switch-label" id="lidLabel">Stay Awake When Closed</span>
+          <span class="switch"><input type="checkbox" id="lidSwitch" /><span class="track"></span></span>
+        </label>
+
+        <label class="switch-row" for="loginSwitch">
+          <span class="switch-label" id="loginLabel">Launch at Login</span>
+          <span class="switch"><input type="checkbox" id="loginSwitch" /><span class="track"></span></span>
+        </label>
+
+        <label class="switch-row" for="animateSwitch">
+          <span class="switch-label" id="animateLabel">Animate icon</span>
+          <span class="switch"><input type="checkbox" id="animateSwitch" /><span class="track"></span></span>
+        </label>
+
+        <div class="field-row">
+          <div class="field-label" id="languageLabel">Language</div>
+          <div class="select-wrap">
+            <select class="select" id="langSelect"></select>
+            <span class="select-caret" aria-hidden="true">▾</span>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <button class="quit-btn" id="quitBtn" type="button">Quit</button>
+      </footer>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

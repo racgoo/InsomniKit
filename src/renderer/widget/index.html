@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;" />
+    <title>InsomniKit Widget</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="widget" id="widget">
+      <div class="wtop">
+        <div class="wbrand">
+          <span class="wlogo" aria-hidden="true"></span>
+          <span class="wname" id="appName">InsomniKit</span>
+        </div>
+        <button class="wclose" id="closeBtn" type="button" title="Hide">✕</button>
+      </div>
+
+      <div class="wstatus-row">
+        <span class="wdot" id="dot"></span>
+        <span class="wstatus" id="statusText">Inactive</span>
+      </div>
+
+      <button class="wtoggle" id="powerBtn" type="button">Enable</button>
+
+      <div class="wlines">
+        <div class="wline" id="timerLine">—</div>
+        <div class="wline dim" id="batteryLine">—</div>
+      </div>
+
+      <div class="wchips" id="durationChips"></div>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
