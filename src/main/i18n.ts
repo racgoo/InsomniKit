@@ -199,10 +199,10 @@ const en: Messages = {
 
   stayAwakeRoot: (state) =>
     state === "on"
-      ? "Stay Awake When Closed: On"
+      ? "Stay Awake with Lid Closed: On"
       : state === "pending"
-        ? "Stay Awake When Closed: pending…"
-        : "Stay Awake When Closed: Off",
+        ? "Stay Awake with Lid Closed: pending…"
+        : "Stay Awake with Lid Closed: Off",
 
   stayAwakeStatus: (state) =>
     state === "on"
@@ -337,10 +337,10 @@ const ko: Messages = {
 
   stayAwakeRoot: (state) =>
     state === "on"
-      ? "닫아도 깨어있기: 켜짐"
+      ? "노트북 닫아도 깨어있기: 켜짐"
       : state === "pending"
-        ? "닫아도 깨어있기: 대기 중…"
-        : "닫아도 깨어있기: 꺼짐",
+        ? "노트북 닫아도 깨어있기: 대기 중…"
+        : "노트북 닫아도 깨어있기: 꺼짐",
 
   stayAwakeStatus: (state) =>
     state === "on"
@@ -464,10 +464,10 @@ const ja: Messages = {
 
   stayAwakeRoot: (state) =>
     state === "on"
-      ? "閉じても起きたまま: オン"
+      ? "フタを閉じても起きたまま: オン"
       : state === "pending"
-        ? "閉じても起きたまま: 待機中…"
-        : "閉じても起きたまま: オフ",
+        ? "フタを閉じても起きたまま: 待機中…"
+        : "フタを閉じても起きたまま: オフ",
   stayAwakeStatus: (state) =>
     state === "on"
       ? "現在: オン (システム全体)"
@@ -709,10 +709,10 @@ const es: Messages = {
 
   stayAwakeRoot: (state) =>
     state === "on"
-      ? "Mantener despierto al cerrar: Activado"
+      ? "Despierto con la tapa cerrada: Activado"
       : state === "pending"
-        ? "Mantener despierto al cerrar: pendiente…"
-        : "Mantener despierto al cerrar: Desactivado",
+        ? "Despierto con la tapa cerrada: pendiente…"
+        : "Despierto con la tapa cerrada: Desactivado",
   stayAwakeStatus: (state) =>
     state === "on"
       ? "Actualmente: Activado (en todo el sistema)"
@@ -832,10 +832,10 @@ const de: Messages = {
 
   stayAwakeRoot: (state) =>
     state === "on"
-      ? "Beim Schließen wach bleiben: Ein"
+      ? "Bei geschlossenem Deckel wach: Ein"
       : state === "pending"
-        ? "Beim Schließen wach bleiben: wird übernommen…"
-        : "Beim Schließen wach bleiben: Aus",
+        ? "Bei geschlossenem Deckel wach: wird übernommen…"
+        : "Bei geschlossenem Deckel wach: Aus",
   stayAwakeStatus: (state) =>
     state === "on"
       ? "Aktuell: Ein (systemweit)"
@@ -955,10 +955,10 @@ const fr: Messages = {
 
   stayAwakeRoot: (state) =>
     state === "on"
-      ? "Rester éveillé fermé: Activé"
+      ? "Éveillé capot fermé: Activé"
       : state === "pending"
-        ? "Rester éveillé fermé: en attente…"
-        : "Rester éveillé fermé: Désactivé",
+        ? "Éveillé capot fermé: en attente…"
+        : "Éveillé capot fermé: Désactivé",
   stayAwakeStatus: (state) =>
     state === "on"
       ? "Actuellement: Activé (système entier)"
@@ -1094,6 +1094,7 @@ export interface WindowLabels {
   statusSection: string;
   settingsSection: string;
   stayAwakeWhenClosed: string;
+  stayAwakeHint: string; // one-line explanation under the toggle
   tagline: string;
   custom: string;
   minutesAbbrev: string;
@@ -1107,7 +1108,8 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
     hideWidget: "Hide Widget",
     statusSection: "Status",
     settingsSection: "Settings",
-    stayAwakeWhenClosed: "Stay Awake When Closed",
+    stayAwakeWhenClosed: "Stay awake with lid closed",
+    stayAwakeHint: "Keep running when you close the laptop — even on battery.",
     tagline: "Keep your Mac awake",
     custom: "Custom",
     minutesAbbrev: "min",
@@ -1119,7 +1121,8 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
     hideWidget: "위젯 숨기기",
     statusSection: "상태",
     settingsSection: "설정",
-    stayAwakeWhenClosed: "닫아도 깨어 있기",
+    stayAwakeWhenClosed: "노트북 닫아도 깨어 있기",
+    stayAwakeHint: "노트북(화면)을 닫아도 시스템이 계속 켜져 있어요 — 배터리에서도.",
     tagline: "Mac을 깨어 있게 유지",
     custom: "사용자 지정",
     minutesAbbrev: "분",
@@ -1131,7 +1134,8 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
     hideWidget: "ウィジェットを隠す",
     statusSection: "ステータス",
     settingsSection: "設定",
-    stayAwakeWhenClosed: "閉じても起動を維持",
+    stayAwakeWhenClosed: "フタを閉じても起動を維持",
+    stayAwakeHint: "ノートを閉じてもシステムは動き続けます（バッテリーでも）。",
     tagline: "Mac をスリープさせない",
     custom: "カスタム",
     minutesAbbrev: "分",
@@ -1143,7 +1147,8 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
     hideWidget: "隐藏小组件",
     statusSection: "状态",
     settingsSection: "设置",
-    stayAwakeWhenClosed: "合盖时保持唤醒",
+    stayAwakeWhenClosed: "合上笔记本也保持唤醒",
+    stayAwakeHint: "合上笔记本后系统继续运行（电池供电时也是）。",
     tagline: "让你的 Mac 保持唤醒",
     custom: "自定义",
     minutesAbbrev: "分钟",
@@ -1155,7 +1160,8 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
     hideWidget: "Ocultar widget",
     statusSection: "Estado",
     settingsSection: "Ajustes",
-    stayAwakeWhenClosed: "Activo al cerrar",
+    stayAwakeWhenClosed: "Activo con la tapa cerrada",
+    stayAwakeHint: "Sigue funcionando al cerrar el portátil — también con batería.",
     tagline: "Mantén tu Mac despierto",
     custom: "Personalizado",
     minutesAbbrev: "min",
@@ -1168,6 +1174,7 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
     statusSection: "Status",
     settingsSection: "Einstellungen",
     stayAwakeWhenClosed: "Wach bei geschlossenem Deckel",
+    stayAwakeHint: "Läuft weiter, wenn du das Notebook zuklappst — auch im Akkubetrieb.",
     tagline: "Halte deinen Mac wach",
     custom: "Benutzerdefiniert",
     minutesAbbrev: "Min",
@@ -1180,6 +1187,7 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
     statusSection: "État",
     settingsSection: "Réglages",
     stayAwakeWhenClosed: "Éveil capot fermé",
+    stayAwakeHint: "Continue de tourner quand vous fermez le portable — même sur batterie.",
     tagline: "Gardez votre Mac éveillé",
     custom: "Personnalisé",
     minutesAbbrev: "min",

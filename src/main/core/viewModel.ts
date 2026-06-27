@@ -97,6 +97,7 @@ export function buildViewModel(
     launchAtLogin: m.launchAtLogin,
     animateIcon: m.animateIcon,
     stayAwakeWhenClosed: w.stayAwakeWhenClosed,
+    stayAwakeHint: w.stayAwakeHint,
     language: m.languageSubmenu,
     custom: w.custom,
     minutesAbbrev: w.minutesAbbrev,

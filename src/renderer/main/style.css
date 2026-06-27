@@ -12,7 +12,9 @@
   --accent-soft-2: rgba(124, 108, 240, 0.24);
   --pink: #f7b8d8;
   --cream: #f3ead0;
+  --charge: #e0941f;
   --bg: linear-gradient(165deg, #f6f0fb 0%, #efe6f6 55%, #f7e8f1 100%);
+  --bg-flow: linear-gradient(120deg, #f4edfb 0%, #f9e6f2 26%, #ebe1f7 52%, #f7e9f3 76%, #eee6fb 100%);
   --wave-1: rgba(247, 168, 209, 0.5);
   --wave-2: rgba(154, 140, 255, 0.42);
   --wave-3: rgba(245, 180, 214, 0.4);
@@ -34,7 +36,9 @@
   :root {
     --text: #f1eefc;
     --text-dim: rgba(225, 220, 250, 0.62);
+    --charge: #f4c95d;
     --bg: linear-gradient(165deg, #2c2358 0%, #1d1542 55%, #2a1a44 100%);
+    --bg-flow: linear-gradient(120deg, #2b2358 0%, #3d2a66 26%, #48285f 52%, #2a1c4a 76%, #1d1542 100%);
     --wave-1: rgba(248, 150, 198, 0.52);
     --wave-2: rgba(150, 134, 255, 0.5);
     --wave-3: rgba(202, 132, 232, 0.5);
@@ -61,11 +65,21 @@ body {
 
 body {
   position: relative;
-  background: var(--bg);
+  /* A large gradient that continuously flows by animating its position —
+     the visibly "moving" base. The blurred blobs below drift on top for
+     an organic, undulating shimmer. */
+  background: var(--bg-flow);
+  background-size: 240% 240%;
+  animation: bgflow 20s ease-in-out infinite;
   font-family: -apple-system, "SF Pro Text", system-ui, sans-serif;
   color: var(--text);
   font-size: 13px;
   overflow: hidden;
+}
+@keyframes bgflow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* Soft pink + lavender "wave" blobs slowly drifting behind the glass.
@@ -260,7 +274,9 @@ body::after {
   flex: none;
   color: var(--accent-bright);
   opacity: 0.92;
+  transition: color 0.25s;
 }
+.stat-ico.charging { color: var(--charge); opacity: 1; }
 .stat-v {
   font-size: 12px;
   white-space: nowrap;
@@ -384,9 +400,20 @@ body::after {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   cursor: pointer;
 }
 .switch-label { font-size: 12.5px; font-weight: 550; }
+/* lid row carries an explanatory hint under the label */
+.lid-row { align-items: flex-start; }
+.switch-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.switch-hint {
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--text-dim);
+}
+.lid-row .switch { margin-top: 1px; }
 .switch { position: relative; width: 40px; height: 24px; flex: none; }
 .switch input { position: absolute; opacity: 0; width: 0; height: 0; }
 .track {

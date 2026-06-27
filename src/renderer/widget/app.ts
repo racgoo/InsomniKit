@@ -47,7 +47,8 @@
     powerBtn.textContent = vm.active ? L.disable : L.enable;
     powerBtn.classList.toggle("active", vm.active);
     timerLine.textContent = vm.timerLine;
-    batteryLine.textContent = vm.batteryLine;
+    // Drop any emoji (e.g. the charging ⚡) — keep the widget text clean.
+    batteryLine.textContent = vm.batteryLine.replace(/\s*\p{Extended_Pictographic}/gu, "").trim();
 
     vm.durationPresets.forEach((opt, i) => {
       const b = chips[i];

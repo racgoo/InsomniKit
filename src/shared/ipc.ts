@@ -57,6 +57,7 @@ export interface ViewLabels {
   launchAtLogin: string;
   animateIcon: string;
   stayAwakeWhenClosed: string;
+  stayAwakeHint: string;
   language: string;
   custom: string;
   minutesAbbrev: string;
