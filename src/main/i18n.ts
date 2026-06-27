@@ -142,7 +142,7 @@ const en: Messages = {
   },
 
   thresholdLine: (t) =>
-    t === null ? "Auto-disable: Off" : `Auto-disable: ≤ ${t}%`,
+    t === null ? "Battery auto-off: Off" : `Battery auto-off: ≤ ${t}%`,
 
   lidCloseWarning: (b) => {
     if (b.onACOnly || b.charging) return null;
@@ -287,7 +287,7 @@ const ko: Messages = {
   },
 
   thresholdLine: (t) =>
-    t === null ? "자동 해제: 끔" : `자동 해제: ${t}% 이하`,
+    t === null ? "배터리 자동 해제: 끔" : `배터리 자동 해제: ${t}% 이하`,
 
   lidCloseWarning: (b) => {
     if (b.onACOnly || b.charging) return null;
@@ -418,7 +418,7 @@ const ja: Messages = {
     if (m === 0) return `タイマー: 残り ${h}時間`;
     return `タイマー: 残り ${h}時間 ${m}分`;
   },
-  thresholdLine: (t) => (t === null ? "自動解除: オフ" : `自動解除: ${t}% 以下`),
+  thresholdLine: (t) => (t === null ? "バッテリー自動解除: オフ" : `バッテリー自動解除: ${t}% 以下`),
   lidCloseWarning: (b) => {
     if (b.onACOnly || b.charging) return null;
     return "⚠︎  バッテリー時は閉じると休止";
@@ -541,7 +541,7 @@ const zh: Messages = {
     if (m === 0) return `计时器: 剩余 ${h}小时`;
     return `计时器: 剩余 ${h}小时 ${m}分`;
   },
-  thresholdLine: (t) => (t === null ? "自动关闭: 关" : `自动关闭: ≤ ${t}%`),
+  thresholdLine: (t) => (t === null ? "电池自动关闭: 关" : `电池自动关闭: ≤ ${t}%`),
   lidCloseWarning: (b) => {
     if (b.onACOnly || b.charging) return null;
     return "⚠︎  电池模式下合盖会休眠";
@@ -663,7 +663,7 @@ const es: Messages = {
     if (m === 0) return `Temporizador: ${h}h restante${h === 1 ? "" : "s"}`;
     return `Temporizador: ${h}h ${m}m restantes`;
   },
-  thresholdLine: (t) => (t === null ? "Auto-desactivar: Desactivado" : `Auto-desactivar: ≤ ${t}%`),
+  thresholdLine: (t) => (t === null ? "Auto-apagado batería: Desactivado" : `Auto-apagado batería: ≤ ${t}%`),
   lidCloseWarning: (b) => {
     if (b.onACOnly || b.charging) return null;
     return "⚠︎  Se duerme al cerrar con batería";
@@ -786,7 +786,7 @@ const de: Messages = {
     if (m === 0) return `Timer: ${h}h verbleibend`;
     return `Timer: ${h}h ${m}m verbleibend`;
   },
-  thresholdLine: (t) => (t === null ? "Auto-Deaktivierung: Aus" : `Auto-Deaktivierung: ≤ ${t}%`),
+  thresholdLine: (t) => (t === null ? "Akku-Auto-Aus: Aus" : `Akku-Auto-Aus: ≤ ${t}%`),
   lidCloseWarning: (b) => {
     if (b.onACOnly || b.charging) return null;
     return "⚠︎  Schläft im Akkubetrieb beim Schließen";
@@ -909,7 +909,7 @@ const fr: Messages = {
     if (m === 0) return `Minuteur: ${h}h restante${h === 1 ? "" : "s"}`;
     return `Minuteur: ${h}h ${m}m restantes`;
   },
-  thresholdLine: (t) => (t === null ? "Auto-désactiver: Désactivé" : `Auto-désactiver: ≤ ${t}%`),
+  thresholdLine: (t) => (t === null ? "Arrêt auto batterie: Désactivé" : `Arrêt auto batterie: ≤ ${t}%`),
   lidCloseWarning: (b) => {
     if (b.onACOnly || b.charging) return null;
     return "⚠︎  Dort en fermant le capot sur batterie";

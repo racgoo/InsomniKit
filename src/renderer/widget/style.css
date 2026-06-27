@@ -156,6 +156,34 @@ body { font-family: -apple-system, "SF Pro Text", system-ui, sans-serif; color: 
 }
 .wline.dim { color: var(--text-dim); }
 
+/* lid-closed toggle — compact secondary button, filled when on */
+.wlid {
+  -webkit-app-region: no-drag;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 550;
+  color: var(--text-dim);
+  background: var(--control);
+  border: none;
+  border-radius: 10px;
+  padding: 7px 8px;
+  cursor: pointer;
+  transition: background 0.16s, color 0.16s, transform 0.12s, box-shadow 0.2s;
+}
+.wlid:hover { background: var(--control-hover); }
+.wlid:active { transform: scale(0.98); }
+.wlid-ico { width: 14px; height: 14px; flex: none; opacity: 0.9; }
+.wlid-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wlid.on {
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+  box-shadow: 0 3px 9px rgba(124, 108, 240, 0.36);
+}
+
 .wchips {
   -webkit-app-region: no-drag;
   display: flex;

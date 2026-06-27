@@ -130,7 +130,7 @@ body::after {
   flex-direction: column;
   height: 100vh;
   padding: 8px 15px 14px;
-  gap: 11px;
+  gap: 10px;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-gutter: stable;
@@ -300,8 +300,8 @@ body::after {
   flex: none;
   display: flex;
   flex-direction: column;
-  gap: 13px;
-  padding: 14px;
+  gap: 11px;
+  padding: 13px 14px;
   border-radius: var(--radius);
   background: var(--panel);
   -webkit-backdrop-filter: blur(22px) saturate(160%);

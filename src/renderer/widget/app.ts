@@ -17,13 +17,21 @@
   const powerBtn = el<HTMLButtonElement>("powerBtn");
   const timerLine = el("timerLine");
   const batteryLine = el("batteryLine");
+  const lidBtn = el<HTMLButtonElement>("lidBtn");
+  const lidLabel = el("lidLabel");
   const chipsHost = el("durationChips");
 
+  let cur: IKViewModel | null = null;
   let built = false;
   const chips: HTMLButtonElement[] = [];
 
   powerBtn.addEventListener("click", () => send({ type: "toggleActive" }));
   closeBtn.addEventListener("click", () => send({ type: "closeWidget" }));
+  // Toggle "stay awake with the lid closed" — fires the same admin sheet
+  // as the window/tray. Use the last-painted state to flip it.
+  lidBtn.addEventListener("click", () =>
+    send({ type: "setLidClosed", value: !(cur && cur.lidApplied) }),
+  );
 
   function build(vm: IKViewModel): void {
     chipsHost.replaceChildren();
@@ -40,8 +48,11 @@
   }
 
   function paint(vm: IKViewModel): void {
+    cur = vm;
     const L = vm.labels;
     appName.textContent = L.appName;
+    lidLabel.textContent = L.stayAwakeWhenClosed;
+    lidBtn.classList.toggle("on", vm.lidApplied);
     statusText.textContent = vm.statusText;
     dot.classList.toggle("on", vm.active);
     powerBtn.textContent = vm.active ? L.disable : L.enable;
