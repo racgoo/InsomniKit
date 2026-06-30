@@ -55,7 +55,7 @@ The installer checks macOS and your Node version up front and stops with a clear
 
 ## ⚡ 30-second start
 
-**Option A — one-shot (recommended).** Auto-detects whichever package manager you have (pnpm / npm / yarn / bun) and handles everything:
+**One command.** `install.sh` auto-detects whichever package manager you have (pnpm / npm / yarn / bun) and handles the whole thing — no manual build steps:
 
 ```bash
 git clone https://github.com/racgoo/InsomniKit.git
@@ -63,22 +63,7 @@ cd InsomniKit
 ./install.sh
 ```
 
-**Option B — manual.** Same outcome, two explicit steps — use whichever package manager you prefer:
-
-```bash
-git clone https://github.com/racgoo/InsomniKit.git
-cd InsomniKit
-
-# with pnpm
-pnpm install && pnpm run install:app
-
-# — or with npm
-npm install && npm run install:app
-
-# — or yarn / bun (same pattern)
-```
-
-Either way:
+It then:
 
 1. The app **builds and installs to your `Applications` folder** (`/Applications/InsomniKit.app`).
 2. **Launches** automatically.
