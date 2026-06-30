@@ -1224,7 +1224,7 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
       "Choose the language for InsomniKit's menus and window. 'System Default' follows your Mac's language automatically.",
     infoLabel: "More info",
     lidBadgeOn: "Awake when closed",
-    lidBadgeOff: "Sleeps when closed",
+    lidBadgeOff: "Stay-awake off",
   },
   ko: {
     openWindow: "창 열기",
@@ -1254,7 +1254,7 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
       "InsomniKit 메뉴와 창에 사용할 언어를 고릅니다. '시스템 기본값'은 Mac의 언어를 자동으로 따라가요.",
     infoLabel: "자세히 보기",
     lidBadgeOn: "닫아도 깨어 있음",
-    lidBadgeOff: "닫으면 잠듦",
+    lidBadgeOff: "닫아도 깨어있기 끔",
   },
   ja: {
     openWindow: "ウィンドウを開く",
@@ -1284,7 +1284,7 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
       "InsomniKit のメニューとウィンドウの言語を選びます。「システムのデフォルト」は Mac の言語に自動で従います。",
     infoLabel: "詳細",
     lidBadgeOn: "閉じても起動",
-    lidBadgeOff: "閉じるとスリープ",
+    lidBadgeOff: "起動維持オフ",
   },
   zh: {
     openWindow: "打开窗口",
@@ -1314,7 +1314,7 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
       "选择 InsomniKit 菜单和窗口的语言。「系统默认」会自动跟随 Mac 的语言。",
     infoLabel: "更多信息",
     lidBadgeOn: "合盖也唤醒",
-    lidBadgeOff: "合盖会休眠",
+    lidBadgeOff: "合盖唤醒关",
   },
   es: {
     openWindow: "Abrir ventana",
@@ -1344,7 +1344,7 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
       "Elige el idioma de los menús y la ventana de InsomniKit. «Predeterminado del sistema» sigue el idioma de tu Mac automáticamente.",
     infoLabel: "Más información",
     lidBadgeOn: "Despierto al cerrar",
-    lidBadgeOff: "Duerme al cerrar",
+    lidBadgeOff: "Mantener despierto: No",
   },
   de: {
     openWindow: "Fenster öffnen",
@@ -1374,7 +1374,7 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
       "Wähle die Sprache für InsomniKits Menüs und Fenster. „Systemstandard“ folgt automatisch der Sprache deines Macs.",
     infoLabel: "Mehr Infos",
     lidBadgeOn: "Wach zugeklappt",
-    lidBadgeOff: "Schläft zugeklappt",
+    lidBadgeOff: "Wach zugeklappt: Aus",
   },
   fr: {
     openWindow: "Ouvrir la fenêtre",
@@ -1404,7 +1404,7 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
       "Choisissez la langue des menus et de la fenêtre d'InsomniKit. « Par défaut du système » suit automatiquement la langue de votre Mac.",
     infoLabel: "Plus d'infos",
     lidBadgeOn: "Éveillé fermé",
-    lidBadgeOff: "Veille si fermé",
+    lidBadgeOff: "Éveil fermé: Non",
   },
 };
 

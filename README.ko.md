@@ -55,7 +55,7 @@
 
 ## ⚡ 30초 시작
 
-**옵션 A — 한 줄 설치 (권장).** 깔려 있는 패키지 매니저를 자동 감지(pnpm / npm / yarn / bun) — 알아서 다 처리:
+**한 줄이면 끝.** `install.sh`가 깔려 있는 패키지 매니저를 자동 감지(pnpm / npm / yarn / bun)해서 빌드·설치·실행까지 알아서 다 처리합니다 — 수동 빌드 단계 없음:
 
 ```bash
 git clone https://github.com/racgoo/InsomniKit.git
@@ -63,22 +63,7 @@ cd InsomniKit
 ./install.sh
 ```
 
-**옵션 B — 직접 설치.** 단계별로 직접 — 쓰던 패키지 매니저 아무거나 OK:
-
-```bash
-git clone https://github.com/racgoo/InsomniKit.git
-cd InsomniKit
-
-# pnpm으로
-pnpm install && pnpm run install:app
-
-# — 또는 npm으로
-npm install && npm run install:app
-
-# — 또는 yarn / bun (패턴 동일)
-```
-
-어느 쪽이든:
+그러면:
 
 1. 앱을 빌드해서 **`응용 프로그램` 폴더에 설치**합니다 (`/Applications/InsomniKit.app`).
 2. 자동으로 **앱을 실행**합니다.
