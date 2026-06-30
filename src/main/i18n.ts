@@ -45,6 +45,13 @@ export interface Messages {
   launchAtLogin: string;
   quit: string;
 
+  // ── submenu explanation blocks (tray) ─────────
+  // Short, plain-language descriptions shown as disabled gray rows at the
+  // top of the Duration / Battery-auto-off submenus — the tray's
+  // equivalent of the window's tooltips. "" marks a separator slot.
+  durationDesc: ReadonlyArray<string>;
+  thresholdDesc: ReadonlyArray<string>;
+
   // ── Language submenu ──────────────────────────
   languageSubmenu: string;
   languageSystem: string;
@@ -141,8 +148,7 @@ const en: Messages = {
     return `Timer: ${h}h ${m}m remaining`;
   },
 
-  thresholdLine: (t) =>
-    t === null ? "Battery auto-off: Off" : `Battery auto-off: ≤ ${t}%`,
+  thresholdLine: (t) => (t === null ? "Off" : `At ${t}% battery`),
 
   lidCloseWarning: (b) => {
     if (b.onACOnly || b.charging) return null;
@@ -166,10 +172,20 @@ const en: Messages = {
   enable: "Enable",
   disable: "Disable",
   durationSubmenu: "Duration",
-  thresholdSubmenu: "Battery Auto-Disable",
+  thresholdSubmenu: "Auto-Disable on Low Battery",
   customEllipsis: "Custom…",
   launchAtLogin: "Launch at Login",
   quit: "Quit InsomniKit",
+
+  durationDesc: [
+    "How long to stay awake before",
+    "InsomniKit turns off automatically.",
+  ],
+  thresholdDesc: [
+    "Turns InsomniKit off automatically",
+    "when the battery drops this low —",
+    "so a forgotten timer won't drain it.",
+  ],
 
   // The English word "Language" stays in every catalog as a universal
   // escape hatch — a user who accidentally switched to a script they
@@ -234,7 +250,7 @@ const en: Messages = {
     `Enter duration in minutes (${min}–${max}):`,
   promptThresholdTitle: "InsomniKit · Custom battery threshold",
   promptThresholdMessage: (min, max) =>
-    `Auto-disable when battery is at or below this percent (${min}–${max}):`,
+    `Turn off automatically when battery drops to this percent or below (${min}–${max}):`,
   promptInvalidTitle: "InsomniKit · Invalid value",
   promptInvalidDuration: (min, max) =>
     `Please enter a whole number of minutes between ${min} and ${max}.`,
@@ -286,8 +302,7 @@ const ko: Messages = {
     return `타이머: ${h}시간 ${m}분 남음`;
   },
 
-  thresholdLine: (t) =>
-    t === null ? "배터리 자동 해제: 끔" : `배터리 자동 해제: ${t}% 이하`,
+  thresholdLine: (t) => (t === null ? "끔" : `배터리 ${t}% 도달 시`),
 
   lidCloseWarning: (b) => {
     if (b.onACOnly || b.charging) return null;
@@ -311,10 +326,20 @@ const ko: Messages = {
   enable: "켜기",
   disable: "끄기",
   durationSubmenu: "지속 시간",
-  thresholdSubmenu: "배터리 자동 해제",
+  thresholdSubmenu: "배터리 부족 시 InsomniKit 끄기",
   customEllipsis: "직접 입력…",
   launchAtLogin: "로그인 시 실행",
   quit: "InsomniKit 종료",
+
+  durationDesc: [
+    "이 시간만큼 깨어 있다가",
+    "InsomniKit이 자동으로 꺼집니다.",
+  ],
+  thresholdDesc: [
+    "배터리가 이 값 이하로 떨어지면",
+    "InsomniKit을 자동으로 꺼서,",
+    "깜빡 잊어도 배터리를 지켜줍니다.",
+  ],
 
   // Native-word suffix — see note in the English catalog above.
   languageSubmenu: "Language / 언어 🌐",
@@ -372,7 +397,7 @@ const ko: Messages = {
     `분 단위로 입력하세요 (${min}–${max}):`,
   promptThresholdTitle: "InsomniKit · 직접 입력 (배터리)",
   promptThresholdMessage: (min, max) =>
-    `배터리가 이 퍼센트 이하면 자동 해제 (${min}–${max}):`,
+    `배터리가 이 퍼센트 이하로 떨어지면 자동으로 끄기 (${min}–${max}):`,
   promptInvalidTitle: "InsomniKit · 유효하지 않은 값",
   promptInvalidDuration: (min, max) =>
     `${min}과 ${max} 사이의 정수를 입력하세요.`,
@@ -418,7 +443,7 @@ const ja: Messages = {
     if (m === 0) return `タイマー: 残り ${h}時間`;
     return `タイマー: 残り ${h}時間 ${m}分`;
   },
-  thresholdLine: (t) => (t === null ? "バッテリー自動解除: オフ" : `バッテリー自動解除: ${t}% 以下`),
+  thresholdLine: (t) => (t === null ? "オフ" : `バッテリー ${t}% で`),
   lidCloseWarning: (b) => {
     if (b.onACOnly || b.charging) return null;
     return "⚠︎  バッテリー時は閉じると休止";
@@ -439,10 +464,20 @@ const ja: Messages = {
   enable: "有効化",
   disable: "無効化",
   durationSubmenu: "持続時間",
-  thresholdSubmenu: "バッテリー自動解除",
+  thresholdSubmenu: "バッテリー低下時に InsomniKit をオフ",
   customEllipsis: "カスタム…",
   launchAtLogin: "ログイン時に起動",
   quit: "InsomniKit を終了",
+
+  durationDesc: [
+    "この時間だけ起きていて、その後",
+    "InsomniKit が自動でオフになります。",
+  ],
+  thresholdDesc: [
+    "バッテリーがこの値以下になると",
+    "InsomniKit を自動でオフにし、",
+    "切り忘れても電池を守ります。",
+  ],
 
   languageSubmenu: "Language / 言語 🌐",
   languageSystem: "システムのデフォルト",
@@ -496,7 +531,7 @@ const ja: Messages = {
   promptDurationMessage: (min, max) => `持続時間を分単位で入力 (${min}–${max}):`,
   promptThresholdTitle: "InsomniKit · カスタムバッテリーしきい値",
   promptThresholdMessage: (min, max) =>
-    `バッテリーがこのパーセント以下のとき自動解除 (${min}–${max}):`,
+    `バッテリーがこのパーセント以下になったら自動でオフ (${min}–${max}):`,
   promptInvalidTitle: "InsomniKit · 無効な値",
   promptInvalidDuration: (min, max) =>
     `${min} から ${max} の整数(分)を入力してください。`,
@@ -541,7 +576,7 @@ const zh: Messages = {
     if (m === 0) return `计时器: 剩余 ${h}小时`;
     return `计时器: 剩余 ${h}小时 ${m}分`;
   },
-  thresholdLine: (t) => (t === null ? "电池自动关闭: 关" : `电池自动关闭: ≤ ${t}%`),
+  thresholdLine: (t) => (t === null ? "关" : `电量 ${t}% 时`),
   lidCloseWarning: (b) => {
     if (b.onACOnly || b.charging) return null;
     return "⚠︎  电池模式下合盖会休眠";
@@ -562,10 +597,20 @@ const zh: Messages = {
   enable: "开启",
   disable: "关闭",
   durationSubmenu: "持续时间",
-  thresholdSubmenu: "电池自动关闭",
+  thresholdSubmenu: "电量低时关闭 InsomniKit",
   customEllipsis: "自定义…",
   launchAtLogin: "登录时启动",
   quit: "退出 InsomniKit",
+
+  durationDesc: [
+    "保持唤醒这段时间后，",
+    "InsomniKit 会自动关闭。",
+  ],
+  thresholdDesc: [
+    "当电量降到此水平时，",
+    "自动关闭 InsomniKit，",
+    "忘了关也不会耗尽电池。",
+  ],
 
   languageSubmenu: "Language / 语言 🌐",
   languageSystem: "系统默认",
@@ -663,7 +708,7 @@ const es: Messages = {
     if (m === 0) return `Temporizador: ${h}h restante${h === 1 ? "" : "s"}`;
     return `Temporizador: ${h}h ${m}m restantes`;
   },
-  thresholdLine: (t) => (t === null ? "Auto-apagado batería: Desactivado" : `Auto-apagado batería: ≤ ${t}%`),
+  thresholdLine: (t) => (t === null ? "Desactivado" : `Al ${t}% de batería`),
   lidCloseWarning: (b) => {
     if (b.onACOnly || b.charging) return null;
     return "⚠︎  Se duerme al cerrar con batería";
@@ -684,10 +729,20 @@ const es: Messages = {
   enable: "Activar",
   disable: "Desactivar",
   durationSubmenu: "Duración",
-  thresholdSubmenu: "Auto-desactivar con batería",
+  thresholdSubmenu: "Desactivar con batería baja",
   customEllipsis: "Personalizado…",
   launchAtLogin: "Iniciar al iniciar sesión",
   quit: "Salir de InsomniKit",
+
+  durationDesc: [
+    "Tiempo despierto antes de que",
+    "InsomniKit se apague solo.",
+  ],
+  thresholdDesc: [
+    "Apaga InsomniKit automáticamente",
+    "cuando la batería baja tanto —",
+    "un temporizador olvidado no la agota.",
+  ],
 
   languageSubmenu: "Language / Idioma 🌐",
   languageSystem: "Predeterminado del sistema",
@@ -741,7 +796,7 @@ const es: Messages = {
   promptDurationMessage: (min, max) => `Introduce la duración en minutos (${min}–${max}):`,
   promptThresholdTitle: "InsomniKit · Umbral de batería personalizado",
   promptThresholdMessage: (min, max) =>
-    `Auto-desactivar cuando la batería esté en este porcentaje o menos (${min}–${max}):`,
+    `Apagar automáticamente cuando la batería baje a este porcentaje o menos (${min}–${max}):`,
   promptInvalidTitle: "InsomniKit · Valor inválido",
   promptInvalidDuration: (min, max) =>
     `Por favor introduce un número entero de minutos entre ${min} y ${max}.`,
@@ -786,7 +841,7 @@ const de: Messages = {
     if (m === 0) return `Timer: ${h}h verbleibend`;
     return `Timer: ${h}h ${m}m verbleibend`;
   },
-  thresholdLine: (t) => (t === null ? "Akku-Auto-Aus: Aus" : `Akku-Auto-Aus: ≤ ${t}%`),
+  thresholdLine: (t) => (t === null ? "Aus" : `Bei ${t}% Akku`),
   lidCloseWarning: (b) => {
     if (b.onACOnly || b.charging) return null;
     return "⚠︎  Schläft im Akkubetrieb beim Schließen";
@@ -807,10 +862,20 @@ const de: Messages = {
   enable: "Aktivieren",
   disable: "Deaktivieren",
   durationSubmenu: "Dauer",
-  thresholdSubmenu: "Akku-Auto-Deaktivierung",
+  thresholdSubmenu: "InsomniKit bei wenig Akku ausschalten",
   customEllipsis: "Benutzerdefiniert…",
   launchAtLogin: "Beim Anmelden starten",
   quit: "InsomniKit beenden",
+
+  durationDesc: [
+    "So lange wach bleiben, dann",
+    "schaltet sich InsomniKit selbst aus.",
+  ],
+  thresholdDesc: [
+    "Schaltet InsomniKit automatisch aus,",
+    "wenn der Akku so weit fällt —",
+    "ein vergessener Timer leert ihn nicht.",
+  ],
 
   languageSubmenu: "Language / Sprache 🌐",
   languageSystem: "Systemstandard",
@@ -864,7 +929,7 @@ const de: Messages = {
   promptDurationMessage: (min, max) => `Gib die Dauer in Minuten ein (${min}–${max}):`,
   promptThresholdTitle: "InsomniKit · Benutzerdefinierter Akku-Schwellwert",
   promptThresholdMessage: (min, max) =>
-    `Auto-deaktivieren, wenn der Akku bei diesem Prozentwert oder darunter ist (${min}–${max}):`,
+    `Automatisch ausschalten, wenn der Akku auf diesen Prozentwert oder darunter fällt (${min}–${max}):`,
   promptInvalidTitle: "InsomniKit · Ungültiger Wert",
   promptInvalidDuration: (min, max) =>
     `Bitte gib eine ganze Zahl an Minuten zwischen ${min} und ${max} ein.`,
@@ -909,7 +974,7 @@ const fr: Messages = {
     if (m === 0) return `Minuteur: ${h}h restante${h === 1 ? "" : "s"}`;
     return `Minuteur: ${h}h ${m}m restantes`;
   },
-  thresholdLine: (t) => (t === null ? "Arrêt auto batterie: Désactivé" : `Arrêt auto batterie: ≤ ${t}%`),
+  thresholdLine: (t) => (t === null ? "Désactivé" : `À ${t}% de batterie`),
   lidCloseWarning: (b) => {
     if (b.onACOnly || b.charging) return null;
     return "⚠︎  Dort en fermant le capot sur batterie";
@@ -930,10 +995,20 @@ const fr: Messages = {
   enable: "Activer",
   disable: "Désactiver",
   durationSubmenu: "Durée",
-  thresholdSubmenu: "Auto-désactiver sur batterie",
+  thresholdSubmenu: "Désactiver si batterie faible",
   customEllipsis: "Personnalisé…",
   launchAtLogin: "Lancer à la connexion",
   quit: "Quitter InsomniKit",
+
+  durationDesc: [
+    "Rester éveillé ce temps, puis",
+    "InsomniKit s'arrête automatiquement.",
+  ],
+  thresholdDesc: [
+    "Arrête InsomniKit automatiquement",
+    "quand la batterie descend si bas —",
+    "un minuteur oublié ne la vide pas.",
+  ],
 
   languageSubmenu: "Language / Langue 🌐",
   languageSystem: "Par défaut du système",
@@ -987,7 +1062,7 @@ const fr: Messages = {
   promptDurationMessage: (min, max) => `Entrez la durée en minutes (${min}–${max}):`,
   promptThresholdTitle: "InsomniKit · Seuil de batterie personnalisé",
   promptThresholdMessage: (min, max) =>
-    `Auto-désactiver lorsque la batterie est à ce pourcentage ou en dessous (${min}–${max}):`,
+    `S'arrêter automatiquement quand la batterie descend à ce pourcentage ou en dessous (${min}–${max}):`,
   promptInvalidTitle: "InsomniKit · Valeur invalide",
   promptInvalidDuration: (min, max) =>
     `Veuillez entrer un nombre entier de minutes entre ${min} et ${max}.`,
@@ -1099,6 +1174,25 @@ export interface WindowLabels {
   custom: string;
   minutesAbbrev: string;
   percentAbbrev: string;
+
+  // ── inline hints + tooltips (window) ──────────
+  // `*Hint` = one short line shown directly under a control.
+  // `*Tip`  = the full explanation behind the ⓘ tooltip icon.
+  durationHint: string;
+  durationTip: string;
+  thresholdHint: string;
+  thresholdTip: string;
+  stayAwakeTip: string;
+  launchAtLoginTip: string;
+  animateIconTip: string;
+  languageTip: string;
+  infoLabel: string; // aria-label for the ⓘ tooltip icons
+
+  // ── lid-closed status badge (top of window + widget) ──
+  // Short effect-phrasing shown on the prominent on/off badge, so the
+  // (important) lid-closed state is glanceable without opening settings.
+  lidBadgeOn: string;
+  lidBadgeOff: string;
 }
 
 const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
@@ -1114,6 +1208,23 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
     custom: "Custom",
     minutesAbbrev: "min",
     percentAbbrev: "%",
+    durationHint: "Stays awake this long, then turns off on its own.",
+    durationTip:
+      "InsomniKit keeps your Mac awake for this long, then turns itself off automatically. Pick ∞ to stay awake until you turn it off yourself, or set any custom value from 1 to 1440 minutes.",
+    thresholdHint: "Turns off by itself when the battery gets low.",
+    thresholdTip:
+      "When the battery falls to this level or lower, InsomniKit switches off automatically and lets your Mac sleep — so a timer you forgot about can't drain the battery flat. Set it to Off to ignore the battery level.",
+    stayAwakeTip:
+      "Stops your Mac from sleeping when you close the lid, so your work keeps running — downloads, builds, agents — even on battery. Reopen and you're right back where you were, because it never slept. It's a system-wide macOS setting, so it asks for your admin password and stays on even after you quit InsomniKit — switch it off here when you're done.",
+    launchAtLoginTip:
+      "Add InsomniKit to your menu bar automatically every time you log in. It starts inactive — it won't keep your Mac awake until you turn it on.",
+    animateIconTip:
+      "Gently pulse the menu-bar icon while your Mac is being kept awake, so you can tell at a glance that it's working. Turn this off to keep the icon perfectly still.",
+    languageTip:
+      "Choose the language for InsomniKit's menus and window. 'System Default' follows your Mac's language automatically.",
+    infoLabel: "More info",
+    lidBadgeOn: "Awake when closed",
+    lidBadgeOff: "Sleeps when closed",
   },
   ko: {
     openWindow: "창 열기",
@@ -1122,11 +1233,28 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
     statusSection: "상태",
     settingsSection: "설정",
     stayAwakeWhenClosed: "노트북 닫아도 깨어 있기",
-    stayAwakeHint: "노트북(화면)을 닫아도 시스템이 계속 켜져 있어요 — 배터리에서도.",
+    stayAwakeHint: "노트북을 닫아도 Mac이 잠들지 않아요 — 배터리에서도.",
     tagline: "Mac을 깨어 있게 유지",
     custom: "사용자 지정",
     minutesAbbrev: "분",
     percentAbbrev: "%",
+    durationHint: "이 시간 동안 깨어 있다가 자동으로 꺼져요.",
+    durationTip:
+      "선택한 시간만큼 Mac을 깨어 있게 한 뒤 자동으로 꺼집니다. ∞를 고르면 직접 끌 때까지 계속 유지되고, 1~1440분 사이로 원하는 값을 직접 입력할 수도 있어요.",
+    thresholdHint: "배터리가 부족해지면 스스로 꺼져요.",
+    thresholdTip:
+      "배터리가 이 값 이하로 떨어지면 InsomniKit이 자동으로 꺼지고 Mac이 다시 잠들 수 있게 합니다. 깜빡 잊고 켜둬도 배터리가 바닥까지 닳지 않아요. '끔'으로 두면 배터리 잔량을 신경 쓰지 않습니다.",
+    stayAwakeTip:
+      "노트북을 닫아도 Mac이 잠들지 않아서 하던 작업이 계속 돌아가요 — 다운로드·빌드·에이전트, 배터리에서도요. 잠든 적이 없으니 다시 열면 바로 그 자리예요. macOS 전체에 적용되는 설정이라 켤 때 관리자 비밀번호를 묻고, InsomniKit을 종료해도 켜진 채로 남으니 다 쓰면 여기서 꺼주세요.",
+    launchAtLoginTip:
+      "Mac에 로그인할 때마다 InsomniKit을 메뉴 막대에 자동으로 띄웁니다. 꺼진 상태로 시작하니, 직접 켜기 전까지는 잠을 막지 않아요.",
+    animateIconTip:
+      "Mac을 깨어 있게 하는 동안 메뉴 막대 아이콘이 은은하게 깜빡여요. 동작 중인지 한눈에 알 수 있죠. 끄면 아이콘이 움직이지 않고 가만히 있습니다.",
+    languageTip:
+      "InsomniKit 메뉴와 창에 사용할 언어를 고릅니다. '시스템 기본값'은 Mac의 언어를 자동으로 따라가요.",
+    infoLabel: "자세히 보기",
+    lidBadgeOn: "닫아도 깨어 있음",
+    lidBadgeOff: "닫으면 잠듦",
   },
   ja: {
     openWindow: "ウィンドウを開く",
@@ -1140,6 +1268,23 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
     custom: "カスタム",
     minutesAbbrev: "分",
     percentAbbrev: "%",
+    durationHint: "この時間だけ起きていて、自動でオフになります。",
+    durationTip:
+      "選んだ時間だけ Mac を起きたままにし、その後は自動でオフになります。∞ を選ぶと自分でオフにするまで起きたまま。1〜1440 分の範囲で自由に指定することもできます。",
+    thresholdHint: "バッテリーが少なくなると自動でオフになります。",
+    thresholdTip:
+      "バッテリーがこの値以下になると、InsomniKit は自動でオフになり Mac がスリープできるようになります。切り忘れてもバッテリーを使い切る心配がありません。「オフ」にするとバッテリー残量を気にしません。",
+    stayAwakeTip:
+      "フタを閉じても Mac がスリープせず、作業が動き続けます — ダウンロード・ビルド・エージェント、バッテリー時も。スリープしていないので、開けばすぐ元の状態に戻ります。macOS 全体に適用される設定なので管理者パスワードを求められ、InsomniKit を終了してもオンのまま残ります。終わったらここでオフにしてください。",
+    launchAtLoginTip:
+      "ログインするたびに InsomniKit をメニューバーに自動で表示します。オフの状態で起動するので、自分でオンにするまでスリープを止めません。",
+    animateIconTip:
+      "Mac を起きたままにしている間、メニューバーのアイコンがゆっくり点滅します。動作中かどうか一目で分かります。オフにするとアイコンは動かず静止します。",
+    languageTip:
+      "InsomniKit のメニューとウィンドウの言語を選びます。「システムのデフォルト」は Mac の言語に自動で従います。",
+    infoLabel: "詳細",
+    lidBadgeOn: "閉じても起動",
+    lidBadgeOff: "閉じるとスリープ",
   },
   zh: {
     openWindow: "打开窗口",
@@ -1153,6 +1298,23 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
     custom: "自定义",
     minutesAbbrev: "分钟",
     percentAbbrev: "%",
+    durationHint: "保持唤醒这段时间后自动关闭。",
+    durationTip:
+      "InsomniKit 让你的 Mac 保持唤醒这段时间，然后自动关闭。选择 ∞ 可一直保持到你手动关闭，也可以输入 1 到 1440 分钟之间的任意值。",
+    thresholdHint: "电量过低时会自动关闭。",
+    thresholdTip:
+      "当电量降到此水平或更低时，InsomniKit 会自动关闭并让 Mac 进入睡眠 —— 这样即使忘了关也不会把电池耗尽。设为「关」则忽略电量。",
+    stayAwakeTip:
+      "合上笔记本后 Mac 也不会睡眠，让你的工作继续运行 —— 下载、构建、智能体，电池供电时也是。因为从未睡眠，重新打开就能立刻回到原处。这是 macOS 系统级设置，会要求输入管理员密码，并且即使退出 InsomniKit 也保持开启 —— 用完后请在此关闭。",
+    launchAtLoginTip:
+      "每次登录时自动把 InsomniKit 添加到菜单栏。它以未启用状态启动 —— 在你开启之前不会阻止 Mac 睡眠。",
+    animateIconTip:
+      "在保持 Mac 唤醒期间，菜单栏图标会轻轻跳动，让你一眼看出它正在工作。关闭后图标保持静止。",
+    languageTip:
+      "选择 InsomniKit 菜单和窗口的语言。「系统默认」会自动跟随 Mac 的语言。",
+    infoLabel: "更多信息",
+    lidBadgeOn: "合盖也唤醒",
+    lidBadgeOff: "合盖会休眠",
   },
   es: {
     openWindow: "Abrir ventana",
@@ -1166,6 +1328,23 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
     custom: "Personalizado",
     minutesAbbrev: "min",
     percentAbbrev: "%",
+    durationHint: "Sigue activo este tiempo y luego se apaga solo.",
+    durationTip:
+      "InsomniKit mantiene tu Mac despierto durante este tiempo y luego se apaga automáticamente. Elige ∞ para seguir despierto hasta que lo apagues tú, o escribe cualquier valor entre 1 y 1440 minutos.",
+    thresholdHint: "Se apaga solo cuando queda poca batería.",
+    thresholdTip:
+      "Cuando la batería baja a este nivel o menos, InsomniKit se apaga automáticamente y deja que tu Mac se duerma — así un temporizador olvidado no agota la batería. Ponlo en Desactivado para ignorar el nivel de batería.",
+    stayAwakeTip:
+      "Evita que tu Mac se duerma al cerrar la tapa, para que tu trabajo siga en marcha — descargas, compilaciones, agentes — incluso con batería. Como nunca se durmió, al abrir vuelves justo donde estabas. Es un ajuste de todo el sistema en macOS, así que pide tu contraseña de administrador y sigue activo aunque cierres InsomniKit — desactívalo aquí cuando termines.",
+    launchAtLoginTip:
+      "Añade InsomniKit a la barra de menús automáticamente cada vez que inicias sesión. Empieza inactivo — no mantendrá tu Mac despierto hasta que lo actives.",
+    animateIconTip:
+      "Hace latir suavemente el icono de la barra de menús mientras se mantiene tu Mac despierto, para que veas de un vistazo que funciona. Desactívalo para que el icono quede fijo.",
+    languageTip:
+      "Elige el idioma de los menús y la ventana de InsomniKit. «Predeterminado del sistema» sigue el idioma de tu Mac automáticamente.",
+    infoLabel: "Más información",
+    lidBadgeOn: "Despierto al cerrar",
+    lidBadgeOff: "Duerme al cerrar",
   },
   de: {
     openWindow: "Fenster öffnen",
@@ -1179,6 +1358,23 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
     custom: "Benutzerdefiniert",
     minutesAbbrev: "Min",
     percentAbbrev: "%",
+    durationHint: "Bleibt so lange wach und schaltet sich dann selbst aus.",
+    durationTip:
+      "InsomniKit hält deinen Mac für diese Dauer wach und schaltet sich dann automatisch aus. Wähle ∞, um wach zu bleiben, bis du es selbst ausschaltest, oder gib einen beliebigen Wert von 1 bis 1440 Minuten ein.",
+    thresholdHint: "Schaltet sich bei wenig Akku von selbst aus.",
+    thresholdTip:
+      "Wenn der Akku auf diesen Wert oder darunter fällt, schaltet sich InsomniKit automatisch aus und lässt deinen Mac schlafen — so leert ein vergessener Timer den Akku nicht. Auf „Aus“ stellen, um den Akkustand zu ignorieren.",
+    stayAwakeTip:
+      "Verhindert, dass dein Mac beim Schließen des Deckels in den Ruhezustand geht, damit deine Arbeit weiterläuft — Downloads, Builds, Agenten — auch im Akkubetrieb. Da er nie geschlafen hat, bist du beim Öffnen sofort wieder da, wo du warst. Es ist eine systemweite macOS-Einstellung, fragt also nach deinem Administratorpasswort und bleibt aktiv, auch nachdem du InsomniKit beendest — schalte sie hier aus, wenn du fertig bist.",
+    launchAtLoginTip:
+      "Fügt InsomniKit bei jeder Anmeldung automatisch zur Menüleiste hinzu. Es startet inaktiv — es hält deinen Mac erst wach, wenn du es einschaltest.",
+    animateIconTip:
+      "Lässt das Menüleistensymbol sanft pulsieren, während dein Mac wach gehalten wird, damit du auf einen Blick siehst, dass es läuft. Ausschalten, damit das Symbol still bleibt.",
+    languageTip:
+      "Wähle die Sprache für InsomniKits Menüs und Fenster. „Systemstandard“ folgt automatisch der Sprache deines Macs.",
+    infoLabel: "Mehr Infos",
+    lidBadgeOn: "Wach zugeklappt",
+    lidBadgeOff: "Schläft zugeklappt",
   },
   fr: {
     openWindow: "Ouvrir la fenêtre",
@@ -1192,6 +1388,23 @@ const WINDOW_LABELS: Record<Exclude<LocalePref, "system">, WindowLabels> = {
     custom: "Personnalisé",
     minutesAbbrev: "min",
     percentAbbrev: "%",
+    durationHint: "Reste éveillé ce temps, puis s'arrête tout seul.",
+    durationTip:
+      "InsomniKit garde votre Mac éveillé pendant cette durée, puis s'arrête automatiquement. Choisissez ∞ pour rester éveillé jusqu'à ce que vous l'arrêtiez vous-même, ou saisissez une valeur entre 1 et 1440 minutes.",
+    thresholdHint: "S'arrête tout seul quand la batterie est faible.",
+    thresholdTip:
+      "Quand la batterie descend à ce niveau ou en dessous, InsomniKit s'arrête automatiquement et laisse votre Mac se mettre en veille — ainsi un minuteur oublié ne vide pas la batterie. Mettez sur Désactivé pour ignorer le niveau de batterie.",
+    stayAwakeTip:
+      "Empêche votre Mac de se mettre en veille quand vous fermez le capot, pour que votre travail continue — téléchargements, builds, agents — même sur batterie. Comme il n'a jamais dormi, vous retrouvez tout à l'identique en rouvrant. C'est un réglage macOS à l'échelle du système : il demande votre mot de passe administrateur et reste actif même après avoir quitté InsomniKit — désactivez-le ici quand vous avez terminé.",
+    launchAtLoginTip:
+      "Ajoute InsomniKit à la barre de menus automatiquement à chaque connexion. Il démarre inactif — il ne gardera pas votre Mac éveillé tant que vous ne l'activez pas.",
+    animateIconTip:
+      "Fait pulser doucement l'icône de la barre de menus pendant que votre Mac est maintenu éveillé, pour voir d'un coup d'œil qu'il fonctionne. Désactivez pour garder l'icône immobile.",
+    languageTip:
+      "Choisissez la langue des menus et de la fenêtre d'InsomniKit. « Par défaut du système » suit automatiquement la langue de votre Mac.",
+    infoLabel: "Plus d'infos",
+    lidBadgeOn: "Éveillé fermé",
+    lidBadgeOff: "Veille si fermé",
   },
 };
 

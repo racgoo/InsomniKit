@@ -21,6 +21,8 @@
   const statusText = el("statusText");
   const powerLine = el("powerLine");
   const powerBtn = el<HTMLButtonElement>("powerBtn");
+  const lidPill = el("lidPill");
+  const lidPillText = el("lidPillText");
   const batteryLine = el("batteryLine");
   const batteryIco = el("batteryIco");
   const timerLine = el("timerLine");
@@ -33,11 +35,13 @@
   const durationCustom = el<HTMLInputElement>("durationCustom");
   const durationCustomTag = el("durationCustomTag");
   const durationUnit = el("durationUnit");
+  const durationHint = el("durationHint");
   const thresholdLabel = el("thresholdLabel");
   const thresholdSeg = el("thresholdSeg");
   const thresholdCustom = el<HTMLInputElement>("thresholdCustom");
   const thresholdCustomTag = el("thresholdCustomTag");
   const thresholdUnit = el("thresholdUnit");
+  const thresholdHint = el("thresholdHint");
   const lidLabel = el("lidLabel");
   const lidHint = el("lidHint");
   const lidSwitch = el<HTMLInputElement>("lidSwitch");
@@ -48,6 +52,8 @@
   const languageLabel = el("languageLabel");
   const langSelect = el<HTMLSelectElement>("langSelect");
   const quitBtn = el<HTMLButtonElement>("quitBtn");
+  const tip = el("tip");
+  const infoEls = Array.from(document.querySelectorAll<HTMLElement>(".info"));
 
   let cur: IKViewModel | null = null;
   let built = false;
@@ -86,6 +92,68 @@
   );
   bindCommit(durationCustom, 1, 1440, (v) => send({ type: "setDuration", value: v }));
   bindCommit(thresholdCustom, 1, 99, (v) => send({ type: "setThreshold", value: v }));
+
+  // ── ⓘ tooltips ──
+  // The detailed explanation behind each info icon. Resolved lazily from
+  // the latest ViewModel labels so it always shows the current locale.
+  const tipText: Record<string, () => string> = {
+    duration: () => cur?.labels.durationTip ?? "",
+    threshold: () => cur?.labels.thresholdTip ?? "",
+    lid: () => cur?.labels.stayAwakeTip ?? "",
+    login: () => cur?.labels.launchAtLoginTip ?? "",
+    animate: () => cur?.labels.animateIconTip ?? "",
+    language: () => cur?.labels.languageTip ?? "",
+  };
+  let tipAnchor: HTMLElement | null = null;
+
+  function placeTip(anchor: HTMLElement): void {
+    // `fixed` from the icon's viewport rect — escapes the scroll
+    // container's clipping. Flip above when there's no room below.
+    const a = anchor.getBoundingClientRect();
+    const r = tip.getBoundingClientRect();
+    const margin = 10;
+    let left = a.left + a.width / 2 - r.width / 2;
+    left = Math.max(margin, Math.min(left, window.innerWidth - r.width - margin));
+    let top = a.bottom + 8;
+    if (top + r.height > window.innerHeight - margin) top = a.top - r.height - 8;
+    tip.style.left = `${Math.round(left)}px`;
+    tip.style.top = `${Math.round(top)}px`;
+  }
+
+  function showTip(anchor: HTMLElement): void {
+    const text = tipText[anchor.dataset.tip ?? ""]?.() ?? "";
+    if (!text) return;
+    tipAnchor = anchor;
+    tip.textContent = text;
+    placeTip(anchor); // measure + position while still invisible (visibility:hidden lays out)
+    tip.classList.add("show");
+  }
+
+  function hideTip(anchor: HTMLElement): void {
+    if (tipAnchor !== anchor) return;
+    tipAnchor = null;
+    tip.classList.remove("show");
+  }
+
+  infoEls.forEach((info) => {
+    info.addEventListener("mouseenter", () => showTip(info));
+    info.addEventListener("mouseleave", () => hideTip(info));
+    info.addEventListener("focus", () => showTip(info));
+    info.addEventListener("blur", () => hideTip(info));
+    // The icon lives inside a <label> for some rows — a click there would
+    // toggle the switch. Swallow it so the icon is info-only.
+    info.addEventListener("mousedown", (e) => e.preventDefault());
+    info.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    info.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        hideTip(info);
+        info.blur();
+      }
+    });
+  });
 
   function bindCommit(
     input: HTMLInputElement,
@@ -155,6 +223,8 @@
     powerLine.textContent = vm.powerLine;
     powerBtn.textContent = vm.active ? L.disable : L.enable;
     powerCard.classList.toggle("active", vm.active);
+    lidPill.classList.toggle("on", vm.lidApplied);
+    lidPillText.textContent = vm.lidApplied ? L.lidBadgeOn : L.lidBadgeOff;
     widgetBtn.textContent = vm.widgetOpen ? L.hideWidget : L.showWidget;
     widgetBtn.classList.toggle("on", vm.widgetOpen);
 
@@ -182,10 +252,13 @@
     thresholdCustomTag.textContent = L.custom;
     durationUnit.textContent = L.minutesAbbrev;
     thresholdUnit.textContent = L.percentAbbrev;
+    durationHint.textContent = L.durationHint;
+    thresholdHint.textContent = L.thresholdHint;
     lidLabel.textContent = L.stayAwakeWhenClosed;
     lidHint.textContent = L.stayAwakeHint;
     loginLabel.textContent = L.launchAtLogin;
     animateLabel.textContent = L.animateIcon;
+    infoEls.forEach((info) => info.setAttribute("aria-label", L.infoLabel));
     // The label has its own globe SVG now — drop the 🌐 from the text.
     languageLabel.textContent = L.language.replace(/\s*🌐/u, "");
 

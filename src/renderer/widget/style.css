@@ -7,6 +7,7 @@
 :root {
   --accent: #7c6cf0;
   --accent-bright: #9a8cff;
+  --pink: #f7b8d8;
   --text: #f3eefc;
   --text-dim: rgba(230, 224, 252, 0.62);
   --glass: rgba(43, 34, 82, 0.88);
@@ -77,6 +78,27 @@ body { font-family: -apple-system, "SF Pro Text", system-ui, sans-serif; color: 
   100% { transform: translate(6%, 5%) scale(1.18); }
 }
 .widget > * { position: relative; z-index: 1; }
+
+/* InsomniKit active = a color-shifting accent ring around the whole
+   widget, so on/off is obvious at a glance even from across the desk. */
+.widget::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  z-index: 2;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1.5px transparent;
+  transition: box-shadow 0.45s;
+}
+.widget.awake::after {
+  animation: wglow 4s ease-in-out infinite;
+}
+@keyframes wglow {
+  0%, 100% { box-shadow: inset 0 0 0 1.6px rgba(154, 140, 255, 0.65), inset 0 0 16px rgba(154, 140, 255, 0.2); }
+  50% { box-shadow: inset 0 0 0 1.6px rgba(247, 184, 216, 0.8), inset 0 0 22px rgba(247, 184, 216, 0.28); }
+}
+.widget.awake .wstatus { color: var(--accent-bright); }
 
 .wtop { display: flex; align-items: center; justify-content: space-between; }
 .wbrand { display: flex; align-items: center; gap: 7px; }
@@ -180,8 +202,15 @@ body { font-family: -apple-system, "SF Pro Text", system-ui, sans-serif; color: 
 .wlid-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wlid.on {
   color: #fff;
-  background: linear-gradient(135deg, var(--accent-bright), var(--accent));
-  box-shadow: 0 3px 9px rgba(124, 108, 240, 0.36);
+  background: linear-gradient(120deg, var(--accent) 0%, var(--accent-bright) 25%, var(--pink) 50%, var(--accent-bright) 75%, var(--accent) 100%);
+  background-size: 280% 280%;
+  box-shadow: 0 4px 12px rgba(124, 108, 240, 0.45);
+  animation: wflow 7s ease-in-out infinite;
+}
+@keyframes wflow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .wchips {
@@ -212,5 +241,11 @@ body { font-family: -apple-system, "SF Pro Text", system-ui, sans-serif; color: 
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, .widget, .widget::before, .wdot.on { animation: none !important; }
+  *,
+  .widget,
+  .widget::before,
+  .widget::after,
+  .widget.awake::after,
+  .wdot.on,
+  .wlid.on { animation: none !important; }
 }

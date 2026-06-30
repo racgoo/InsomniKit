@@ -105,6 +105,17 @@ export function buildViewModel(
     showWidget: w.showWidget,
     hideWidget: w.hideWidget,
     quit: m.quit,
+    durationHint: w.durationHint,
+    durationTip: w.durationTip,
+    thresholdHint: w.thresholdHint,
+    thresholdTip: w.thresholdTip,
+    stayAwakeTip: w.stayAwakeTip,
+    launchAtLoginTip: w.launchAtLoginTip,
+    animateIconTip: w.animateIconTip,
+    languageTip: w.languageTip,
+    infoLabel: w.infoLabel,
+    lidBadgeOn: w.lidBadgeOn,
+    lidBadgeOff: w.lidBadgeOff,
   };
 
   return {
