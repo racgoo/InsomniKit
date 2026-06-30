@@ -232,7 +232,13 @@ export class TrayController {
   private buildDurationMenu(state: AppState): MenuItemConstructorOptions {
     const m = t();
     const showsCustom = !isDurationPreset(state.duration);
+    // Plain-language explanation at the top — the tray's tooltip stand-in.
+    const desc: MenuItemConstructorOptions[] = m.durationDesc.map((line) =>
+      line === "" ? { type: "separator" } : { label: line, enabled: false },
+    );
     const submenu: MenuItemConstructorOptions[] = [
+      ...desc,
+      { type: "separator" },
       ...DURATION_PRESETS.map<MenuItemConstructorOptions>((d) => ({
         label: m.durationPresetLabel(d),
         type: "radio" as const,
@@ -261,7 +267,14 @@ export class TrayController {
   private buildThresholdMenu(state: AppState): MenuItemConstructorOptions {
     const m = t();
     const showsCustom = !isThresholdPreset(state.batteryThreshold);
+    // Plain-language explanation at the top — clears up what "auto-off on
+    // low battery" actually does without leaving the menu.
+    const desc: MenuItemConstructorOptions[] = m.thresholdDesc.map((line) =>
+      line === "" ? { type: "separator" } : { label: line, enabled: false },
+    );
     const submenu: MenuItemConstructorOptions[] = [
+      ...desc,
+      { type: "separator" },
       ...THRESHOLD_PRESETS.map<MenuItemConstructorOptions>((th) => ({
         label: m.thresholdPresetLabel(th),
         type: "radio" as const,

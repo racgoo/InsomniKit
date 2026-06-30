@@ -10,6 +10,7 @@
     document.getElementById(id) as T;
   const send = (action: IKAction): void => bridge.send(action);
 
+  const widget = el("widget");
   const appName = el("appName");
   const dot = el("dot");
   const statusText = el("statusText");
@@ -52,9 +53,14 @@
     const L = vm.labels;
     appName.textContent = L.appName;
     lidLabel.textContent = L.stayAwakeWhenClosed;
+    // Native hover tooltip — the widget is too small for an inline ⓘ, but
+    // the full explanation is one hover away (and the OS tooltip renders
+    // even over this frameless, always-on-top window).
+    lidBtn.title = L.stayAwakeTip;
     lidBtn.classList.toggle("on", vm.lidApplied);
     statusText.textContent = vm.statusText;
     dot.classList.toggle("on", vm.active);
+    widget.classList.toggle("awake", vm.active);
     powerBtn.textContent = vm.active ? L.disable : L.enable;
     powerBtn.classList.toggle("active", vm.active);
     timerLine.textContent = vm.timerLine;

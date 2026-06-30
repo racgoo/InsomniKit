@@ -65,6 +65,18 @@ export interface ViewLabels {
   showWidget: string;
   hideWidget: string;
   quit: string;
+  // ── inline hints + tooltip text (window) ──
+  durationHint: string;
+  durationTip: string;
+  thresholdHint: string;
+  thresholdTip: string;
+  stayAwakeTip: string;
+  launchAtLoginTip: string;
+  animateIconTip: string;
+  languageTip: string;
+  infoLabel: string;
+  lidBadgeOn: string;
+  lidBadgeOff: string;
 }
 
 /**

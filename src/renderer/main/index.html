@@ -26,6 +26,12 @@
           <div class="power-text">
             <span class="status-text" id="statusText">Inactive</span>
             <span class="status-sub" id="powerLine">—</span>
+            <span class="lid-pill" id="lidPill">
+              <svg class="lid-pill-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="4" y="5" width="16" height="10" rx="1.5" /><path d="M2 18.5h20" />
+              </svg>
+              <span id="lidPillText">Sleeps when closed</span>
+            </span>
           </div>
         </div>
         <button class="power-btn" id="powerBtn" type="button">Enable</button>
@@ -45,8 +51,11 @@
           <span class="stat-v" id="timerLine">—</span>
         </div>
         <div class="stat">
+          <!-- Low-battery glyph (not a power button — that read as "shut down
+               the Mac"). This row is the battery level at which InsomniKit
+               turns itself off. -->
           <svg class="stat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 4v7" /><path d="M8 7.6a7 7 0 1 0 8 0" />
+            <rect x="2.5" y="8.5" width="14.5" height="8" rx="2.2" /><path d="M20 11.3v2.4" /><rect x="4.5" y="10.5" width="3.4" height="4" rx="0.7" fill="currentColor" stroke="none" />
           </svg>
           <span class="stat-v" id="thresholdLine">—</span>
         </div>
@@ -64,7 +73,12 @@
         <div class="section-title" id="settingsTitle">Settings</div>
 
         <div class="field">
-          <div class="field-label" id="durationLabel">Duration</div>
+          <div class="field-label">
+            <span id="durationLabel">Duration</span>
+            <span class="info" data-tip="duration" role="button" tabindex="0" aria-label="More info">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5" /><path d="M12 11.2v4.8" /><path d="M12 7.8h.01" /></svg>
+            </span>
+          </div>
           <div class="segment" id="durationSeg"></div>
           <div class="custom-row">
             <span class="custom-tag" id="durationCustomTag">Custom</span>
@@ -72,10 +86,18 @@
               inputmode="numeric" min="1" max="1440" placeholder="—" />
             <span class="custom-unit" id="durationUnit">min</span>
           </div>
+          <div class="field-hint" id="durationHint"></div>
         </div>
 
+        <div class="divider"></div>
+
         <div class="field">
-          <div class="field-label" id="thresholdLabel">Battery Auto-Disable</div>
+          <div class="field-label">
+            <span id="thresholdLabel">Auto-Disable on Low Battery</span>
+            <span class="info" data-tip="threshold" role="button" tabindex="0" aria-label="More info">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5" /><path d="M12 11.2v4.8" /><path d="M12 7.8h.01" /></svg>
+            </span>
+          </div>
           <div class="segment" id="thresholdSeg"></div>
           <div class="custom-row">
             <span class="custom-tag" id="thresholdCustomTag">Custom</span>
@@ -83,25 +105,47 @@
               inputmode="numeric" min="1" max="99" placeholder="—" />
             <span class="custom-unit" id="thresholdUnit">%</span>
           </div>
+          <div class="field-hint" id="thresholdHint"></div>
         </div>
 
+        <div class="divider"></div>
+
+        <div class="toggle-group">
         <label class="switch-row lid-row" for="lidSwitch">
           <span class="switch-text">
-            <span class="switch-label" id="lidLabel">Stay awake with lid closed</span>
+            <span class="switch-label-row">
+              <span class="switch-label" id="lidLabel">Stay awake with lid closed</span>
+              <span class="info" data-tip="lid" role="button" tabindex="0" aria-label="More info">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5" /><path d="M12 11.2v4.8" /><path d="M12 7.8h.01" /></svg>
+              </span>
+            </span>
             <span class="switch-hint" id="lidHint">Keep running when you close the laptop.</span>
           </span>
           <span class="switch"><input type="checkbox" id="lidSwitch" /><span class="track"></span></span>
         </label>
 
         <label class="switch-row" for="loginSwitch">
-          <span class="switch-label" id="loginLabel">Launch at Login</span>
+          <span class="switch-label-row">
+            <span class="switch-label" id="loginLabel">Launch at Login</span>
+            <span class="info" data-tip="login" role="button" tabindex="0" aria-label="More info">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5" /><path d="M12 11.2v4.8" /><path d="M12 7.8h.01" /></svg>
+            </span>
+          </span>
           <span class="switch"><input type="checkbox" id="loginSwitch" /><span class="track"></span></span>
         </label>
 
         <label class="switch-row" for="animateSwitch">
-          <span class="switch-label" id="animateLabel">Animate icon</span>
+          <span class="switch-label-row">
+            <span class="switch-label" id="animateLabel">Animate icon</span>
+            <span class="info" data-tip="animate" role="button" tabindex="0" aria-label="More info">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5" /><path d="M12 11.2v4.8" /><path d="M12 7.8h.01" /></svg>
+            </span>
+          </span>
           <span class="switch"><input type="checkbox" id="animateSwitch" /><span class="track"></span></span>
         </label>
+        </div>
+
+        <div class="divider"></div>
 
         <div class="field-row">
           <div class="field-label with-ico">
@@ -110,6 +154,9 @@
               <path d="M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" />
             </svg>
             <span id="languageLabel">Language</span>
+            <span class="info" data-tip="language" role="button" tabindex="0" aria-label="More info">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5" /><path d="M12 11.2v4.8" /><path d="M12 7.8h.01" /></svg>
+            </span>
           </div>
           <div class="select-wrap">
             <select class="select" id="langSelect"></select>
@@ -122,6 +169,7 @@
         <button class="quit-btn" id="quitBtn" type="button">Quit</button>
       </footer>
     </main>
+    <div class="tip" id="tip" role="tooltip"></div>
     <script src="app.js"></script>
   </body>
 </html>
